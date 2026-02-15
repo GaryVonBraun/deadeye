@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-pub struct GameplayPlugin;
+pub struct SimulationPlugin;
 
-impl Plugin for GameplayPlugin {
+impl Plugin for SimulationPlugin {
    fn build(&self, _app: &mut App) {
        
    } 
