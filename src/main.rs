@@ -1,10 +1,15 @@
 use bevy::{prelude::*, window::WindowResolution};
 
-use crate::{actor::ActorPlugin, core::CorePlugin, debug::DebugPlugin, simulation::SimulationPlugin};
-mod core;
-mod simulation;
+use crate::{
+    actor::ActorPlugin, core::CorePlugin, debug::DebugPlugin, player::PlayerPlugin,
+    simulation::SimulationPlugin,
+};
 mod actor;
+mod core;
 mod debug;
+mod player;
+mod simulation;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -17,7 +22,7 @@ fn main() {
             }),
             ..Default::default()
         }))
-        .add_plugins((SimulationPlugin, ActorPlugin))
+        .add_plugins((SimulationPlugin, ActorPlugin, PlayerPlugin))
         .add_plugins(CorePlugin)
         .add_plugins(DebugPlugin)
         .run();

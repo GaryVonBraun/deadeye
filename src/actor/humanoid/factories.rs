@@ -6,11 +6,11 @@ use crate::{
         humanoid::appearance::bundles::*,
         locomotion::components::Locomotion,
     },
-    debug::components::DebugMovementIntent,
+    debug::components::DebugMovementIntent, player::components::PlayerMovementIntent,
 };
 
 
-pub fn spawn_basic_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         CoreActorBundle {
             actor: Actor,
@@ -29,4 +29,25 @@ pub fn spawn_basic_humanoid(mut commands: Commands, asset_server: Res<AssetServe
         },
     ));
     info!("spawned basic humanoid entity");
+}
+
+pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        CoreActorBundle {
+            actor: Actor,
+            transform: Transform::from_xyz(0., 0., 0.),
+        },
+        HumanoidAppearanceBundle {
+            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+            appearance: HumanoidAppearance,
+        },
+        Locomotion {
+            move_direction: vec2(0., 0.),
+            speed: 100.,
+        },
+        PlayerMovementIntent {
+            direction: Vec2::default(),
+        },
+    ));
+    info!("spawned player");
 }
