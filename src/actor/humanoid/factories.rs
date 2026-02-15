@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{actor::{
     bundles::{Actor, CoreActorBundle},
     humanoid::appearance::bundles::*, locomotion::components::Locomotion,
-}, debug::components::DebugMovement};
+}, debug::components::DebugMovementIntent};
 
 pub fn spawn_basic_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -16,10 +16,12 @@ pub fn spawn_basic_humanoid(mut commands: Commands, asset_server: Res<AssetServe
             appearance: HumanoidAppearance,
         },
         Locomotion {
-            movement_intent: vec2(0., 0.),
-            movement_speed: 100.
+            move_direction: vec2(0., 0.),
+            speed: 100.
         },
-        DebugMovement
+        DebugMovementIntent {
+            intent: Vec2::default()
+        }
     ));
     info!("spawned basic humanoid entity");
 }

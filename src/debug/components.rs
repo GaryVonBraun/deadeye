@@ -1,4 +1,6 @@
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
-pub struct DebugMovement;
+pub struct DebugMovementIntent {
+    pub intent: Vec2
+}

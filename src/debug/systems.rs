@@ -1,9 +1,10 @@
-use bevy::{ecs::query, prelude::*};
+use bevy::prelude::*;
 
-use crate::{actor::locomotion::components::Locomotion, debug::components::DebugMovement};
+use crate::debug::components::DebugMovementIntent;
 
+//NOTE - This is a quick implementation to see if the locomotion system works
 pub fn debug_movement_controller(
-    mut movement_debug_entity: Query<&mut Locomotion, With<DebugMovement>>,
+    mut movement_debug_entity: Query<&mut DebugMovementIntent>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
     let Ok(mut movement_entity) = movement_debug_entity.single_mut() else {
@@ -25,5 +26,5 @@ pub fn debug_movement_controller(
         intent.y += -1.;
     }
 
-    movement_entity.movement_intent = intent;
+    movement_entity.intent = intent;
 }
