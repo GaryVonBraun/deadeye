@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::debug::components::DebugMovementIntent;
 
-//NOTE - This is a quick implementation to see if the locomotion system works
+//TEMPORARY - This is a quick implementation to see if the locomotion system works
 pub fn debug_movement_controller(
     mut movement_debug_entity: Query<&mut DebugMovementIntent>,
     keys: Res<ButtonInput<KeyCode>>,
