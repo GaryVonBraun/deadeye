@@ -11,20 +11,20 @@ pub fn debug_movement_controller(
         return;
     };
 
-    let mut intent = Vec2::default();
+    let mut direction = Vec2::default();
 
     if keys.pressed(KeyCode::KeyA) {
-        intent.x += -1.;
+        direction.x += -1.;
     }
     if keys.pressed(KeyCode::KeyD) {
-        intent.x += 1.;
+        direction.x += 1.;
     }
     if keys.pressed(KeyCode::KeyW) {
-        intent.y += 1.;
+        direction.y += 1.;
     }
     if keys.pressed(KeyCode::KeyS) {
-        intent.y += -1.;
+        direction.y += -1.;
     }
 
-    movement_entity.intent = intent;
+    movement_entity.direction = direction;
 }

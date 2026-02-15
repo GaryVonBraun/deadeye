@@ -4,22 +4,24 @@ use crate::{actor::locomotion::components::Locomotion, debug::components::DebugM
 
 pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time: Res<Time>) {
     for (locomotion, mut transform) in &mut query {
+
+        // We normalize our vec2 to get a direction
         let direction = locomotion.move_direction.normalize_or_zero();
 
-        let movement = direction * locomotion.speed * time.delta_secs();
+        // Displacement is the new position base on the direction x speed and the delta time
+        let displacement = direction * locomotion.speed * time.delta_secs();
 
-        transform.translation += movement.extend(0.0);
+
+        transform.translation += displacement.extend(0.0);
     }
 }
 
 pub fn resolve_movement(mut query: Query<(&mut Locomotion, Option<&DebugMovementIntent>)>) {
-    for (mut locomotion, debug_movement_component) in query.iter_mut() {
-        match debug_movement_component {
-            Some(debug_movement) => locomotion.move_direction = debug_movement.intent,
-            None => {
-                //TEMPORARY - if there is no debug movement we don't have it do nothing
-                //NOTE - might have to be careful if component gets removed at runtime, could make the keep its intent.
-            }
-        }
+    for (mut locomotion, debug_intent) in query.iter_mut() {
+
+        // When debug_intent is present we map it to the move direction
+        locomotion.move_direction = debug_intent
+            .map(|d| d.direction)
+            .unwrap_or(Vec2::ZERO);
     }
 }

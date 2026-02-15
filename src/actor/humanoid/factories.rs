@@ -25,7 +25,7 @@ pub fn spawn_basic_humanoid(mut commands: Commands, asset_server: Res<AssetServe
             speed: 100.,
         },
         DebugMovementIntent {
-            intent: Vec2::default(),
+            direction: Vec2::default(),
         },
     ));
     info!("spawned basic humanoid entity");
