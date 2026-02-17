@@ -6,6 +6,7 @@ use crate::{actor::{humanoid::{HumanoidPlugin, factories::*}, locomotion::Locomo
 mod bundles;
 mod humanoid;
 pub mod locomotion;
+mod appearance;
 pub struct ActorPlugin;
 
 impl Plugin for ActorPlugin {

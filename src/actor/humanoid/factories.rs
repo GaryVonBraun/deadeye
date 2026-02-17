@@ -2,13 +2,11 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{
-        bundles::{Actor, CoreActorBundle},
-        humanoid::appearance::bundles::*,
-        locomotion::components::Locomotion,
+        appearance::bundles::*, bundles::{Actor, CoreActorBundle}, locomotion::components::Locomotion
     },
-    debug::components::DebugMovementIntent, player::components::PlayerMovementIntent,
+    debug::components::DebugMovementIntent,
+    player::components::PlayerMovementIntent,
 };
-
 
 pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -16,9 +14,9 @@ pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServe
             actor: Actor,
             transform: Transform::from_xyz(0., 0., 0.),
         },
-        HumanoidAppearanceBundle {
+        AppearanceBundle {
             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-            appearance: HumanoidAppearance,
+            appearance: Appearance,
         },
         Locomotion {
             move_direction: vec2(0., 0.),
@@ -37,9 +35,9 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
             actor: Actor,
             transform: Transform::from_xyz(0., 0., 0.),
         },
-        HumanoidAppearanceBundle {
+        AppearanceBundle {
             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-            appearance: HumanoidAppearance,
+            appearance: Appearance,
         },
         Locomotion {
             move_direction: vec2(0., 0.),
