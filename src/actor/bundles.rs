@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct Actor;
+use crate::actor::components::Actor;
 
 #[derive(Bundle)]
-pub struct CoreActorBundle{
+pub struct CoreActorBundle {
     pub transform: Transform,
-    pub actor:Actor
+    pub actor: Actor,
 }

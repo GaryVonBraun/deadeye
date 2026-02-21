@@ -2,9 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{
-        appearance::bundles::*,
-        bundles::{Actor, CoreActorBundle},
-        locomotion::components::Locomotion,
+        appearance::bundles::*, bundles::CoreActorBundle, components::Actor, locomotion::components::Locomotion
     },
     combat::weapon::factories::spawn_debug_weapon,
     debug::components::DebugMovementIntent,

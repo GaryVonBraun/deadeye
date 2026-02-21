@@ -1,12 +1,18 @@
 use bevy::prelude::*;
 
-use crate::{actor::{humanoid::{HumanoidPlugin, factories::*}, locomotion::LocomotionPlugin}, core::states::AppState};
+use crate::{
+    actor::{
+        humanoid::{HumanoidPlugin, factories::*},
+        locomotion::LocomotionPlugin,
+    },
+    core::states::AppState,
+};
 
-
-pub mod bundles;
+mod appearance;
+mod bundles;
+pub mod components;
 mod humanoid;
 pub mod locomotion;
-mod appearance;
 pub struct ActorPlugin;
 
 impl Plugin for ActorPlugin {

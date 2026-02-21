@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::bundles::Actor,
+    actor::components::Actor,
     combat::{messages::ShootMessage, weapon::component::Weapon},
 };
 
@@ -16,6 +16,7 @@ pub fn shoot_weapon(
             for child in children.iter() {
                 // and we check if the child is a weapon
                 if let Ok(mut weapon) = weapon_query.get(child) {
+                    //NOTE - currently this means if an actor has multiple weapons they all fire
                     info!(
                         "weapon shot with a projectile speed of {:?}",
                         weapon.projectile_speed
