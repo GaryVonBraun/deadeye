@@ -4,4 +4,5 @@ use bevy::prelude::*;
 pub struct Projectile {
     pub speed: f32,
     pub direction: Vec2,
+    pub lifetime: f32,
 }

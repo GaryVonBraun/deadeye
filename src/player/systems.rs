@@ -70,7 +70,7 @@ pub fn player_shoot_input(
         return;
     };
 
-    if buttons.just_pressed(MouseButton::Left) {
+    if buttons.pressed(MouseButton::Left) {
         //LINK - src/combat/weapon/systems.rs:8
         // this links to where the message is being read
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::combat::weapon::systems::shoot_weapon;
+use crate::combat::weapon::systems::{shoot_weapon, weapon_cooldown};
 
 mod bundles;
 pub mod component;
@@ -11,6 +11,6 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, shoot_weapon);
+        app.add_systems(Update, (weapon_cooldown, shoot_weapon).chain());
     }
 }
