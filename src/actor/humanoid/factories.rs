@@ -33,7 +33,7 @@ pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServe
 }
 
 pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
-    //TEMPORARY - we are spawning the weapon before the player for the moment
+    //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
     let weapon = spawn_debug_weapon(&mut commands, &asset_server);
 
     commands

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{actor::{humanoid::{HumanoidPlugin, factories::*}, locomotion::LocomotionPlugin}, core::states::AppState};
 
 
-mod bundles;
+pub mod bundles;
 mod humanoid;
 pub mod locomotion;
 mod appearance;

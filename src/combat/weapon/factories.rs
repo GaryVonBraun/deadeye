@@ -11,6 +11,7 @@ pub fn spawn_debug_weapon(commands: &mut Commands, asset_server: &Res<AssetServe
                 fire_rate: 1.,
                 projectile_speed: 10.,
             },
+            transform: Transform::default()
         })
         .id()
 }

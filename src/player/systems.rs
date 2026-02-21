@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::player::components::{PlayerMovementIntent, PlayerShootingIntent};
+use crate::{
+    combat::messages::ShootMessage,
+    player::components::{PlayerMovementIntent, PlayerShootingIntent},
+};
 
 pub fn player_movement_controller(
     mut query: Query<&mut PlayerMovementIntent>,
@@ -30,16 +33,28 @@ pub fn player_movement_controller(
 
 pub fn player_shooting_controller(
     window: Single<&mut Window>,
-    mut query: Query<&mut PlayerShootingIntent>,
+    mut query: Query<(Entity, &mut PlayerShootingIntent)>,
+    mut messages: MessageWriter<ShootMessage>,
+    buttons: Res<ButtonInput<MouseButton>>,
 ) {
-    let Ok(mut shooting_intent) = query.single_mut() else {
+    
+    let Ok((entity, mut shooting_intent)) = query.single_mut() else {
         return;
     };
 
     let some_position = window.cursor_position();
 
     match some_position {
-        Some(position) => shooting_intent.direction = position.normalize(),
+        Some(position) => {
+            shooting_intent.direction = position.normalize();
+            if buttons.just_pressed(MouseButton::Left) {
+                info!("clicked mouse button");
+                messages.write(ShootMessage {
+                    shooter: entity,
+                    direction: shooting_intent.direction,
+                });
+            }
+        }
         None => shooting_intent.direction = Vec2::default(),
     }
 }
