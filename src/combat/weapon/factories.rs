@@ -9,7 +9,7 @@ pub fn spawn_debug_weapon(commands: &mut Commands, asset_server: &Res<AssetServe
             sprite: Sprite::from_image(asset_server.load("debug_weapon.png")),
             weapon: Weapon {
                 fire_rate: 1.,
-                projectile_speed: 10.,
+                projectile_speed: 100.,
             },
             transform: Transform::default()
         })

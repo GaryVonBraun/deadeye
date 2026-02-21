@@ -33,28 +33,47 @@ pub fn player_movement_controller(
 
 pub fn player_shooting_controller(
     window: Single<&mut Window>,
-    mut query: Query<(Entity, &mut PlayerShootingIntent)>,
+    mut player_query: Query<(Entity, &mut PlayerShootingIntent, &GlobalTransform)>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
     mut messages: MessageWriter<ShootMessage>,
     buttons: Res<ButtonInput<MouseButton>>,
 ) {
-    
-    let Ok((entity, mut shooting_intent)) = query.single_mut() else {
+
+    //FIXME - this looks bad
+
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
+
+    let Ok((entity, mut shooting_intent, transform)) = player_query.single_mut() else {
         return;
     };
 
-    let some_position = window.cursor_position();
+    let Some(mouse_position) = window.cursor_position() else {
+        return;
+    };
 
-    match some_position {
-        Some(position) => {
-            shooting_intent.direction = position.normalize();
-            if buttons.just_pressed(MouseButton::Left) {
-                info!("clicked mouse button");
-                messages.write(ShootMessage {
-                    shooter: entity,
-                    direction: shooting_intent.direction,
-                });
-            }
-        }
-        None => shooting_intent.direction = Vec2::default(),
-    }
+    let Ok(mouse_world) = camera_query
+        .0
+        .viewport_to_world_2d(camera_query.1, mouse_position)
+    else {
+        return;
+    };
+
+    let player_position = transform.translation().truncate();
+
+    shooting_intent.direction = (mouse_world
+        - Vec2 {
+            x: player_position.x,
+            y: player_position.y,
+        })
+    .normalize_or_zero();
+
+    //LINK - src/combat/weapon/systems.rs:8
+    // this links to where the message is being read
+
+    messages.write(ShootMessage {
+        shooter: entity,
+        direction: shooting_intent.direction,
+    });
 }

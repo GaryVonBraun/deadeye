@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use crate::combat::weapon::system::shoot_weapon;
+use crate::combat::weapon::systems::shoot_weapon;
 
 mod bundles;
 mod component;
 pub mod factories;
-mod system;
+mod systems;
 
 pub struct WeaponPlugin;
 
