@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{ecs::relationship::Relationship, prelude::*, transform};
 
 use crate::{
-    combat::messages::ShootMessage,
+    combat::{messages::ShootMessage, weapon::component::Weapon},
     player::components::{PlayerMovementIntent, PlayerShootingIntent},
 };
 
@@ -31,49 +31,61 @@ pub fn player_movement_controller(
     player_entity.direction = direction;
 }
 
-pub fn player_shooting_controller(
+pub fn player_aim_system(
     window: Single<&mut Window>,
-    mut player_query: Query<(Entity, &mut PlayerShootingIntent, &GlobalTransform)>,
+    mut player_query: Query<(&mut PlayerShootingIntent, &GlobalTransform)>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    mut messages: MessageWriter<ShootMessage>,
-    buttons: Res<ButtonInput<MouseButton>>,
 ) {
-
-    //FIXME - this looks bad
-
-    if !buttons.just_pressed(MouseButton::Left) {
-        return;
-    }
-
-    let Ok((entity, mut shooting_intent, transform)) = player_query.single_mut() else {
+    let Ok((mut shooting_intent, transform)) = player_query.single_mut() else {
         return;
     };
 
-    let Some(mouse_position) = window.cursor_position() else {
+    let Some(cursor_position) = window.cursor_position() else {
         return;
     };
 
-    let Ok(mouse_world) = camera_query
+    let Ok(mouse_world_position) = camera_query
         .0
-        .viewport_to_world_2d(camera_query.1, mouse_position)
+        .viewport_to_world_2d(camera_query.1, cursor_position)
     else {
         return;
     };
 
     let player_position = transform.translation().truncate();
 
-    shooting_intent.direction = (mouse_world
+    shooting_intent.direction = (mouse_world_position
         - Vec2 {
             x: player_position.x,
             y: player_position.y,
         })
     .normalize_or_zero();
+}
 
-    //LINK - src/combat/weapon/systems.rs:8
-    // this links to where the message is being read
+pub fn player_shoot_input(
+    mut player_query: Query<(Entity, &mut PlayerShootingIntent)>,
+    mut messages: MessageWriter<ShootMessage>,
+    buttons: Res<ButtonInput<MouseButton>>,
+) {
+    let Ok((entity, shooting_intent)) = player_query.single_mut() else {
+        return;
+    };
 
-    messages.write(ShootMessage {
-        shooter: entity,
-        direction: shooting_intent.direction,
-    });
+    if buttons.just_pressed(MouseButton::Left) {
+        //LINK - src/combat/weapon/systems.rs:8
+        // this links to where the message is being read
+
+        messages.write(ShootMessage {
+            shooter: entity,
+            direction: shooting_intent.direction,
+        });
+    }
+}
+
+pub fn rotate_weapons(parent_query: Query<&PlayerShootingIntent>, mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>) {
+    for (parent, mut transform) in weapon_query.iter_mut() {
+        if let Ok(intent) = parent_query.get(parent.get()) {
+            let angle = intent.direction.to_angle();
+            transform.rotation = Quat::from_rotation_z(angle);
+        }
+    }
 }

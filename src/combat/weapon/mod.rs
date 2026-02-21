@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::combat::weapon::systems::shoot_weapon;
 
 mod bundles;
-mod component;
+pub mod component;
 pub mod factories;
 mod systems;
 
