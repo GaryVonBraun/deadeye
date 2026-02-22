@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{
-        appearance::bundles::*, bundles::CoreActorBundle, components::Actor, locomotion::components::Locomotion
+        appearance::bundles::*, bundles::CoreActorBundle, components::Actor,
+        locomotion::components::Locomotion,
     },
     combat::weapon::factories::spawn_debug_weapon,
     debug::components::DebugMovementIntent,
@@ -32,8 +33,15 @@ pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServe
 
 pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
     //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
-    let weapon = spawn_debug_weapon(&mut commands, &asset_server);
-
+    let weapon = spawn_debug_weapon(
+        &mut commands,
+        &asset_server,
+        Vec3 {
+            x: 10.0,
+            y: 0.,
+            z: 0.,
+        },
+    );
     commands
         .spawn((
             CoreActorBundle {
