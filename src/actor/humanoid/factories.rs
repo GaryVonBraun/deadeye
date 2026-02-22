@@ -45,26 +45,14 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
     );
     let entity = commands
         .spawn((
-            CoreActorBundle {
-                actor: Actor,
-                transform: Transform::from_xyz(0., 0., 0.),
-                health: Health::default(),
-                collision: Collision::from_radius(16.),
-            },
+            CoreActorBundle::default_with_translation(Vec3::default()),
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,
             },
-            Locomotion {
-                move_direction: vec2(0., 0.),
-                speed: 100.,
-            },
-            PlayerMovementIntent {
-                direction: Vec2::default(),
-            },
-            PlayerShootingIntent {
-                direction: Vec2::default(),
-            },
+            Locomotion::from_speed(100.),
+            PlayerMovementIntent::default(),
+            PlayerShootingIntent::default(),
         ))
         .add_child(weapon)
         .id();
@@ -74,19 +62,14 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
 pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServer>) {
     let entity = commands
         .spawn((
-            CoreActorBundle {
-                actor: Actor,
-                transform: Transform::from_xyz(200., 0., 0.),
-                health: Health::default(),
-                collision: Collision::from_radius(16.),
-            },
+            CoreActorBundle::default_with_translation(Vec3 {
+                x: 200.,
+                y: 0.,
+                z: 0.,
+            }),
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,
-            },
-            Locomotion {
-                move_direction: vec2(0., 0.),
-                speed: 100.,
             },
         ))
         .id();

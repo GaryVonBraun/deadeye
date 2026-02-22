@@ -12,3 +12,14 @@ pub struct CoreActorBundle {
     pub health: Health,
     pub collision: Collision,
 }
+
+impl CoreActorBundle {
+    pub fn default_with_translation(translation: Vec3) -> Self {
+        CoreActorBundle {
+                actor: Actor,
+                transform: Transform::from_translation(translation),
+                health: Health::default(),
+                collision: Collision::from_radius(16.),
+            }
+    }
+}
