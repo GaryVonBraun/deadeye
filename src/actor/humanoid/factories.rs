@@ -43,7 +43,7 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
             z: 0.,
         },
     );
-    commands
+    let entity = commands
         .spawn((
             CoreActorBundle {
                 actor: Actor,
@@ -66,26 +66,29 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
                 direction: Vec2::default(),
             },
         ))
-        .add_child(weapon);
-    info!("spawned player");
+        .add_child(weapon)
+        .id();
+    info!("spawned player, id: {:?}", entity);
 }
 
 pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
-        CoreActorBundle {
-            actor: Actor,
-            transform: Transform::from_xyz(200., 0., 0.),
-            health: Health::default(),
-            collision: Collision::from_radius(16.)
-        },
-        AppearanceBundle {
-            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-            appearance: Appearance,
-        },
-        Locomotion {
-            move_direction: vec2(0., 0.),
-            speed: 100.,
-        },
-    ));
-    info!("spawned training dummy");
+    let entity = commands
+        .spawn((
+            CoreActorBundle {
+                actor: Actor,
+                transform: Transform::from_xyz(200., 0., 0.),
+                health: Health::default(),
+                collision: Collision::from_radius(16.),
+            },
+            AppearanceBundle {
+                sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                appearance: Appearance,
+            },
+            Locomotion {
+                move_direction: vec2(0., 0.),
+                speed: 100.,
+            },
+        ))
+        .id();
+    info!("spawned training dummy, id: {:?}", entity);
 }
