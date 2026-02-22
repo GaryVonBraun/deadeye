@@ -14,3 +14,6 @@ impl Default for Health {
         }
     }
 }
+
+#[derive(Component)]
+pub struct Dead;
