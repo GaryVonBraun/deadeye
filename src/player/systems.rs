@@ -75,7 +75,7 @@ pub fn player_shoot_input(
         // this links to where the message is being read
 
         messages.write(ShootMessage {
-            shooter: entity,
+            owner: entity,
             direction: shooting_intent.direction,
         });
     }

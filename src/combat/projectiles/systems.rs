@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
-use crate::combat::projectiles::component::Projectile;
+use crate::{
+    combat::{health::components::Health, projectiles::component::Projectile},
+    simulation::collision::components::Collision,
+};
 
-pub fn update_projectiles(
+pub fn move_projectiles(
     mut query: Query<(Entity, &mut Projectile, &mut Transform)>,
     time: Res<Time>,
     mut commands: Commands,
@@ -16,5 +19,23 @@ pub fn update_projectiles(
         }
 
         projectile.lifetime -= time.delta_secs();
+    }
+}
+
+pub fn projectile_collision(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Projectile, &Transform)>,
+    health_query: Query<(Entity, &Collision, &Transform), With<Health>>,
+) {
+    for (entity, projectile, transform) in projectile_query.iter() {
+        for (health_entity, collision, health_transform) in health_query.iter() {
+            if projectile.owner == health_entity {
+                break;
+            }
+            if Vec2::distance(transform.translation.truncate(), health_transform.translation.truncate()) < collision.radius {
+                commands.entity(entity).despawn();
+                info!("{:?} hit something", entity);
+            }
+        }
     }
 }

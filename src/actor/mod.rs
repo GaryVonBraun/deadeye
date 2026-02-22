@@ -18,6 +18,6 @@ pub struct ActorPlugin;
 impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((HumanoidPlugin, LocomotionPlugin));
-        app.add_systems(OnEnter(AppState::MainMenu), spawn_player_humanoid);
+        app.add_systems(OnEnter(AppState::MainMenu), (spawn_player_humanoid, spawn_training_dummy));
     }
 }

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+pub mod collision;
 pub struct SimulationPlugin;
 
 impl Plugin for SimulationPlugin {

@@ -4,5 +4,6 @@ use bevy::prelude::*;
 pub struct Weapon {
     pub fire_delay: f32,
     pub cooldown: f32,
-    pub projectile_speed: f32,
+    pub speed: f32,
+    pub damage: f32,
 }

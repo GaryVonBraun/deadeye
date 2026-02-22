@@ -2,6 +2,6 @@ use bevy::prelude::*;
 
 #[derive(Message)]
 pub struct ShootMessage {
-    pub shooter: Entity,
+    pub owner: Entity,
     pub direction: Vec2
 }

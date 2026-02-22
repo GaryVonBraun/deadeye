@@ -1,4 +1,4 @@
-use bevy::{ecs::query, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     actor::components::Actor,
@@ -18,44 +18,36 @@ pub fn shoot_weapon(
 ) {
     for message in messages.read() {
         // get the children of the shooter entity
-        if let Ok(children) = children_query.get(message.shooter) {
+        if let Ok(children) = children_query.get(message.owner) {
             for child in children.iter() {
                 // and we check if the child is a weapon
                 if let Ok((mut weapon, global_transform)) = weapon_query.get_mut(child) {
                     //NOTE - currently this means if an actor has multiple weapons they all fire
 
-                    //TEMPORARY - this does maybe not make complete sense, we should maybe prevent a message from even being written
                     if weapon.cooldown > 0.0 {
                         return;
                     }
 
-                    info!(
-                        "weapon shot with a projectile speed of {:?}",
-                        weapon.projectile_speed
-                    );
-
                     let angle = message.direction.y.atan2(message.direction.x);
                     let rotation = Quat::from_rotation_z(angle);
 
-                    let projectile = commands
-                        .spawn(ProjectileBundle {
-                            projectile: Projectile {
-                                speed: weapon.projectile_speed,
-                                direction: message.direction,
-                                lifetime: 3.,
-                            },
-                            sprite: Sprite::from_image(asset_server.load("debug_bullet.png")),
-                            transform: Transform {
-                                rotation: rotation,
-                                translation: global_transform.translation(),
-                                scale: Vec3::ONE,
-                            },
-                        })
-                        .id();
+                    commands.spawn(ProjectileBundle {
+                        projectile: Projectile {
+                            speed: weapon.speed,
+                            direction: message.direction,
+                            lifetime: 3.,
+                            damage: weapon.damage,
+                            owner: message.owner
+                        },
+                        sprite: Sprite::from_image(asset_server.load("debug_bullet.png")),
+                        transform: Transform {
+                            rotation: rotation,
+                            translation: global_transform.translation(),
+                            scale: Vec3::ONE,
+                        },
+                    });
 
                     weapon.cooldown = weapon.fire_delay;
-
-                    info!("projectile spawned {:?}", projectile)
                 }
             }
         }
