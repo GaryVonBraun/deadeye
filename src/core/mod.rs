@@ -22,5 +22,6 @@ impl Plugin for CorePlugin {
                 toggle_simulation_state,
             ),
         );
+        app.add_systems(OnEnter(AppState::InGame), run_simulation);
     }
 }

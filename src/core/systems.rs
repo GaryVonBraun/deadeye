@@ -37,3 +37,7 @@ pub fn toggle_simulation_state(
         }
     }
 }
+
+pub fn run_simulation(mut next_state: ResMut<NextState<SimulationState>>,){
+    next_state.set(SimulationState::Running);
+}
