@@ -1,14 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::{
-        appearance::bundles::*, bundles::CoreActorBundle, components::Actor,
-        locomotion::components::Locomotion,
-    },
-    combat::{health::components::Health, weapon::factories::spawn_debug_weapon},
-    debug::components::DebugMovementIntent,
-    player::components::{PlayerMovementIntent, PlayerShootingIntent},
-    simulation::collision::components::Collision,
+    actor::{appearance::bundles::*, bundles::CoreActorBundle, locomotion::components::Locomotion},
+    combat::weapon::factories::spawn_debug_weapon,
+    player::components::{Player, PlayerMovementIntent, PlayerShootingIntent},
 };
 
 // pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -32,16 +27,7 @@ use crate::{
 //     info!("spawned basic humanoid entity");
 // }
 
-pub fn spawn_player_humanoid(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    camera_query: Query<Entity, With<Camera2d>>,
-) {
-    let Ok(camera) = camera_query.single() else {
-        error!("no camera found");
-        return;
-    };
-
+pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
     //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
     let weapon = spawn_debug_weapon(
         &mut commands,
@@ -62,8 +48,9 @@ pub fn spawn_player_humanoid(
             Locomotion::from_speed(100.),
             PlayerMovementIntent::default(),
             PlayerShootingIntent::default(),
+            Player,
         ))
-        .add_children(&[weapon, camera])
+        .add_children(&[weapon])
         .id();
     info!("spawned player, id: {:?}", entity);
 }

@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::combat::weapon::{bundles::WeaponBundle, component::Weapon};
+use crate::{
+    combat::weapon::{bundles::WeaponBundle, component::Weapon},
+    core::components::GameEntity,
+};
 
 pub fn spawn_debug_weapon(
     commands: &mut Commands,

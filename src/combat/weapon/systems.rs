@@ -6,7 +6,7 @@ use crate::{
         messages::ShootMessage,
         projectiles::{bundles::ProjectileBundle, component::Projectile},
         weapon::component::Weapon,
-    },
+    }, core::components::GameEntity,
 };
 
 pub fn shoot_weapon(
@@ -45,6 +45,7 @@ pub fn shoot_weapon(
                             translation: global_transform.translation(),
                             scale: Vec3::ONE,
                         },
+                        game_entity: GameEntity
                     });
 
                     weapon.cooldown = weapon.fire_delay;

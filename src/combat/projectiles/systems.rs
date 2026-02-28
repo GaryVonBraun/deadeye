@@ -36,7 +36,6 @@ pub fn projectile_collision(
             if projectile.owner == health_entity {
                 continue;
             }
-            info!("health entity: {:?}", health_entity);
             if Vec2::distance(
                 transform.translation.truncate(),
                 health_transform.translation.truncate(),

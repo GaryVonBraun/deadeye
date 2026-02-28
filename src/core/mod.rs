@@ -26,5 +26,6 @@ impl Plugin for CorePlugin {
             ),
         );
         app.add_systems(OnEnter(AppState::InGame), run_simulation);
+        app.add_systems(OnExit(AppState::InGame), despawn_game_entities);
     }
 }
