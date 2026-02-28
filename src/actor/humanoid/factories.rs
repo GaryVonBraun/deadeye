@@ -32,7 +32,16 @@ use crate::{
 //     info!("spawned basic humanoid entity");
 // }
 
-pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_player_humanoid(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    camera_query: Query<Entity, With<Camera2d>>,
+) {
+    let Ok(camera) = camera_query.single() else {
+        error!("no camera found");
+        return;
+    };
+
     //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
     let weapon = spawn_debug_weapon(
         &mut commands,
@@ -40,7 +49,7 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
         Vec3 {
             x: 10.0,
             y: 0.,
-            z: 0.,
+            z: 1.,
         },
     );
     let entity = commands
@@ -54,7 +63,7 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
             PlayerMovementIntent::default(),
             PlayerShootingIntent::default(),
         ))
-        .add_child(weapon)
+        .add_children(&[weapon, camera])
         .id();
     info!("spawned player, id: {:?}", entity);
 }
