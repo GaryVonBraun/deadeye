@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::component::Components, prelude::*};
 
 use crate::{
     combat::{
@@ -34,8 +34,9 @@ pub fn projectile_collision(
     for (entity, projectile, transform) in projectile_query.iter() {
         for (health_entity, collision, health_transform) in health_query.iter() {
             if projectile.owner == health_entity {
-                break;
+                continue;
             }
+            info!("health entity: {:?}", health_entity);
             if Vec2::distance(
                 transform.translation.truncate(),
                 health_transform.translation.truncate(),

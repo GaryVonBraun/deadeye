@@ -16,9 +16,7 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (weapon_cooldown, shoot_weapon)
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
+            (weapon_cooldown, shoot_weapon).run_if(in_state(SimulationState::Running)),
         );
     }
 }
