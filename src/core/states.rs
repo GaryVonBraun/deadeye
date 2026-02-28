@@ -10,10 +10,9 @@ pub enum AppState {
     Loading,
 }
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum SimulationState {
     Running,
     #[default]
     Paused,
 }
-

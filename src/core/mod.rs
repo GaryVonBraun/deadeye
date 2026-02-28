@@ -14,6 +14,13 @@ impl Plugin for CorePlugin {
         app.init_state::<SimulationState>();
         app.add_systems(Startup, load_app);
         app.add_systems(Startup, setup_camera);
-        app.add_systems(Update, log_app_state_changes);
+        app.add_systems(
+            Update,
+            (
+                log_app_state_changes,
+                log_simulation_state_changes,
+                toggle_simulation_state,
+            ),
+        );
     }
 }

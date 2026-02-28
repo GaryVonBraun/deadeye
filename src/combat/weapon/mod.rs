@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::combat::weapon::systems::{shoot_weapon, weapon_cooldown};
+use crate::{
+    combat::weapon::systems::{shoot_weapon, weapon_cooldown},
+    core::states::SimulationState,
+};
 
 mod bundles;
 pub mod component;
@@ -11,6 +14,11 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (weapon_cooldown, shoot_weapon).chain());
+        app.add_systems(
+            Update,
+            (weapon_cooldown, shoot_weapon)
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
     }
 }
