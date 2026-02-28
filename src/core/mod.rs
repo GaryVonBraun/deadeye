@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::core::{camera::setup_camera, states::*, systems::*};
 
 mod camera;
+pub mod components;
 pub mod states;
 mod systems;
 
@@ -20,6 +21,8 @@ impl Plugin for CorePlugin {
                 log_app_state_changes,
                 log_simulation_state_changes,
                 toggle_simulation_state,
+                toggle_app_state,
+                camera_follow,
             ),
         );
         app.add_systems(OnEnter(AppState::InGame), run_simulation);
