@@ -31,7 +31,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                 },))
                 .with_children(|parent| {
                     // title
-                    parent.spawn((Text::new("Deadeye".to_string()), TextColor::WHITE));
+                    parent.spawn((Text::new("STFU".to_string()), TextColor::WHITE));
                 });
             // play button
             parent

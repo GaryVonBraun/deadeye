@@ -24,10 +24,10 @@ pub fn vision_detection_system(
             ) < ai_vision.range
             {
                 visible_actors.push(actor_entity);
-                info!(
-                    "actor: {:?} in in vision of actor {:?}",
-                    ai_entity, actor_entity
-                );
+                // info!(
+                //     "actor: {:?} in in vision of actor {:?}",
+                //     ai_entity, actor_entity
+                // );
             }
         }
 

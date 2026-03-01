@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{ai::vision::systems::*, core::states::AppState};
+use crate::{
+    ai::{AiSet, vision::systems::*},
+    core::states::SimulationState,
+};
 
 pub mod components;
 mod systems;
@@ -10,7 +13,9 @@ impl Plugin for VisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (vision_detection_system, vision_debug_system).run_if(in_state(AppState::InGame)),
+            (vision_detection_system, vision_debug_system)
+                .in_set(AiSet::Perception)
+                .run_if(in_state(SimulationState::Running)),
         );
     }
 }

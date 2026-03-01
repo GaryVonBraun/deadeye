@@ -61,8 +61,8 @@ pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServe
     let entity = commands
         .spawn((
             CoreActorBundle::default_with_translation(Vec3 {
-                x: 200.,
-                y: 0.,
+                x: -50.,
+                y: -50.,
                 z: 0.,
             }),
             AppearanceBundle {
@@ -85,6 +85,27 @@ pub fn spawn_test_ai(mut commands: Commands, asset_server: Res<AssetServer>) {
                 }),
                 ai: AiBundle::with_range(200.)
             },
+            Locomotion::from_speed(50.),
+            AppearanceBundle {
+                sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                appearance: Appearance,
+            },
+        ))
+        .id();
+    info!("spawned test ai, id: {:?}", entity);
+}
+pub fn spawn_test_ai2(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let entity = commands
+        .spawn((
+            AiActorBundle {
+                core: CoreActorBundle::default_with_translation(Vec3 {
+                    x: 0.,
+                    y: -200.,
+                    z: 0.,
+                }),
+                ai: AiBundle::with_range(200.)
+            },
+            Locomotion::from_speed(50.),
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,

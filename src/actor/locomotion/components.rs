@@ -14,3 +14,9 @@ impl Locomotion {
         }
     }
 }
+
+#[derive(Component, Debug)]
+pub struct AiMovementIntent {
+    pub move_direction: Vec2,
+    pub speed: f32,
+}
