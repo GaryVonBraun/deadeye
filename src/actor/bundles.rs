@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::components::*, combat::health::components::Health, core::components::GameEntity,
-    simulation::collision::components::Collision,
+    actor::components::*, ai::bundles::AiBundle, combat::health::components::Health,
+    core::components::GameEntity, simulation::collision::components::Collision,
 };
 
 #[derive(Bundle)]
@@ -24,4 +24,10 @@ impl CoreActorBundle {
             game_entity: GameEntity,
         }
     }
+}
+
+#[derive(Bundle)]
+pub struct AiActorBundle {
+    pub core: CoreActorBundle,
+    pub ai: AiBundle,
 }

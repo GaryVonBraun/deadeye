@@ -1,10 +1,11 @@
 use bevy::{prelude::*, window::WindowResolution};
 
 use crate::{
-    actor::ActorPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
+    actor::ActorPlugin, ai::AiPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
     player::PlayerPlugin, simulation::SimulationPlugin, ui::UiPlugin,
 };
 mod actor;
+mod ai;
 mod combat;
 mod core;
 mod debug;
@@ -19,14 +20,21 @@ fn main() {
                 title: String::from("Deadeye"),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
                 resolution: WindowResolution::new(512, 512),
-                resizable: false,
+                resizable: true,
                 ..Default::default()
             }),
             ..Default::default()
         }))
-        .add_plugins((SimulationPlugin, ActorPlugin, PlayerPlugin, CombatPlugin))
         .add_plugins(CorePlugin)
+        .add_plugins((
+            SimulationPlugin,
+            ActorPlugin,
+            PlayerPlugin,
+            CombatPlugin,
+            AiPlugin,
+        ))
         .add_plugins(DebugPlugin)
         .add_plugins(UiPlugin)
         .run();
 }
+// brb

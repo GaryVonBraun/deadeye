@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::{appearance::bundles::*, bundles::CoreActorBundle, locomotion::components::Locomotion},
-    combat::weapon::factories::spawn_debug_weapon,
-    player::components::{Player, PlayerMovementIntent, PlayerShootingIntent},
+    actor::{
+        appearance::bundles::*,
+        bundles::{AiActorBundle, CoreActorBundle},
+        locomotion::components::Locomotion,
+    }, ai::bundles::AiBundle, combat::weapon::factories::spawn_debug_weapon, player::components::{Player, PlayerMovementIntent, PlayerShootingIntent}
 };
 
 // pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -70,4 +72,24 @@ pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServe
         ))
         .id();
     info!("spawned training dummy, id: {:?}", entity);
+}
+
+pub fn spawn_test_ai(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let entity = commands
+        .spawn((
+            AiActorBundle {
+                core: CoreActorBundle::default_with_translation(Vec3 {
+                    x: -200.,
+                    y: -200.,
+                    z: 0.,
+                }),
+                ai: AiBundle::with_range(200.)
+            },
+            AppearanceBundle {
+                sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                appearance: Appearance,
+            },
+        ))
+        .id();
+    info!("spawned test ai, id: {:?}", entity);
 }

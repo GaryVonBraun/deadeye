@@ -20,7 +20,7 @@ impl Plugin for ActorPlugin {
         app.add_plugins((HumanoidPlugin, LocomotionPlugin));
         app.add_systems(
             OnEnter(AppState::InGame),
-            (spawn_player_humanoid, spawn_training_dummy),
+            (spawn_player_humanoid, spawn_training_dummy, spawn_test_ai),
         );
     }
 }
