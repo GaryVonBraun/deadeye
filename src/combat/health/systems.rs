@@ -25,7 +25,9 @@ pub fn apply_damage(
 pub fn death_system(mut commands: Commands, query: Query<(Entity, &Health), Without<Dead>>) {
     for (entity, health) in query.iter() {
         if health.current <= 0.0 {
-            commands.entity(entity).insert(Dead);
+            //TEMPORARY - For now we just despawn the entity if it dies
+            // commands.entity(entity).insert(Dead);
+            commands.entity(entity).despawn();
         }
     }
 }
