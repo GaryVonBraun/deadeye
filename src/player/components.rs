@@ -15,16 +15,3 @@ impl PlayerMovementIntent {
         }
     }
 }
-
-#[derive(Component, Debug)]
-pub struct PlayerShootingIntent {
-    pub direction: Vec2,
-}
-
-impl PlayerShootingIntent {
-    pub fn default() -> Self {
-        PlayerShootingIntent {
-            direction: Vec2::default(),
-        }
-    }
-}

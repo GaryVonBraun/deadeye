@@ -5,7 +5,10 @@ use crate::{
         appearance::bundles::*,
         bundles::{AiActorBundle, CoreActorBundle},
         locomotion::components::Locomotion,
-    }, ai::bundles::AiBundle, combat::weapon::factories::spawn_debug_weapon, player::components::{Player, PlayerMovementIntent, PlayerShootingIntent}
+    },
+    ai::bundles::AiBundle,
+    combat::weapon::{component::ShootingIntent, factories::spawn_debug_weapon},
+    player::components::{Player, PlayerMovementIntent},
 };
 
 // pub fn spawn_debug_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -49,7 +52,7 @@ pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServ
             },
             Locomotion::from_speed(100.),
             PlayerMovementIntent::default(),
-            PlayerShootingIntent::default(),
+            ShootingIntent::default(),
             Player,
         ))
         .add_children(&[weapon])
@@ -75,6 +78,15 @@ pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServe
 }
 
 pub fn spawn_test_ai(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let weapon = spawn_debug_weapon(
+        &mut commands,
+        &asset_server,
+        Vec3 {
+            x: 10.0,
+            y: 0.,
+            z: 1.,
+        },
+    );
     let entity = commands
         .spawn((
             AiActorBundle {
@@ -83,14 +95,16 @@ pub fn spawn_test_ai(mut commands: Commands, asset_server: Res<AssetServer>) {
                     y: -200.,
                     z: 0.,
                 }),
-                ai: AiBundle::with_range(200.)
+                ai: AiBundle::with_range(200.),
             },
             Locomotion::from_speed(50.),
+            ShootingIntent::default(),
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,
             },
         ))
+        .add_child(weapon)
         .id();
     info!("spawned test ai, id: {:?}", entity);
 }
@@ -103,10 +117,9 @@ pub fn spawn_test_ai2(mut commands: Commands, asset_server: Res<AssetServer>) {
                     y: -200.,
                     z: 0.,
                 }),
-                ai: AiBundle::with_range(200.)
+                ai: AiBundle::with_range(200.),
             },
             Locomotion::from_speed(50.),
-            
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,

@@ -1,8 +1,8 @@
-use bevy::{ecs::relationship::Relationship, prelude::*, transform};
+use bevy::prelude::*;
 
 use crate::{
-    combat::{messages::ShootMessage, weapon::component::Weapon},
-    player::components::{PlayerMovementIntent, PlayerShootingIntent},
+    combat::{messages::ShootMessage, weapon::component::ShootingIntent},
+    player::components::{Player, PlayerMovementIntent},
 };
 
 pub fn player_movement_controller(
@@ -33,7 +33,7 @@ pub fn player_movement_controller(
 
 pub fn player_aim_system(
     window: Single<&mut Window>,
-    mut player_query: Query<(&mut PlayerShootingIntent, &GlobalTransform)>,
+    mut player_query: Query<(&mut ShootingIntent, &GlobalTransform), With<Player>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
 ) {
     let Ok((mut shooting_intent, transform)) = player_query.single_mut() else {
@@ -62,7 +62,7 @@ pub fn player_aim_system(
 }
 
 pub fn player_shoot_input(
-    mut player_query: Query<(Entity, &mut PlayerShootingIntent)>,
+    mut player_query: Query<(Entity, &mut ShootingIntent), With<Player>>,
     mut messages: MessageWriter<ShootMessage>,
     buttons: Res<ButtonInput<MouseButton>>,
 ) {
@@ -78,14 +78,5 @@ pub fn player_shoot_input(
             owner: entity,
             direction: shooting_intent.direction,
         });
-    }
-}
-
-pub fn rotate_weapons(parent_query: Query<&PlayerShootingIntent>, mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>) {
-    for (parent, mut transform) in weapon_query.iter_mut() {
-        if let Ok(intent) = parent_query.get(parent.get()) {
-            let angle = intent.direction.to_angle();
-            transform.rotation = Quat::from_rotation_z(angle);
-        }
     }
 }

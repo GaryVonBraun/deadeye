@@ -11,7 +11,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (player_movement_controller, rotate_weapons).run_if(in_state(SimulationState::Running)),
+            (player_movement_controller).run_if(in_state(SimulationState::Running)),
         );
         app.add_systems(
             Update,

@@ -6,6 +6,7 @@ use crate::{
         components::{AiController, AiIntent, AiMovementIntent},
         vision::components::Vision,
     },
+    combat::{messages::ShootMessage, weapon::component::ShootingIntent},
 };
 
 pub fn ai_targeting_system(
@@ -72,6 +73,35 @@ pub fn ai_movement_system(
                 }
             }
             _ => movement_intent.move_direction = Vec2::ZERO,
+        }
+    }
+}
+
+pub fn ai_shooting_system(
+    mut ai_query: Query<
+        (Entity, &AiController, &Transform, &mut ShootingIntent),
+        With<AiController>,
+    >,
+    actor_query: Query<&Transform, With<Actor>>,
+    mut messages: MessageWriter<ShootMessage>,
+) {
+    for (ai_entity, controller, ai_transform, mut ai_shooting_intent) in ai_query.iter_mut() {
+        match controller.black_board.intent {
+            AiIntent::Chase(target) => {
+                if let Ok(target_transform) = actor_query.get(target) {
+                    let direction = (target_transform.translation.truncate()
+                        - ai_transform.translation.truncate())
+                    .normalize();
+
+                    ai_shooting_intent.direction = direction;
+
+                    messages.write(ShootMessage {
+                        owner: ai_entity,
+                        direction: ai_shooting_intent.direction,
+                    });
+                }
+            }
+            _ => {}
         }
     }
 }

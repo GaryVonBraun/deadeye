@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::ai::tree::{actions::{IdleAction, Selector, Sequence}, conditions::{ChaseTarget, HasTarget}};
+use crate::ai::tree::{
+    actions::{IdleAction, Selector, Sequence},
+    conditions::{ChaseTarget, HasTarget},
+};
 
 pub enum BtStatus {
     Failure,
@@ -25,7 +28,7 @@ pub struct Blackboard {
     pub visible_actors: Vec<Entity>,
     pub current_target: Option<Entity>,
     pub last_known_enemy_pos: Option<Vec2>,
-    pub intent: AiIntent
+    pub intent: AiIntent,
 }
 
 #[derive(Component)]
@@ -34,37 +37,29 @@ pub struct AiController {
     pub tree: Box<dyn BtNode>,
 }
 
-
 impl AiController {
     pub fn default() -> Self {
         let tree = Box::new(Selector {
-    children: vec![
-        Box::new(Sequence {
             children: vec![
-                Box::new(HasTarget),
-                Box::new(ChaseTarget),
-            ]
-        }),
-        Box::new(IdleAction),
-    ]
-});
+                Box::new(Sequence {
+                    children: vec![Box::new(HasTarget), Box::new(ChaseTarget)],
+                }),
+                Box::new(IdleAction),
+            ],
+        });
 
         AiController {
             black_board: Blackboard {
                 visible_actors: [].to_vec(),
                 current_target: None,
                 last_known_enemy_pos: None,
-                intent: AiIntent::Idle
+                intent: AiIntent::Idle,
             },
             tree: tree,
         }
     }
 }
 
-#[derive(Component, Debug)]
-pub struct AiShootingIntent {
-    pub direction: Vec2,
-}
 
 #[derive(Component, Debug)]
 pub struct AiMovementIntent {

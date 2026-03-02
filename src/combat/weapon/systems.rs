@@ -1,11 +1,11 @@
-use bevy::prelude::*;
+use bevy::{ecs::relationship::Relationship, prelude::*};
 
 use crate::{
     actor::components::Actor,
     combat::{
         messages::ShootMessage,
         projectiles::{bundles::ProjectileBundle, component::Projectile},
-        weapon::component::Weapon,
+        weapon::component::{ShootingIntent, Weapon},
     }, core::components::GameEntity,
 };
 
@@ -51,6 +51,15 @@ pub fn shoot_weapon(
                     weapon.cooldown = weapon.fire_delay;
                 }
             }
+        }
+    }
+}
+
+pub fn rotate_weapons(parent_query: Query<&ShootingIntent>, mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>) {
+    for (parent, mut transform) in weapon_query.iter_mut() {
+        if let Ok(intent) = parent_query.get(parent.get()) {
+            let angle = intent.direction.to_angle();
+            transform.rotation = Quat::from_rotation_z(angle);
         }
     }
 }
