@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::{components::Actor, locomotion::components::AiMovementIntent},
+    actor::components::Actor,
     ai::{
-        components::{AiController, AiIntent},
+        components::{AiController, AiIntent, AiMovementIntent},
         vision::components::Vision,
     },
 };

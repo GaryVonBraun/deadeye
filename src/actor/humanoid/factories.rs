@@ -106,6 +106,7 @@ pub fn spawn_test_ai2(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ai: AiBundle::with_range(200.)
             },
             Locomotion::from_speed(50.),
+            
             AppearanceBundle {
                 sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                 appearance: Appearance,

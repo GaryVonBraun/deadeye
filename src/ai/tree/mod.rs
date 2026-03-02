@@ -12,3 +12,5 @@ impl Plugin for BehaviorTreePlugin {
         app.add_systems(Update, behavior_tree_system.in_set(AiSet::Decision).run_if(in_state(SimulationState::Running)));
     }
 }
+
+//FIXME - Actually learn how the ai system works!!!!! or the bt

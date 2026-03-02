@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::locomotion::components::AiMovementIntent,
     ai::{components::*, vision::components::Vision},
 };
 

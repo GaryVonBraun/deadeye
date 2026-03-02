@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::locomotion::components::{AiMovementIntent, Locomotion}, debug::components::DebugMovementIntent,
-    player::components::PlayerMovementIntent,
+    actor::locomotion::components::Locomotion, ai::components::AiMovementIntent,
+    debug::components::DebugMovementIntent, player::components::PlayerMovementIntent,
 };
 
 pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time: Res<Time>) {
@@ -17,7 +17,7 @@ pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time:
     }
 }
 
-pub fn resolve_movement(        
+pub fn resolve_movement(
     mut query: Query<(
         &mut Locomotion,
         Option<&DebugMovementIntent>,

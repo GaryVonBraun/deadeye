@@ -60,3 +60,14 @@ impl AiController {
         }
     }
 }
+
+#[derive(Component, Debug)]
+pub struct AiShootingIntent {
+    pub direction: Vec2,
+}
+
+#[derive(Component, Debug)]
+pub struct AiMovementIntent {
+    pub move_direction: Vec2,
+    pub speed: f32,
+}
