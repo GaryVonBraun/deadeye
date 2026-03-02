@@ -79,7 +79,7 @@ pub fn spawn_test_ai(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn((
             AiActorBundle {
                 core: CoreActorBundle::default_with_translation(Vec3 {
-                    x: -200.,
+                    x: 200.,
                     y: -200.,
                     z: 0.,
                 }),

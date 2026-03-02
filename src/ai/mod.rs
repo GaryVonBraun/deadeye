@@ -6,10 +6,10 @@ use crate::{
 };
 
 pub mod bundles;
-mod components;
+pub mod components;
 mod systems;
 pub mod tree;
-mod vision;
+pub mod vision;
 
 pub struct AiPlugin;
 

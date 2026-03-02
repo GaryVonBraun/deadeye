@@ -34,15 +34,3 @@ pub fn vision_detection_system(
         ai_controller.black_board.visible_actors = visible_actors;
     }
 }
-pub fn vision_debug_system(
-    ai_query: Query<(&Transform, &Vision)>,
-    mut gizmos: Gizmos,
-) {
-    for (transform, vision) in ai_query.iter() {
-        gizmos.circle_2d(
-            transform.translation.truncate(),
-            vision.range,
-            Color::srgba(1.0, 1.0, 0.0, 0.5),
-        );
-    }
-}
