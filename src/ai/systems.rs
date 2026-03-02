@@ -49,7 +49,7 @@ pub fn ai_movement_system(
                         ai_transform.translation.truncate(),
                     );
 
-                    let keep_distance_at = ai_vision.range / 2.;
+                    let keep_distance_at = 100.;
 
                     //TEMPORARY - this is not good code and should be fixed
                     //FIXME - this is a mess

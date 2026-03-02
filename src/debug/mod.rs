@@ -16,8 +16,7 @@ impl Plugin for DebugPlugin {
                 debug_vision_gizmo,
                 debug_visible_entities_gizmo,
                 debug_target_entity_gizmo,
-            )
-                .run_if(in_state(SimulationState::Running)),
+            ),
         );
     }
 }

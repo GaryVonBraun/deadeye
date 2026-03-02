@@ -19,7 +19,7 @@ fn main() {
             primary_window: Some(Window {
                 title: String::from("Deadeye"),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
-                resolution: WindowResolution::new(512, 512),
+                resolution: WindowResolution::new(2000, 1000),
                 resizable: true,
                 ..Default::default()
             }),

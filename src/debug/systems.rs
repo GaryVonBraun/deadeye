@@ -76,7 +76,7 @@ pub fn debug_target_entity_gizmo(
             gizmos.arrow_2d(
                 ai_transform.translation.truncate(),
                 actor_transform.translation.truncate(),
-                Color::srgba(1., 0., 0., 1.),
+                Color::srgba(1., 0., 0., 0.1),
             ).with_tip_length(10.);
         }
     }

@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    combat::weapon::{bundles::WeaponBundle, component::Weapon},
-    core::components::GameEntity,
-};
+use crate::combat::weapon::{bundles::WeaponBundle, component::Weapon};
 
 pub fn spawn_debug_weapon(
     commands: &mut Commands,
@@ -15,7 +12,7 @@ pub fn spawn_debug_weapon(
         .spawn(WeaponBundle {
             sprite: Sprite::from_image(asset_server.load("debug_weapon.png")),
             weapon: Weapon {
-                fire_delay: 0.1,
+                fire_delay: 0.4,
                 cooldown: 0.,
                 speed: 500.,
                 damage: 10.,
