@@ -1,5 +1,5 @@
 use crate::ai::{
-    components::{AiIntent, Blackboard},
+    components::Blackboard,
     tree::{BtNode, BtStatus},
 };
 
@@ -13,4 +13,3 @@ impl BtNode for HasTarget {
         }
     }
 }
-

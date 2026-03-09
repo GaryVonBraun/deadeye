@@ -1,22 +1,47 @@
-use crate::ai::{components::{AiIntent, Blackboard}, tree::{BtNode, BtStatus}};
+use crate::ai::{
+    components::{AiActionIntent, AiLocomotionIntent, Blackboard},
+    tree::{BtNode, BtStatus},
+};
 
+// Locomotion
+pub struct LocomotionIdle;
 
-
-pub struct IdleAction;
-
-impl BtNode for IdleAction {
+impl BtNode for LocomotionIdle {
     fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
-        blackboard.intent = AiIntent::Idle;
+        blackboard.locomotion_intent = AiLocomotionIntent::Idle;
         BtStatus::Success
     }
 }
 
-pub struct ChaseTarget;
+pub struct LocomotionChase;
 
-impl BtNode for ChaseTarget {
+impl BtNode for LocomotionChase {
     fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
         if let Some(target) = blackboard.current_target {
-            blackboard.intent = AiIntent::Chase(target);
+            blackboard.locomotion_intent = AiLocomotionIntent::Chase(target);
+            BtStatus::Running
+        } else {
+            BtStatus::Failure
+        }
+    }
+}
+
+
+// Action
+pub struct ActionIdle;
+
+impl BtNode for ActionIdle {
+    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+        blackboard.action_intent = AiActionIntent::Idle;
+        BtStatus::Success
+    }
+}
+pub struct ActionShoot;
+
+impl BtNode for ActionShoot {
+    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+        if let Some(target) = blackboard.current_target {
+            blackboard.action_intent = AiActionIntent::Shoot(target);
             BtStatus::Running
         } else {
             BtStatus::Failure

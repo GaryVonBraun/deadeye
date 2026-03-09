@@ -2,40 +2,55 @@ use bevy::prelude::*;
 
 use crate::ai::tree::{
     BtNode, Selector, Sequence,
-    actions::{ChaseTarget, IdleAction},
+    actions::{ActionIdle, LocomotionChase, LocomotionIdle, ActionShoot},
     conditions::HasTarget,
 };
 
 #[derive(Component, Default, Debug)]
-pub enum AiIntent {
+pub enum AiLocomotionIntent {
     #[default]
     Idle,
     Chase(Entity),
-    Attack(Entity),
+}
+
+#[derive(Component, Default, Debug)]
+pub enum AiActionIntent {
+    #[default]
+    Idle,
+    Shoot(Entity),
 }
 
 #[derive(Component)]
 pub struct Blackboard {
     pub visible_actors: Vec<Entity>,
     pub current_target: Option<Entity>,
-    pub last_known_enemy_pos: Option<Vec2>,
-    pub intent: AiIntent,
+    pub locomotion_intent: AiLocomotionIntent,
+    pub action_intent: AiActionIntent,
 }
 
 #[derive(Component)]
 pub struct AiController {
     pub black_board: Blackboard,
-    pub tree: Box<dyn BtNode>,
+    pub action_tree: Box<dyn BtNode>,
+    pub locomotion_tree: Box<dyn BtNode>,
 }
 
 impl AiController {
     pub fn default() -> Self {
-        let tree = Box::new(Selector {
+        let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(ChaseTarget)],
+                    children: vec![Box::new(HasTarget), Box::new(ActionShoot)],
                 }),
-                Box::new(IdleAction),
+                Box::new(ActionIdle),
+            ],
+        });
+        let locomotion_tree = Box::new(Selector {
+            children: vec![
+                Box::new(Sequence {
+                    children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
+                }),
+                Box::new(LocomotionIdle),
             ],
         });
 
@@ -43,10 +58,11 @@ impl AiController {
             black_board: Blackboard {
                 visible_actors: [].to_vec(),
                 current_target: None,
-                last_known_enemy_pos: None,
-                intent: AiIntent::Idle,
+                locomotion_intent: AiLocomotionIntent::Idle,
+                action_intent: AiActionIntent::Idle,
             },
-            tree: tree,
+            action_tree,
+            locomotion_tree,
         }
     }
 }

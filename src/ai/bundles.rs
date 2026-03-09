@@ -1,13 +1,12 @@
 use bevy::prelude::*;
 
-use crate::{
-    ai::{components::*, vision::components::Vision},
-};
+use crate::ai::{components::*, vision::components::Vision};
 
 #[derive(Bundle)]
 pub struct AiBundle {
     controller: AiController,
-    intent: AiIntent,
+    locomotion_intent: AiLocomotionIntent,
+    action_intent: AiActionIntent,
     vision: Vision,
     movement_intent: AiMovementIntent,
 }
@@ -16,11 +15,15 @@ impl AiBundle {
     pub fn with_range(vision_range: f32) -> Self {
         AiBundle {
             controller: AiController::default(),
-            intent: AiIntent::default(),
+            locomotion_intent: AiLocomotionIntent::default(),
+            action_intent: AiActionIntent::default(),
             vision: Vision {
                 range: vision_range,
             },
-            movement_intent: AiMovementIntent { move_direction: Vec2::default(), speed: 50. }
+            movement_intent: AiMovementIntent {
+                move_direction: Vec2::default(),
+                speed: 50.,
+            },
         }
     }
 }
