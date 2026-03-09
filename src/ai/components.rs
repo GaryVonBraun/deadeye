@@ -1,19 +1,10 @@
 use bevy::prelude::*;
 
 use crate::ai::tree::{
-    actions::{IdleAction, Selector, Sequence},
-    conditions::{ChaseTarget, HasTarget},
+    BtNode, Selector, Sequence,
+    actions::{ChaseTarget, IdleAction},
+    conditions::HasTarget,
 };
-
-pub enum BtStatus {
-    Failure,
-    Success,
-    Running,
-}
-
-pub trait BtNode: Send + Sync {
-    fn tick(&mut self, black_board: &mut Blackboard) -> BtStatus;
-}
 
 #[derive(Component, Default, Debug)]
 pub enum AiIntent {
@@ -59,7 +50,6 @@ impl AiController {
         }
     }
 }
-
 
 #[derive(Component, Debug)]
 pub struct AiMovementIntent {
