@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::WindowResolution};
 
 use crate::{
     actor::ActorPlugin, ai::AiPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
-    player::PlayerPlugin, simulation::SimulationPlugin, ui::UiPlugin,
+    player::PlayerPlugin, simulation::SimulationPlugin, ui::UiPlugin, world::WorldPlugin,
 };
 mod actor;
 mod ai;
@@ -12,6 +12,7 @@ mod debug;
 mod player;
 mod simulation;
 mod ui;
+mod world;
 
 fn main() {
     App::new()
@@ -32,6 +33,7 @@ fn main() {
             PlayerPlugin,
             CombatPlugin,
             AiPlugin,
+            WorldPlugin,
         ))
         .add_plugins(DebugPlugin)
         .add_plugins(UiPlugin)
