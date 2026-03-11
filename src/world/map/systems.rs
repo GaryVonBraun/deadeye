@@ -7,7 +7,10 @@ use uuid::Uuid;
 
 use crate::{
     core::components::GameEntity,
-    world::map::{components::WorldMap, io::save_map},
+    world::map::{
+        components::WorldMap,
+        io::{load_world_map_data, read_manifest, save_world_map},
+    },
 };
 
 pub fn spawn_tilemap(mut commands: Commands, assets_server: Res<AssetServer>) {
@@ -58,7 +61,7 @@ fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
 }
 
 //TEMPORARY - we create a map on M input just so we can test if everything works
-pub fn create_map_on_input(keys: Res<ButtonInput<KeyCode>>) {
+pub fn map_input_actions(keys: Res<ButtonInput<KeyCode>>) {
     if keys.just_pressed(KeyCode::KeyM) {
         info!("user creating new world map entry");
 
@@ -74,11 +77,20 @@ pub fn create_map_on_input(keys: Res<ButtonInput<KeyCode>>) {
             vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
             vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
         ];
-        let map = WorldMap {
+        let world_map = WorldMap {
             name: "test map".to_string(),
             uuid: Uuid::new_v4(),
             tiles: raw_matrix,
         };
-        save_map(map);
+        save_world_map(world_map);
+    }
+    if keys.just_pressed(KeyCode::KeyL) {
+        match read_manifest() {
+            Ok(manifest) => {
+                info!("manifest found: {:?}", manifest);
+                load_world_map_data(&manifest.maps[0].id);
+            }
+            Err(error) => error!(error),
+        }
     }
 }

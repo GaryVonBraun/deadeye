@@ -4,6 +4,7 @@ use crate::core::{camera::setup_camera, states::*, systems::*};
 
 mod camera;
 pub mod components;
+pub mod io;
 pub mod states;
 mod systems;
 

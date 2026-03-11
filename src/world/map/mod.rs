@@ -10,9 +10,6 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         // app.add_systems(OnEnter(AppState::InGame), spawn_tilemap);
-        app.add_systems(
-            Update,
-            create_map_on_input.run_if(in_state(AppState::InGame)),
-        );
+        app.add_systems(Update, map_input_actions.run_if(in_state(AppState::InGame)));
     }
 }
