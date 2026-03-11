@@ -6,11 +6,8 @@ use bevy::{
 use uuid::Uuid;
 
 use crate::{
-    core::components::GameEntity,
-    world::map::{
-        components::WorldMap,
-        io::{load_world_map_data, read_manifest, save_world_map},
-    },
+    core::{components::GameEntity, io::read_ron_file},
+    world::map::{components::WorldMap, io::*},
 };
 
 pub fn spawn_tilemap(mut commands: Commands, assets_server: Res<AssetServer>) {
@@ -85,7 +82,7 @@ pub fn map_input_actions(keys: Res<ButtonInput<KeyCode>>) {
         save_world_map(world_map);
     }
     if keys.just_pressed(KeyCode::KeyL) {
-        match read_manifest() {
+        match read_ron_file::<MapManifest>(manifest_path()) {
             Ok(manifest) => {
                 info!("manifest found: {:?}", manifest);
                 load_world_map_data(&manifest.maps[0].id);

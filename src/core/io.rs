@@ -1,6 +1,7 @@
 use std::{fs, path::PathBuf};
 
-use serde::de::DeserializeOwned;
+use bevy::tasks::futures_lite::io;
+use serde::{Serialize, Serializer, de::DeserializeOwned};
 
 pub fn read_ron_file<T>(path: PathBuf) -> Result<T, String>
 where
@@ -16,6 +17,18 @@ where
             Err(_) => Err("error parsing content".to_string()),
         }
     } else {
-        Err("invalid path".to_string())
+        Err(format!("invalid path: {:?}", path).to_string())
+    }
+}
+pub fn write_ron_file<T>(data: &T, path: PathBuf) -> Result<(), String>
+where
+    T: Serialize,
+{
+    match ron::to_string(data) {
+        Ok(parsed_data) => match fs::write(path, parsed_data) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(err.to_string()),
+        },
+        Err(err) => Err(err.to_string()),
     }
 }

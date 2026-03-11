@@ -5,7 +5,10 @@ use ron::error;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{core::io::read_ron_file, world::map::components::WorldMap};
+use crate::{
+    core::io::{read_ron_file, write_ron_file},
+    world::map::components::WorldMap,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MapManifestEntry {
@@ -18,9 +21,11 @@ pub struct MapManifest {
     pub maps: Vec<MapManifestEntry>,
 }
 
-fn manifest_path() -> PathBuf {
+//TEMPORARY - public now for testing
+pub fn manifest_path() -> PathBuf {
     PathBuf::from("data/maps/manifest.ron")
 }
+
 fn map_data_path(id: &Uuid) -> PathBuf {
     PathBuf::from(format!("data/maps/data/{}.ron", id.to_string()))
 }
@@ -36,9 +41,14 @@ pub fn save_world_map(world_map: WorldMap) {
         name: world_map.name.clone(),
     });
 
-    write_manifest_data(manifest);
-
-    write_world_map_data(world_map);
+    if let Err(error_log) = write_ron_file(&manifest, manifest_path()) {
+        info!(error_log);
+        return;
+    };
+    if let Err(error_log) = write_ron_file(&world_map, map_data_path(&world_map.uuid)) {
+        info!(error_log);
+        return;
+    };
 }
 
 pub fn load_world_map_data(id: &Uuid) {
@@ -46,28 +56,14 @@ pub fn load_world_map_data(id: &Uuid) {
     info!("{:?}", map_data);
 }
 
-fn write_world_map_data(world_map: WorldMap) {
-    let world_map_data = ron::to_string(&world_map).unwrap();
-    fs::write(map_data_path(&world_map.uuid), world_map_data).unwrap();
-}
-
-fn write_manifest_data(manifest: MapManifest) {
-    let new_manifest = ron::to_string(&manifest).unwrap();
-    fs::write(manifest_path(), new_manifest).unwrap();
-}
-
 fn read_world_map_data(id: &Uuid) -> Result<WorldMap, String> {
     read_ron_file(map_data_path(id))
-}
-
-pub fn read_manifest() -> Result<MapManifest, String> {
-    read_ron_file(manifest_path())
 }
 
 fn load_or_create_manifest() -> MapManifest {
     // this function ensure that if there is no manifest we create one
 
-    if let Ok(manifest) = read_manifest() {
+    if let Ok(manifest) = read_ron_file(manifest_path()) {
         manifest
     } else {
         info!("manifest not found, creating new manifest");
