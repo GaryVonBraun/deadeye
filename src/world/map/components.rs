@@ -5,6 +5,6 @@ use uuid::Uuid;
 #[derive(Component, Debug, Serialize, Deserialize)]
 pub struct WorldMap {
     pub name: String,
-    pub uuid: Uuid,
+    pub id: Uuid,
     pub tiles: Vec<Vec<u32>>,
 }

@@ -1,8 +1,6 @@
-use std::{fs, path::PathBuf};
-
-use bevy::log::{error_span, info, tracing_subscriber::fmt::format};
-use ron::error;
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::{fs, path::PathBuf};
 use uuid::Uuid;
 
 use crate::{
@@ -37,23 +35,28 @@ pub fn save_world_map(world_map: WorldMap) {
     let mut manifest = load_or_create_manifest();
 
     manifest.maps.push(MapManifestEntry {
-        id: world_map.uuid.clone(),
+        id: world_map.id.clone(),
         name: world_map.name.clone(),
     });
 
-    if let Err(error_log) = write_ron_file(&manifest, manifest_path()) {
-        info!(error_log);
+    if let Err(_) = write_ron_file(&manifest, manifest_path()) {
+        error!("failed to save updated entry");
         return;
-    };
-    if let Err(error_log) = write_ron_file(&world_map, map_data_path(&world_map.uuid)) {
-        info!(error_log);
+    }
+    if let Err(_) = write_ron_file(&world_map, map_data_path(&world_map.id)) {
+        error!("failed to store world map data");
         return;
     };
 }
 
-pub fn load_world_map_data(id: &Uuid) {
-    let map_data = read_world_map_data(id);
-    info!("{:?}", map_data);
+pub fn load_world_map_data(id: &Uuid) -> Result<WorldMap, ()> {
+    match read_world_map_data(id) {
+        Ok(map_data) => Ok(map_data),
+        Err(err) => {
+            error!(err);
+            Err(())
+        }
+    }
 }
 
 fn read_world_map_data(id: &Uuid) -> Result<WorldMap, String> {
@@ -62,11 +65,10 @@ fn read_world_map_data(id: &Uuid) -> Result<WorldMap, String> {
 
 fn load_or_create_manifest() -> MapManifest {
     // this function ensure that if there is no manifest we create one
-
     if let Ok(manifest) = read_ron_file(manifest_path()) {
         manifest
     } else {
-        info!("manifest not found, creating new manifest");
+        warn!("manifest not found, creating new manifest");
         MapManifest { maps: vec![] }
     }
 }

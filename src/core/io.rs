@@ -1,7 +1,7 @@
+use bevy::prelude::*;
 use std::{fs, path::PathBuf};
 
-use bevy::tasks::futures_lite::io;
-use serde::{Serialize, Serializer, de::DeserializeOwned};
+use serde::{Serialize, de::DeserializeOwned};
 
 pub fn read_ron_file<T>(path: PathBuf) -> Result<T, String>
 where
@@ -12,11 +12,18 @@ where
         match contents {
             Ok(contents) => match ron::from_str::<T>(&contents) {
                 Ok(manifest) => Ok(manifest),
-                Err(spanned_error) => Err(spanned_error.code.to_string()),
+                Err(spanned_error) => {
+                    error!("{:?}", spanned_error.code);
+                    Err(spanned_error.code.to_string())
+                }
             },
-            Err(_) => Err("error parsing content".to_string()),
+            Err(_) => {
+                error!("error parsing content");
+                Err("error parsing content".to_string())
+            }
         }
     } else {
+        error!("invalid path: {:?}", path);
         Err(format!("invalid path: {:?}", path).to_string())
     }
 }
@@ -27,8 +34,14 @@ where
     match ron::to_string(data) {
         Ok(parsed_data) => match fs::write(path, parsed_data) {
             Ok(result) => Ok(result),
-            Err(err) => Err(err.to_string()),
+            Err(err) => {
+                error!("{:?}", err);
+                Err(err.to_string())
+            }
         },
-        Err(err) => Err(err.to_string()),
+        Err(err) => {
+            error!("{:?}", err);
+            Err(err.to_string())
+        }
     }
 }

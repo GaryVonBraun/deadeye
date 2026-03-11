@@ -10,7 +10,7 @@ use crate::{
     world::map::{components::WorldMap, io::*},
 };
 
-pub fn spawn_tilemap(mut commands: Commands, assets_server: Res<AssetServer>) {
+pub fn spawn_world_map(mut commands: Commands, assets_server: Res<AssetServer>) {
     //TEMPORARY - Everything you see here is hard coded and will be data driven later, this is to check whether everything works
     let texture = assets_server.load_with_settings(
         "prototype_ground_textures.png",
@@ -19,24 +19,22 @@ pub fn spawn_tilemap(mut commands: Commands, assets_server: Res<AssetServer>) {
         },
     );
 
-    let raw_matrix: Vec<Vec<u32>> = vec![
-        vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
-        vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-    ];
+    // load manifest needed for map selection
+    let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
+        error!("failed to get manifest needed for spawning map");
+        return;
+    };
+
+    let Ok(world_map) = load_world_map_data(&manifest.maps[0].id) else {
+        error!("failed to load world map");
+        return;
+    };
 
     commands.spawn((
         WorldMap {
             name: "test_map".to_string(),
-            uuid: Uuid::new_v4(),
-            tiles: raw_matrix.clone(),
+            id: Uuid::new_v4(),
+            tiles: world_map.tiles.clone(),
         },
         TilemapChunk {
             chunk_size: UVec2::new(10, 10),      // 20x20 tiles
@@ -44,7 +42,7 @@ pub fn spawn_tilemap(mut commands: Commands, assets_server: Res<AssetServer>) {
             tileset: texture,
             ..default()
         },
-        TilemapChunkTileData(convert_tiles(&raw_matrix)),
+        TilemapChunkTileData(convert_tiles(&world_map.tiles)),
         GameEntity,
     ));
 }
@@ -57,7 +55,7 @@ fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
         .collect()
 }
 
-//TEMPORARY - we create a map on M input just so we can test if everything works
+//TEMPORARY - we create a map on M input just so we can test if everything works L reads the first entry of the manifest
 pub fn map_input_actions(keys: Res<ButtonInput<KeyCode>>) {
     if keys.just_pressed(KeyCode::KeyM) {
         info!("user creating new world map entry");
@@ -76,7 +74,7 @@ pub fn map_input_actions(keys: Res<ButtonInput<KeyCode>>) {
         ];
         let world_map = WorldMap {
             name: "test map".to_string(),
-            uuid: Uuid::new_v4(),
+            id: Uuid::new_v4(),
             tiles: raw_matrix,
         };
         save_world_map(world_map);
