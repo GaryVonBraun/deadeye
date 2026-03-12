@@ -1,9 +1,21 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, ui::Node};
 
 use crate::{
-    ui::{common::bundles::ui_card, map::menu::components::MapListUi},
+    ui::{
+        common::{
+            bundles::ui_card,
+            button::{UiButton, UiButtonVariant},
+        },
+        map::menu::components::MapListUi,
+    },
     world::map::io::read_manifest,
 };
+
+#[derive(Component, Debug, Clone, Copy)]
+pub enum MapMenuInteractions {
+    Delete,
+    Edit,
+}
 
 pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapListUi>>) {
     for entity in query.iter() {
@@ -35,6 +47,13 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapLi
                                     TextColor::from(TextColor::WHITE),
                                 ));
                             });
+                        UiButton::new("Delete".to_string())
+                            .variant(UiButtonVariant::Danger)
+                            .spawn(parent, MapMenuInteractions::Delete);
+                        UiButton::new("Edit".to_string())
+                            .variant(UiButtonVariant::Success)
+                            .spawn(parent, MapMenuInteractions::Edit);
+
                         // card that will hold the maps
                     })
                     .id(),

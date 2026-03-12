@@ -1,5 +1,5 @@
 use crate::ui::{
-    common::bundles::ui_button_bundle,
+    common::button::UiButton,
     main_menu::components::{MainMenu, MainMenuInteractions},
 };
 use bevy::prelude::*;
@@ -36,42 +36,11 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                     // title
                     parent.spawn((Text::new("HUH".to_string()), TextColor::WHITE));
                 });
-            // play button
-            parent
-                .spawn((ui_button_bundle(), MainMenuInteractions::PlayButton))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("play".to_string()),
-                        TextColor::from(TextColor::WHITE),
-                    ));
-                });
-            // settings button
-            parent
-                .spawn((ui_button_bundle(), MainMenuInteractions::SettingsButton))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("settings".to_string()),
-                        TextColor::from(TextColor::WHITE),
-                    ));
-                });
-            // maps button
-            parent
-                .spawn((ui_button_bundle(), MainMenuInteractions::MapsButton))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("maps".to_string()),
-                        TextColor::from(TextColor::WHITE),
-                    ));
-                });
-            // quit button
-            parent
-                .spawn((ui_button_bundle(), MainMenuInteractions::QuitButton))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("quit".to_string()),
-                        TextColor::from(TextColor::WHITE),
-                    ));
-                });
+            UiButton::new("play".to_string()).spawn(parent, MainMenuInteractions::PlayButton);
+            UiButton::new("setting".to_string())
+                .spawn(parent, MainMenuInteractions::SettingsButton);
+            UiButton::new("maps".to_string()).spawn(parent, MainMenuInteractions::MapsButton);
+            UiButton::new("quit".to_string()).spawn(parent, MainMenuInteractions::QuitButton);
         })
         .id();
     main_menu_entity

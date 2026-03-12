@@ -1,5 +1,5 @@
 use crate::ui::{
-    common::bundles::{ui_button_bundle, ui_card_list},
+    common::bundles::ui_card_list,
     map::menu::components::{MapListUi, MapMenuUi},
 };
 use bevy::prelude::*;
@@ -35,6 +35,7 @@ pub fn build_map_list(commands: &mut Commands, asset_server: &Res<AssetServer>) 
                     // title
                     parent.spawn((Text::new("Maps".to_string()), TextColor::WHITE));
                 });
+
             // card that will hold the maps
             parent.spawn((ui_card_list(), MapListUi));
         })

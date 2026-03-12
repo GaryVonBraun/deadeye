@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::ui::{
-    common::bundles::ui_button_interaction, main_menu::MainMenuPlugin, map::MapUiPlugin,
+    common::button::ui_button_interaction, main_menu::MainMenuPlugin, map::MapUiPlugin,
 };
 
 mod common;
