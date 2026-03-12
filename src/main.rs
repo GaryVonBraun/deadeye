@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
 use crate::{
     actor::ActorPlugin, ai::AiPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
@@ -26,6 +27,8 @@ fn main() {
             }),
             ..Default::default()
         }))
+        .add_plugins(EguiPlugin::default())
+        .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(CorePlugin)
         .add_plugins((
             SimulationPlugin,
