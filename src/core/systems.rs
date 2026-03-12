@@ -54,6 +54,7 @@ pub fn toggle_app_state(
             AppState::MainMenu => next_state.set(AppState::InGame),
             AppState::InGame => next_state.set(AppState::MainMenu),
             AppState::Loading => todo!(),
+            AppState::MapListMenu => todo!(),
         }
     }
 }

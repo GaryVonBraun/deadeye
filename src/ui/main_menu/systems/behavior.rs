@@ -16,6 +16,9 @@ pub fn main_menu_interactions(
                 MainMenuInteractions::PlayButton => {
                     next_state.set(AppState::InGame);
                 }
+                MainMenuInteractions::MapsButton => {
+                    next_state.set(AppState::MapListMenu);
+                }
                 MainMenuInteractions::SettingsButton => {
                     //TEMPORARY - currently settings don't exist so its placeholder
                     next_state.set(AppState::InGame);

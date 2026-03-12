@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::world::map::MapPlugin;
 
-mod map;
+pub mod map;
 
 pub struct WorldPlugin;
 

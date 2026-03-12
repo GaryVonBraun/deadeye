@@ -63,12 +63,24 @@ fn read_world_map_data(id: &Uuid) -> Result<WorldMap, String> {
     read_ron_file(map_data_path(id))
 }
 
+pub fn read_manifest() -> Result<MapManifest, ()> {
+    match read_ron_file(manifest_path()) {
+        Ok(manifest) => Ok(manifest),
+        Err(err) => {
+            error!(err);
+            Err(())
+        }
+    }
+}
+
 fn load_or_create_manifest() -> MapManifest {
     // this function ensure that if there is no manifest we create one
-    if let Ok(manifest) = read_ron_file(manifest_path()) {
-        manifest
-    } else {
-        warn!("manifest not found, creating new manifest");
-        MapManifest { maps: vec![] }
+
+    match read_ron_file(manifest_path()) {
+        Ok(manifest) => manifest,
+        Err(_) => {
+            warn!("manifest not found, creating new manifest");
+            MapManifest { maps: vec![] }
+        }
     }
 }
