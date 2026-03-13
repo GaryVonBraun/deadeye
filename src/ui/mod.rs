@@ -6,7 +6,7 @@ use crate::ui::{
 
 mod common;
 mod main_menu;
-mod map;
+pub mod map;
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

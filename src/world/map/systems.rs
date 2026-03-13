@@ -6,33 +6,78 @@ use bevy::{
 use uuid::Uuid;
 
 use crate::{
-    core::{components::GameEntity, io::read_ron_file},
-    world::map::{components::WorldMap, io::*, messages::LoadMapMessage},
+    core::{
+        components::GameEntity,
+        io::{read_ron_file, remove_ron_file, write_ron_file},
+    },
+    ui::map::menu::messages::RefreshMapListMessage,
+    world::map::{
+        components::WorldMap,
+        io::*,
+        messages::{DeleteMapMessage, LoadMapMessage},
+    },
 };
 
-pub fn spawn_world_map(mut messages: MessageWriter<LoadMapMessage>) {
+pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
     // load manifest needed for map selection
     let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
         error!("failed to get manifest needed for spawning map");
         return;
     };
 
+    if manifest.maps.is_empty() {
+        error!("no maps found in manifest");
+        return;
+    }
+
     let first_manifest = &manifest.maps[0];
 
-    messages.write(LoadMapMessage {
+    message_writer.write(LoadMapMessage {
         id: first_manifest.id,
         name: first_manifest.name.clone(),
     });
 }
 
-pub fn load_map(
-    mut messages: MessageReader<LoadMapMessage>,
+fn remove_map_file(id: Uuid) {
+    info!("deleting: {:?}", id);
+
+    let Ok(mut manifest) = read_manifest() else {
+        error!("cannot find manifest");
+        return;
+    };
+
+    if let Some(index) = manifest.maps.iter().position(|map| map.id == id) {
+        let deleted_entry = manifest.maps.swap_remove(index);
+        if let Err(_) = write_ron_file(&manifest, manifest_path()) {
+            error!("failed to save updated entry");
+            return;
+        }
+        info!("removed entry from manifest: {:?}", deleted_entry.id);
+    }
+
+    if let Err(err) = remove_ron_file(map_data_path(&id)) {
+        error!("failed to remove map data file for: {:?}{:?}", err, id);
+    }
+}
+
+pub fn handle_delete_map_message(
+    mut message_reader: MessageReader<DeleteMapMessage>,
+    mut resfresh_map_message_writer: MessageWriter<RefreshMapListMessage>,
+) {
+    for message in message_reader.read() {
+        remove_map_file(message.id);
+    }
+    resfresh_map_message_writer.write(RefreshMapListMessage);
+}
+
+pub fn load_map_data(
+    mut message_reader: MessageReader<LoadMapMessage>,
     map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
     mut commands: Commands,
     assets_server: Res<AssetServer>,
 ) {
     //NOTE - currently just taking the first message to prevent loading and unloading if multiple messages are present
-    for message in messages.read() {
+    for message in message_reader.read() {
         info!("loading map: {:?}", message.name);
 
         // despawn all existing maps
@@ -81,10 +126,10 @@ fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
         .collect()
 }
 
-//TEMPORARY - we temporary controls for testing
+//TEMPORARY - temporary controls for testing
 pub fn map_input_actions(
     keys: Res<ButtonInput<KeyCode>>,
-    mut messages: MessageWriter<LoadMapMessage>,
+    mut message_writer: MessageWriter<LoadMapMessage>,
 ) {
     if keys.just_pressed(KeyCode::KeyM) {
         info!("user creating new world map entry");
@@ -116,7 +161,7 @@ pub fn map_input_actions(
 
         let first_manifest = &manifest.maps[1];
 
-        messages.write(LoadMapMessage {
+        message_writer.write(LoadMapMessage {
             id: first_manifest.id,
             name: first_manifest.name.clone(),
         });

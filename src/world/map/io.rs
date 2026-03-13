@@ -24,7 +24,7 @@ pub fn manifest_path() -> PathBuf {
     PathBuf::from("data/maps/manifest.ron")
 }
 
-fn map_data_path(id: &Uuid) -> PathBuf {
+pub fn map_data_path(id: &Uuid) -> PathBuf {
     PathBuf::from(format!("data/maps/data/{}.ron", id.to_string()))
 }
 
@@ -52,24 +52,18 @@ pub fn save_world_map(world_map: WorldMap) {
 pub fn load_world_map_data(id: &Uuid) -> Result<WorldMap, ()> {
     match read_world_map_data(id) {
         Ok(map_data) => Ok(map_data),
-        Err(err) => {
-            error!(err);
-            Err(())
-        }
+        Err(()) => Err(()),
     }
 }
 
-fn read_world_map_data(id: &Uuid) -> Result<WorldMap, String> {
+fn read_world_map_data(id: &Uuid) -> Result<WorldMap, ()> {
     read_ron_file(map_data_path(id))
 }
 
 pub fn read_manifest() -> Result<MapManifest, ()> {
     match read_ron_file(manifest_path()) {
         Ok(manifest) => Ok(manifest),
-        Err(err) => {
-            error!(err);
-            Err(())
-        }
+        Err(()) => Err(()),
     }
 }
 

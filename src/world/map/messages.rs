@@ -6,3 +6,8 @@ pub struct LoadMapMessage {
     pub id: Uuid,
     pub name: String,
 }
+
+#[derive(Message)]
+pub struct DeleteMapMessage {
+    pub id: Uuid,
+}

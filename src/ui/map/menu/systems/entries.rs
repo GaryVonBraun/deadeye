@@ -6,16 +6,10 @@ use crate::{
             bundles::ui_card,
             button::{UiButton, UiButtonVariant},
         },
-        map::menu::components::MapListUi,
+        map::menu::components::{MapListInteractions, MapListUi},
     },
     world::map::io::read_manifest,
 };
-
-#[derive(Component, Debug, Clone, Copy)]
-pub enum MapMenuInteractions {
-    Delete,
-    Edit,
-}
 
 pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapListUi>>) {
     for entity in query.iter() {
@@ -23,6 +17,8 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapLi
             error!("no manifest found");
             return;
         };
+
+        commands.entity(entity).despawn_children();
 
         let mut entries: Vec<Entity> = vec![];
 
@@ -49,10 +45,10 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapLi
                             });
                         UiButton::new("Delete".to_string())
                             .variant(UiButtonVariant::Danger)
-                            .spawn(parent, MapMenuInteractions::Delete);
+                            .spawn(parent, MapListInteractions::Delete(map.id));
                         UiButton::new("Edit".to_string())
                             .variant(UiButtonVariant::Success)
-                            .spawn(parent, MapMenuInteractions::Edit);
+                            .spawn(parent, MapListInteractions::Edit);
 
                         // card that will hold the maps
                     })

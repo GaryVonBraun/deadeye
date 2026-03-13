@@ -3,28 +3,28 @@ use std::{fs, path::PathBuf};
 
 use serde::{Serialize, de::DeserializeOwned};
 
-pub fn read_ron_file<T>(path: PathBuf) -> Result<T, String>
+pub fn read_ron_file<T>(path: PathBuf) -> Result<T, ()>
 where
     T: DeserializeOwned,
 {
-    if path.exists() {
-        let contents = fs::read_to_string(path);
-        match contents {
-            Ok(contents) => match ron::from_str::<T>(&contents) {
-                Ok(manifest) => Ok(manifest),
-                Err(spanned_error) => {
-                    error!("{:?}", spanned_error.code);
-                    Err(spanned_error.code.to_string())
-                }
-            },
-            Err(_) => {
-                error!("error parsing content");
-                Err("error parsing content".to_string())
-            }
-        }
-    } else {
+    // if no path found return error
+    if !path.exists() {
         error!("invalid path: {:?}", path);
-        Err(format!("invalid path: {:?}", path).to_string())
+        return Err(());
+    }
+
+    // if there is no content return error
+    let Ok(contents) = fs::read_to_string(path.clone()) else {
+        error!("failed to read content of: {:?}", path);
+        return Err(());
+    };
+
+    match ron::from_str::<T>(&contents) {
+        Ok(manifest) => Ok(manifest),
+        Err(spanned_error) => {
+            error!("{:?}", spanned_error.code);
+            Err(())
+        }
     }
 }
 pub fn write_ron_file<T>(data: &T, path: PathBuf) -> Result<(), String>
@@ -42,6 +42,22 @@ where
         Err(err) => {
             error!("{:?}", err);
             Err(err.to_string())
+        }
+    }
+}
+
+pub fn remove_ron_file(path: PathBuf) -> Result<(), ()> {
+    // if no path found return error
+    if !path.exists() {
+        error!("invalid path: {:?}", path);
+        return Err(());
+    }
+
+    match fs::remove_file(path) {
+        Ok(result) => Ok(result),
+        Err(err) => {
+            error!("{:?}", err);
+            Err(())
         }
     }
 }
