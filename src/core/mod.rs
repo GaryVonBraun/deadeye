@@ -23,7 +23,6 @@ impl Plugin for CorePlugin {
                 log_simulation_state_changes,
                 toggle_simulation_state,
                 toggle_app_state,
-                camera_follow,
             ),
         );
         app.add_systems(OnEnter(AppState::InGame), run_simulation);

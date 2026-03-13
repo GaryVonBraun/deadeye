@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{core::states::SimulationState, player::systems::*};
+use crate::{
+    core::states::{AppState, SimulationState},
+    player::systems::*,
+};
 
 pub mod components;
 mod systems;
@@ -18,6 +21,10 @@ impl Plugin for PlayerPlugin {
             (player_aim_system, player_shoot_input)
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            Update,
+            camera_follow_player.run_if(in_state(AppState::InGame)),
         );
     }
 }
