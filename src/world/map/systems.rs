@@ -10,14 +10,12 @@ use crate::{
     core::{
         components::GameEntity,
         io::{read_ron_file, remove_ron_file, write_ron_file},
-        states::AppState,
     },
     ui::map::menu::messages::RefreshMapListMessage,
     world::map::{
         components::WorldMap,
         io::*,
-        messages::{DeleteMapMessage, EditMapMessage, LoadMapMessage},
-        resources::ActiveMap,
+        messages::{DeleteMapMessage, LoadMapMessage},
     },
 };
 
@@ -149,31 +147,4 @@ fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
         .flatten()
         .map(|tile_id| Some(TileData::from_tileset_index(*tile_id as u16)))
         .collect()
-}
-
-pub fn handle_create_map_message(
-    mut next_state: ResMut<NextState<AppState>>,
-    mut active_map: ResMut<ActiveMap>,
-) {
-    let world_map = create_new_map();
-    active_map.id = world_map.id;
-    next_state.set(AppState::MapEditor);
-}
-
-pub fn handle_edit_map_message(
-    mut next_state: ResMut<NextState<AppState>>,
-    mut active_map: ResMut<ActiveMap>,
-    mut edit_map_message_reader: MessageReader<EditMapMessage>,
-) {
-    for message in edit_map_message_reader.read() {
-        active_map.id = message.id;
-        next_state.set(AppState::MapEditor);
-    }
-}
-
-pub fn init_map_editor(
-    active_map: Res<ActiveMap>,
-    mut message_writer: MessageWriter<LoadMapMessage>,
-) {
-    message_writer.write(LoadMapMessage { id: active_map.id });
 }
