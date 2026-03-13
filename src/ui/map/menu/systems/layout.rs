@@ -39,6 +39,9 @@ pub fn build_map_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) 
                     parent.spawn((Text::new("Maps".to_string()), TextColor::WHITE));
                 });
 
+            UiButton::new("New map".to_string())
+                .variant(UiButtonVariant::Success)
+                .spawn(parent, MapMenuInteractions::New);
             // card that will hold the maps
             parent.spawn((ui_card_list(), MapListUi));
 

@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
     sprite_render::{TileData, TilemapChunk, TilemapChunkTileData},
 };
+use rand::RngExt;
 use uuid::Uuid;
 
 use crate::{
@@ -14,7 +15,7 @@ use crate::{
     world::map::{
         components::WorldMap,
         io::*,
-        messages::{DeleteMapMessage, LoadMapMessage},
+        messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
     },
 };
 
@@ -118,52 +119,34 @@ pub fn load_map_data(
     }
 }
 
+pub fn create_new_map() {
+    let raw_matrix: Vec<Vec<u32>> = vec![
+        vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
+        vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+    ];
+
+    let mut rng = rand::rng();
+
+    let world_map = WorldMap {
+        name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
+        id: Uuid::new_v4(),
+        tiles: raw_matrix,
+    };
+    save_world_map(world_map);
+}
+
 fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
     tiles
         .iter()
         .flatten()
         .map(|tile_id| Some(TileData::from_tileset_index(*tile_id as u16)))
         .collect()
-}
-
-//TEMPORARY - temporary controls for testing
-pub fn map_input_actions(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut message_writer: MessageWriter<LoadMapMessage>,
-) {
-    if keys.just_pressed(KeyCode::KeyM) {
-        info!("user creating new world map entry");
-
-        let raw_matrix: Vec<Vec<u32>> = vec![
-            vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
-            vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        ];
-        let world_map = WorldMap {
-            name: "test map".to_string(),
-            id: Uuid::new_v4(),
-            tiles: raw_matrix,
-        };
-        save_world_map(world_map);
-    }
-    if keys.just_pressed(KeyCode::KeyL) {
-        let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
-            error!("failed to get manifest needed for spawning map");
-            return;
-        };
-
-        let first_manifest = &manifest.maps[1];
-
-        message_writer.write(LoadMapMessage {
-            id: first_manifest.id,
-            name: first_manifest.name.clone(),
-        });
-    }
 }

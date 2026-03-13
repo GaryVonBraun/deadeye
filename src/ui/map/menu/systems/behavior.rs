@@ -2,11 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::AppState,
-    ui::map::menu::{
-        components::{MapListInteractions, MapMenuInteractions},
-        messages::RefreshMapListMessage,
-    },
-    world::map::messages::DeleteMapMessage,
+    ui::map::menu::components::{MapListInteractions, MapMenuInteractions},
+    world::map::messages::{CreateMapMessage, DeleteMapMessage},
 };
 
 pub fn map_menu_interactions(
@@ -15,6 +12,7 @@ pub fn map_menu_interactions(
         (Changed<Interaction>, With<MapMenuInteractions>),
     >,
     mut next_state: ResMut<NextState<AppState>>,
+    mut create_map_message_writer: MessageWriter<CreateMapMessage>,
 ) {
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {
@@ -23,8 +21,7 @@ pub fn map_menu_interactions(
                     next_state.set(AppState::MainMenu);
                 }
                 MapMenuInteractions::New => {
-                    //TEMPORARY - currently settings don't exist so its placeholder
-                    todo!()
+                    create_map_message_writer.write(CreateMapMessage);
                 }
             }
         }
@@ -36,7 +33,6 @@ pub fn map_list_interactions(
         (Changed<Interaction>, With<MapListInteractions>),
     >,
     mut delete_map_message_writer: MessageWriter<DeleteMapMessage>,
-    mut resfresh_map_message_writer: MessageWriter<RefreshMapListMessage>,
 ) {
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {

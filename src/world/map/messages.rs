@@ -11,3 +11,6 @@ pub struct LoadMapMessage {
 pub struct DeleteMapMessage {
     pub id: Uuid,
 }
+
+#[derive(Message)]
+pub struct CreateMapMessage;
