@@ -48,7 +48,7 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapLi
                             .spawn(parent, MapListInteractions::Delete(map.id));
                         UiButton::new("Edit".to_string())
                             .variant(UiButtonVariant::Success)
-                            .spawn(parent, MapListInteractions::Edit);
+                            .spawn(parent, MapListInteractions::Edit(map.id));
 
                         // card that will hold the maps
                     })

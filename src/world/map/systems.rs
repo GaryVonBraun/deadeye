@@ -10,12 +10,14 @@ use crate::{
     core::{
         components::GameEntity,
         io::{read_ron_file, remove_ron_file, write_ron_file},
+        states::AppState,
     },
     ui::map::menu::messages::RefreshMapListMessage,
     world::map::{
         components::WorldMap,
         io::*,
-        messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
+        messages::{DeleteMapMessage, EditMapMessage, LoadMapMessage},
+        resources::ActiveMap,
     },
 };
 
@@ -35,7 +37,6 @@ pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
 
     message_writer.write(LoadMapMessage {
         id: first_manifest.id,
-        name: first_manifest.name.clone(),
     });
 }
 
@@ -79,8 +80,6 @@ pub fn load_map_data(
 ) {
     //NOTE - currently just taking the first message to prevent loading and unloading if multiple messages are present
     for message in message_reader.read() {
-        info!("loading map: {:?}", message.name);
-
         // despawn all existing maps
         //NOTE - technically it should not be possible to have multiple maps, but its for safety
         for (map_entity, world_map_info) in map_query.iter() {
@@ -119,7 +118,7 @@ pub fn load_map_data(
     }
 }
 
-pub fn create_new_map() {
+pub fn create_new_map() -> WorldMap {
     let raw_matrix: Vec<Vec<u32>> = vec![
         vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
         vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
@@ -140,7 +139,8 @@ pub fn create_new_map() {
         id: Uuid::new_v4(),
         tiles: raw_matrix,
     };
-    save_world_map(world_map);
+    save_world_map(&world_map);
+    world_map
 }
 
 fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
@@ -149,4 +149,31 @@ fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
         .flatten()
         .map(|tile_id| Some(TileData::from_tileset_index(*tile_id as u16)))
         .collect()
+}
+
+pub fn handle_create_map_message(
+    mut next_state: ResMut<NextState<AppState>>,
+    mut active_map: ResMut<ActiveMap>,
+) {
+    let world_map = create_new_map();
+    active_map.id = world_map.id;
+    next_state.set(AppState::MapEditor);
+}
+
+pub fn handle_edit_map_message(
+    mut next_state: ResMut<NextState<AppState>>,
+    mut active_map: ResMut<ActiveMap>,
+    mut edit_map_message_reader: MessageReader<EditMapMessage>,
+) {
+    for message in edit_map_message_reader.read() {
+        active_map.id = message.id;
+        next_state.set(AppState::MapEditor);
+    }
+}
+
+pub fn init_map_editor(
+    active_map: Res<ActiveMap>,
+    mut message_writer: MessageWriter<LoadMapMessage>,
+) {
+    message_writer.write(LoadMapMessage { id: active_map.id });
 }

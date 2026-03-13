@@ -53,8 +53,7 @@ pub fn toggle_app_state(
         match state.get() {
             AppState::MainMenu => next_state.set(AppState::InGame),
             AppState::InGame => next_state.set(AppState::MainMenu),
-            AppState::Loading => todo!(),
-            AppState::MapListMenu => todo!(),
+            _ => {}
         }
     }
 }

@@ -10,7 +10,7 @@ pub struct MapListUi;
 #[derive(Component, Debug, Clone, Copy)]
 pub enum MapListInteractions {
     Delete(Uuid),
-    Edit,
+    Edit(Uuid),
 }
 
 #[derive(Component, Debug, Clone, Copy)]

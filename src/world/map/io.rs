@@ -28,7 +28,7 @@ pub fn map_data_path(id: &Uuid) -> PathBuf {
     PathBuf::from(format!("data/maps/data/{}.ron", id.to_string()))
 }
 
-pub fn save_world_map(world_map: WorldMap) {
+pub fn save_world_map(world_map: &WorldMap) {
     info!("saving world map");
     fs::create_dir_all("data/maps/data").unwrap();
 
