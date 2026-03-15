@@ -1,36 +1,22 @@
+use std::fs;
+
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf};
 use uuid::Uuid;
 
 use crate::{
     core::io::{read_ron_file, write_ron_file},
-    world::map::components::WorldMap,
+    world::map::{
+        components::WorldMap,
+        io::{
+            paths::{manifest_path, map_data_path},
+            types::{MapManifest, MapManifestEntry},
+        },
+    },
 };
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MapManifestEntry {
-    pub id: Uuid,
-    pub name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MapManifest {
-    pub maps: Vec<MapManifestEntry>,
-}
-
-//TEMPORARY - public now for testing
-pub fn manifest_path() -> PathBuf {
-    PathBuf::from("data/maps/manifest.ron")
-}
-
-pub fn map_data_path(id: &Uuid) -> PathBuf {
-    PathBuf::from(format!("data/maps/data/{}.ron", id.to_string()))
-}
 
 pub fn save_world_map(world_map: &WorldMap) {
     info!("saving world map");
-    fs::create_dir_all("data/maps/data").unwrap();
+    fs::create_dir_all("content/maps/map_data").unwrap();
 
     let mut manifest = load_or_create_manifest();
 

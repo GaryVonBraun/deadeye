@@ -59,6 +59,7 @@ pub fn editor_camera_controller(
     if keys.pressed(KeyCode::KeyW) {
         direction.y += 1.;
     }
+
     if keys.pressed(KeyCode::KeyS) {
         direction.y += -1.;
     }
