@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -6,5 +8,6 @@ use uuid::Uuid;
 pub struct WorldMap {
     pub name: String,
     pub id: Uuid,
+    pub tileset_name: String,
     pub tiles: Vec<Vec<u32>>,
 }

@@ -15,8 +15,8 @@ use crate::{
     world::map::{
         components::WorldMap,
         io::{
-            operations::{load_world_map_data, read_manifest, save_world_map},
-            paths::{manifest_path, map_data_path},
+            operations::{read_map_data, read_map_manifest, read_tileset, write_map},
+            paths::{manifest_path, map_data_path, tileset_path},
             types::MapManifest,
             *,
         },
@@ -46,7 +46,7 @@ pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
 fn remove_map_file(id: Uuid) {
     info!("deleting: {:?}", id);
 
-    let Ok(mut manifest) = read_manifest() else {
+    let Ok(mut manifest) = read_map_manifest() else {
         error!("cannot find manifest");
         return;
     };
@@ -90,24 +90,29 @@ pub fn load_map_data(
             commands.entity(map_entity).despawn();
         }
 
+        let Ok(world_map) = read_map_data(&message.id) else {
+            error!("failed to load world map with id: {:?}", message.id);
+            return;
+        };
+
+        let Ok(tileset) = read_tileset(tileset_path(world_map.tileset_name.clone())) else {
+            return;
+        };
+
         //TEMPORARY - The tilemap texture is currently hardcoded, maps might have different textures
         let texture = assets_server.load_with_settings(
-            "prototype_ground_textures.png",
+            tileset.texture,
             |settings: &mut ImageLoaderSettings| {
                 settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 4 });
             },
         );
-
-        let Ok(world_map) = load_world_map_data(&message.id) else {
-            error!("failed to load world map with id: {:?}", message.id);
-            return;
-        };
 
         commands.spawn((
             WorldMap {
                 name: "test_map".to_string(),
                 id: Uuid::new_v4(),
                 tiles: world_map.tiles.clone(),
+                tileset_name: world_map.tileset_name,
             },
             TilemapChunk {
                 chunk_size: UVec2::new(10, 10),      // 20x20 tiles
@@ -141,8 +146,9 @@ pub fn create_new_map() -> WorldMap {
         name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
         id: Uuid::new_v4(),
         tiles: raw_matrix,
+        tileset_name: "base".to_string(),
     };
-    save_world_map(&world_map);
+    write_map(&world_map);
     world_map
 }
 

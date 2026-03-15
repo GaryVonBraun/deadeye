@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use bevy::prelude::*;
 use uuid::Uuid;
@@ -9,16 +9,16 @@ use crate::{
         components::WorldMap,
         io::{
             paths::{manifest_path, map_data_path},
-            types::{MapManifest, MapManifestEntry},
+            types::{MapManifest, MapManifestEntry, TileSet},
         },
     },
 };
 
-pub fn save_world_map(world_map: &WorldMap) {
+pub fn write_map(world_map: &WorldMap) {
     info!("saving world map");
     fs::create_dir_all("content/maps/map_data").unwrap();
 
-    let mut manifest = load_or_create_manifest();
+    let mut manifest = read_or_write_map_manifest();
 
     manifest.maps.push(MapManifestEntry {
         id: world_map.id.clone(),
@@ -35,25 +35,18 @@ pub fn save_world_map(world_map: &WorldMap) {
     };
 }
 
-pub fn load_world_map_data(id: &Uuid) -> Result<WorldMap, ()> {
-    match read_world_map_data(id) {
-        Ok(map_data) => Ok(map_data),
-        Err(()) => Err(()),
-    }
-}
-
-fn read_world_map_data(id: &Uuid) -> Result<WorldMap, ()> {
+pub fn read_map_data(id: &Uuid) -> Result<WorldMap, ()> {
     read_ron_file(map_data_path(id))
 }
 
-pub fn read_manifest() -> Result<MapManifest, ()> {
+pub fn read_map_manifest() -> Result<MapManifest, ()> {
     match read_ron_file(manifest_path()) {
         Ok(manifest) => Ok(manifest),
         Err(()) => Err(()),
     }
 }
 
-fn load_or_create_manifest() -> MapManifest {
+fn read_or_write_map_manifest() -> MapManifest {
     // this function ensure that if there is no manifest we create one
 
     match read_ron_file(manifest_path()) {
@@ -63,4 +56,12 @@ fn load_or_create_manifest() -> MapManifest {
             MapManifest { maps: vec![] }
         }
     }
+}
+
+pub fn read_tileset(path: PathBuf) -> Result<TileSet, ()> {
+    let Ok(tileset) = read_ron_file::<TileSet>(path.clone()) else {
+        error!("tileset not found: {:?}", path);
+        return Err(());
+    };
+    Ok(tileset)
 }

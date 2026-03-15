@@ -8,12 +8,12 @@ use crate::{
         },
         map::menu::components::{MapListInteractions, MapListUi},
     },
-    world::map::io::operations::read_manifest,
+    world::map::io::operations::read_map_manifest,
 };
 
 pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapListUi>>) {
     for entity in query.iter() {
-        let Ok(manifest) = read_manifest() else {
+        let Ok(manifest) = read_map_manifest() else {
             error!("no manifest found");
             return;
         };

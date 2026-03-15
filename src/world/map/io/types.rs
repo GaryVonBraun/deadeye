@@ -22,12 +22,8 @@ pub struct TileDef {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct TileSetEntry {
-    texture: PathBuf,
-    name: String,
-    tiles: Vec<TileDef>,
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TileSetRegistry {
-    pub tile_sets: Vec<TileSetEntry>,
+pub struct TileSet {
+    pub name: String,
+    pub texture: String,
+    pub tiles: Vec<TileDef>,
 }

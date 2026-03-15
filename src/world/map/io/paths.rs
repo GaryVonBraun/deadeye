@@ -10,3 +10,7 @@ pub fn manifest_path() -> PathBuf {
 pub fn map_data_path(id: &Uuid) -> PathBuf {
     PathBuf::from(format!("content/maps/map_data/{}.ron", id.to_string()))
 }
+
+pub fn tileset_path(name: String) -> PathBuf {
+    PathBuf::from(format!("content/maps/tilesets/{}.ron", name))
+}
