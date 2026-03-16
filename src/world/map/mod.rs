@@ -15,21 +15,21 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<LoadMissionMessage>();
-        app.add_message::<DeleteMissionMessage>();
-        app.add_message::<CreateMissionMessage>();
-        app.add_message::<EditMissionMessage>();
+        app.add_message::<LoadMapMessage>();
+        app.add_message::<DeleteMapMessage>();
+        app.add_message::<CreateMapMessage>();
+        app.add_message::<EditMapMessage>();
         app.add_plugins(MapEditorPlugin);
         app.init_resource::<ActiveMap>();
+        app.add_systems(Update, load_map_data.run_if(on_message::<LoadMapMessage>));
         app.add_systems(
             Update,
-            load_map_data.run_if(on_message::<LoadMissionMessage>),
+            create_new_map.run_if(on_message::<CreateMapMessage>),
         );
-
         app.add_systems(Update, load_map_data);
         app.add_systems(
             Update,
-            handle_delete_map_message.run_if(on_message::<DeleteMissionMessage>),
+            delete_map_message.run_if(on_message::<DeleteMapMessage>),
         );
     }
 }

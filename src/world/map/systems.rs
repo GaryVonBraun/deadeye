@@ -11,20 +11,15 @@ use crate::{
         components::GameEntity,
         io::{read_ron_file, remove_ron_file, write_ron_file},
     },
-    ui::missions_menu::messages::RefreshMissionDevListMessage,
+    ui::missions_menu::messages::RefreshMissionListMessage,
     world::map::{
         components::WorldMap,
-        io::{
-            operations::{read_map_data, read_map_manifest, read_tileset, write_map},
-            paths::{manifest_path, map_data_path, tileset_path},
-            types::MapManifest,
-            *,
-        },
-        messages::{DeleteMissionMessage, LoadMissionMessage},
+        io::{operations::*, paths::*, types::MapManifest, *},
+        messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
     },
 };
 
-pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMissionMessage>) {
+pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
     // load manifest needed for map selection
     let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
         error!("failed to get manifest needed for spawning map");
@@ -38,45 +33,19 @@ pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMissionMessage>) {
 
     let first_manifest = &manifest.maps[0];
 
-    message_writer.write(LoadMissionMessage {
+    message_writer.write(LoadMapMessage {
         id: first_manifest.id,
     });
 }
 
-fn remove_map_file(id: Uuid) {
-    info!("deleting: {:?}", id);
-
-    let Ok(mut manifest) = read_map_manifest() else {
-        error!("cannot find manifest");
-        return;
-    };
-
-    if let Some(index) = manifest.maps.iter().position(|map| map.id == id) {
-        let deleted_entry = manifest.maps.swap_remove(index);
-        if let Err(_) = write_ron_file(&manifest, manifest_path()) {
-            error!("failed to save updated entry");
-            return;
-        }
-        info!("removed entry from manifest: {:?}", deleted_entry.id);
-    }
-
-    if let Err(err) = remove_ron_file(map_data_path(&id)) {
-        error!("failed to remove map data file for: {:?}{:?}", err, id);
-    }
-}
-
-pub fn handle_delete_map_message(
-    mut message_reader: MessageReader<DeleteMissionMessage>,
-    mut resfresh_map_message_writer: MessageWriter<RefreshMissionDevListMessage>,
-) {
+pub fn delete_map_message(mut message_reader: MessageReader<DeleteMapMessage>) {
     for message in message_reader.read() {
-        remove_map_file(message.id);
+        remove_map(message.id);
     }
-    resfresh_map_message_writer.write(RefreshMissionDevListMessage);
 }
 
 pub fn load_map_data(
-    mut message_reader: MessageReader<LoadMissionMessage>,
+    mut message_reader: MessageReader<LoadMapMessage>,
     map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
     mut commands: Commands,
     assets_server: Res<AssetServer>,
@@ -126,30 +95,31 @@ pub fn load_map_data(
     }
 }
 
-pub fn create_new_map() -> WorldMap {
-    let raw_matrix: Vec<Vec<u32>> = vec![
-        vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
-        vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-    ];
+pub fn create_new_map(mut map_message_reader: MessageReader<CreateMapMessage>) {
+    for map_message in map_message_reader.read() {
+        let raw_matrix: Vec<Vec<u32>> = vec![
+            vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
+            vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
+        ];
 
-    let mut rng = rand::rng();
+        let mut rng = rand::rng();
 
-    let world_map = WorldMap {
-        name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
-        id: Uuid::new_v4(),
-        tiles: raw_matrix,
-        tileset_name: "base".to_string(),
-    };
-    write_map(&world_map);
-    world_map
+        let world_map = WorldMap {
+            name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
+            id: map_message.id,
+            tiles: raw_matrix,
+            tileset_name: "base".to_string(),
+        };
+        write_map(&world_map);
+    }
 }
 
 fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {

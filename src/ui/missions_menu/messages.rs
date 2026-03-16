@@ -1,4 +1,4 @@
 use bevy::prelude::*;
 
 #[derive(Message)]
-pub struct RefreshMissionDevListMessage;
+pub struct RefreshMissionListMessage;

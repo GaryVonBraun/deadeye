@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     core::states::AppState,
     world::map::{
-        messages::{EditMissionMessage, LoadMissionMessage},
+        messages::{EditMapMessage, LoadMapMessage},
         resources::ActiveMap,
         systems::create_new_map,
     },
@@ -13,30 +13,30 @@ const CAMERA_SPEED: f32 = 100.;
 
 pub fn init_map_editor(
     active_map: Res<ActiveMap>,
-    mut message_writer: MessageWriter<LoadMissionMessage>,
+    mut message_writer: MessageWriter<LoadMapMessage>,
 ) {
-    message_writer.write(LoadMissionMessage { id: active_map.id });
+    message_writer.write(LoadMapMessage { id: active_map.id });
 }
 
 pub fn handle_edit_map_message(
     mut next_state: ResMut<NextState<AppState>>,
     mut active_map: ResMut<ActiveMap>,
-    mut edit_map_message_reader: MessageReader<EditMissionMessage>,
+    mut edit_map_message_reader: MessageReader<EditMapMessage>,
 ) {
     for message in edit_map_message_reader.read() {
         active_map.id = message.id;
-        next_state.set(AppState::MapEditor);
+        next_state.set(AppState::Editor);
     }
 }
 
-pub fn handle_create_map_message(
-    mut next_state: ResMut<NextState<AppState>>,
-    mut active_map: ResMut<ActiveMap>,
-) {
-    let world_map = create_new_map();
-    active_map.id = world_map.id;
-    next_state.set(AppState::MapEditor);
-}
+// pub fn handle_create_map_message(
+//     mut next_state: ResMut<NextState<AppState>>,
+//     mut active_map: ResMut<ActiveMap>,
+// ) {
+//     let world_map = create_new_map();
+//     active_map.id = world_map.id;
+//     next_state.set(AppState::Editor);
+// }
 
 pub fn editor_camera_controller(
     keys: Res<ButtonInput<KeyCode>>,

@@ -7,6 +7,6 @@ pub struct MainMenu;
 pub enum MainMenuInteractions {
     PlayButton,
     SettingsButton,
-    MapsButton,
+    MissionsButton,
     QuitButton,
 }

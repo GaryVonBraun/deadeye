@@ -1,20 +1,20 @@
 use bevy::{prelude::*, ui::Node};
 
 use crate::{
+    mission::io::operations::read_missions_manifest,
     ui::{
         common::{
             bundles::ui_card,
             button::{UiButton, UiButtonVariant},
         },
-        missions_menu::components::{MissionDevListInteractions, MissionDevListUi},
+        missions_menu::components::{MissionListInteractions, MissionListUi},
     },
-    world::map::io::operations::read_map_manifest,
 };
 
-pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MissionDevListUi>>) {
+pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<MissionListUi>>) {
     for entity in query.iter() {
-        let Ok(manifest) = read_map_manifest() else {
-            error!("no manifest found");
+        let Ok(manifest) = read_missions_manifest() else {
+            error!("no mission manifest found");
             return;
         };
 
@@ -22,7 +22,7 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<Missi
 
         let mut entries: Vec<Entity> = vec![];
 
-        for map in manifest.maps {
+        for mission in manifest.missions {
             entries.push(
                 commands
                     .spawn(ui_card())
@@ -39,18 +39,24 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<Missi
                             .with_children(|parent| {
                                 // title
                                 parent.spawn((
-                                    Text::new(format!("map name: {}", map.name)),
+                                    Text::new(format!("mission name: {}", mission.name)),
                                     TextColor::from(TextColor::WHITE),
                                 ));
                             });
                         UiButton::new("Delete".to_string())
                             .variant(UiButtonVariant::Danger)
-                            .spawn(parent, MissionDevListInteractions::Delete(map.id));
+                            .spawn(
+                                parent,
+                                MissionListInteractions::Delete {
+                                    mission_id: mission.id,
+                                    map_id: mission.map_id,
+                                },
+                            );
                         UiButton::new("Edit".to_string())
                             .variant(UiButtonVariant::Success)
-                            .spawn(parent, MissionDevListInteractions::Edit(map.id));
+                            .spawn(parent, MissionListInteractions::Edit(mission.id));
 
-                        // card that will hold the maps
+                        // card that will hold the missions
                     })
                     .id(),
             );

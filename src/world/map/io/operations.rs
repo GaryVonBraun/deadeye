@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use uuid::Uuid;
 
 use crate::{
-    core::io::{read_ron_file, write_ron_file},
+    core::io::{read_ron_file, remove_ron_file, write_ron_file},
     world::map::{
         components::WorldMap,
         io::{
@@ -64,4 +64,26 @@ pub fn read_tileset(path: PathBuf) -> Result<TileSet, ()> {
         return Err(());
     };
     Ok(tileset)
+}
+
+pub fn remove_map(id: Uuid) {
+    info!("deleting: {:?}", id);
+
+    let Ok(mut manifest) = read_map_manifest() else {
+        error!("cannot find manifest");
+        return;
+    };
+
+    if let Some(index) = manifest.maps.iter().position(|map| map.id == id) {
+        let deleted_entry = manifest.maps.swap_remove(index);
+        if let Err(_) = write_ron_file(&manifest, manifest_path()) {
+            error!("failed to save updated entry");
+            return;
+        }
+        info!("removed entry from manifest: {:?}", deleted_entry.id);
+    }
+
+    if let Err(err) = remove_ron_file(map_data_path(&id)) {
+        error!("failed to remove map data file for: {:?}{:?}", err, id);
+    }
 }

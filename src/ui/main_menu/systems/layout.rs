@@ -39,7 +39,8 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
             UiButton::new("play".to_string()).spawn(parent, MainMenuInteractions::PlayButton);
             UiButton::new("setting".to_string())
                 .spawn(parent, MainMenuInteractions::SettingsButton);
-            UiButton::new("maps".to_string()).spawn(parent, MainMenuInteractions::MapsButton);
+            UiButton::new("missions".to_string())
+                .spawn(parent, MainMenuInteractions::MissionsButton);
             UiButton::new("quit".to_string()).spawn(parent, MainMenuInteractions::QuitButton);
         })
         .id();

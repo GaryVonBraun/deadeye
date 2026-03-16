@@ -5,16 +5,16 @@ use uuid::Uuid;
 pub struct MissionDevMenuUi;
 
 #[derive(Component, Debug)]
-pub struct MissionDevListUi;
+pub struct MissionListUi;
 
 #[derive(Component, Debug, Clone, Copy)]
-pub enum MissionDevListInteractions {
-    Delete(Uuid),
+pub enum MissionListInteractions {
+    Delete { mission_id: Uuid, map_id: Uuid },
     Edit(Uuid),
 }
 
 #[derive(Component, Debug, Clone, Copy)]
-pub enum MissionDevMenuInteractions {
+pub enum MissionMenuInteractions {
     Back,
     New,
 }
