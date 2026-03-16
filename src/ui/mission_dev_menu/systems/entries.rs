@@ -6,12 +6,12 @@ use crate::{
             bundles::ui_card,
             button::{UiButton, UiButtonVariant},
         },
-        map::menu::components::{MapListInteractions, MapListUi},
+        mission_dev_menu::components::{MissionDevListInteractions, MissionDevListUi},
     },
     world::map::io::operations::read_map_manifest,
 };
 
-pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapListUi>>) {
+pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MissionDevListUi>>) {
     for entity in query.iter() {
         let Ok(manifest) = read_map_manifest() else {
             error!("no manifest found");
@@ -45,10 +45,10 @@ pub fn populate_map_list(mut commands: Commands, query: Query<Entity, With<MapLi
                             });
                         UiButton::new("Delete".to_string())
                             .variant(UiButtonVariant::Danger)
-                            .spawn(parent, MapListInteractions::Delete(map.id));
+                            .spawn(parent, MissionDevListInteractions::Delete(map.id));
                         UiButton::new("Edit".to_string())
                             .variant(UiButtonVariant::Success)
-                            .spawn(parent, MapListInteractions::Edit(map.id));
+                            .spawn(parent, MissionDevListInteractions::Edit(map.id));
 
                         // card that will hold the maps
                     })

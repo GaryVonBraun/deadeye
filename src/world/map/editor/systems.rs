@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     core::states::AppState,
     world::map::{
-        messages::{EditMapMessage, LoadMapMessage},
+        messages::{EditMissionMessage, LoadMissionMessage},
         resources::ActiveMap,
         systems::create_new_map,
     },
@@ -13,15 +13,15 @@ const CAMERA_SPEED: f32 = 100.;
 
 pub fn init_map_editor(
     active_map: Res<ActiveMap>,
-    mut message_writer: MessageWriter<LoadMapMessage>,
+    mut message_writer: MessageWriter<LoadMissionMessage>,
 ) {
-    message_writer.write(LoadMapMessage { id: active_map.id });
+    message_writer.write(LoadMissionMessage { id: active_map.id });
 }
 
 pub fn handle_edit_map_message(
     mut next_state: ResMut<NextState<AppState>>,
     mut active_map: ResMut<ActiveMap>,
-    mut edit_map_message_reader: MessageReader<EditMapMessage>,
+    mut edit_map_message_reader: MessageReader<EditMissionMessage>,
 ) {
     for message in edit_map_message_reader.read() {
         active_map.id = message.id;

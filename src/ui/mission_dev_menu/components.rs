@@ -2,19 +2,19 @@ use bevy::prelude::*;
 use uuid::Uuid;
 
 #[derive(Component, Debug)]
-pub struct MapMenuUi;
+pub struct MissionDevMenuUi;
 
 #[derive(Component, Debug)]
-pub struct MapListUi;
+pub struct MissionDevListUi;
 
 #[derive(Component, Debug, Clone, Copy)]
-pub enum MapListInteractions {
+pub enum MissionDevListInteractions {
     Delete(Uuid),
     Edit(Uuid),
 }
 
 #[derive(Component, Debug, Clone, Copy)]
-pub enum MapMenuInteractions {
+pub enum MissionDevMenuInteractions {
     Back,
     New,
 }

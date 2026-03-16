@@ -2,19 +2,19 @@ use bevy::prelude::*;
 use uuid::Uuid;
 
 #[derive(Message)]
-pub struct LoadMapMessage {
+pub struct LoadMissionMessage {
     pub id: Uuid,
 }
 
 #[derive(Message)]
-pub struct DeleteMapMessage {
+pub struct DeleteMissionMessage {
     pub id: Uuid,
 }
 
 #[derive(Message)]
-pub struct CreateMapMessage;
+pub struct CreateMissionMessage;
 
 #[derive(Message)]
-pub struct EditMapMessage {
+pub struct EditMissionMessage {
     pub id: Uuid,
 }

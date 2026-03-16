@@ -11,7 +11,7 @@ use crate::{
         components::GameEntity,
         io::{read_ron_file, remove_ron_file, write_ron_file},
     },
-    ui::map::menu::messages::RefreshMapListMessage,
+    ui::mission_dev_menu::messages::RefreshMissionDevListMessage,
     world::map::{
         components::WorldMap,
         io::{
@@ -20,11 +20,11 @@ use crate::{
             types::MapManifest,
             *,
         },
-        messages::{DeleteMapMessage, LoadMapMessage},
+        messages::{DeleteMissionMessage, LoadMissionMessage},
     },
 };
 
-pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
+pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMissionMessage>) {
     // load manifest needed for map selection
     let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
         error!("failed to get manifest needed for spawning map");
@@ -38,7 +38,7 @@ pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
 
     let first_manifest = &manifest.maps[0];
 
-    message_writer.write(LoadMapMessage {
+    message_writer.write(LoadMissionMessage {
         id: first_manifest.id,
     });
 }
@@ -66,17 +66,17 @@ fn remove_map_file(id: Uuid) {
 }
 
 pub fn handle_delete_map_message(
-    mut message_reader: MessageReader<DeleteMapMessage>,
-    mut resfresh_map_message_writer: MessageWriter<RefreshMapListMessage>,
+    mut message_reader: MessageReader<DeleteMissionMessage>,
+    mut resfresh_map_message_writer: MessageWriter<RefreshMissionDevListMessage>,
 ) {
     for message in message_reader.read() {
         remove_map_file(message.id);
     }
-    resfresh_map_message_writer.write(RefreshMapListMessage);
+    resfresh_map_message_writer.write(RefreshMissionDevListMessage);
 }
 
 pub fn load_map_data(
-    mut message_reader: MessageReader<LoadMapMessage>,
+    mut message_reader: MessageReader<LoadMissionMessage>,
     map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
     mut commands: Commands,
     assets_server: Res<AssetServer>,

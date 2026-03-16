@@ -3,14 +3,16 @@ use crate::ui::{
         bundles::ui_card_list,
         button::{UiButton, UiButtonVariant},
     },
-    map::menu::components::{MapListUi, MapMenuInteractions, MapMenuUi},
+    mission_dev_menu::components::{
+        MissionDevListUi, MissionDevMenuInteractions, MissionDevMenuUi,
+    },
 };
 use bevy::prelude::*;
-pub fn spawn_map_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    build_map_menu(&mut commands, &asset_server);
+pub fn spawn_missions_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+    build_missions_menu(&mut commands, &asset_server);
 }
 
-pub fn build_map_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
+pub fn build_missions_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
     commands
         .spawn((
             Node {
@@ -22,7 +24,7 @@ pub fn build_map_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) 
                 row_gap: Val::Px(20.),
                 ..Default::default()
             },
-            MapMenuUi,
+            MissionDevMenuUi,
         ))
         .with_children(|parent| {
             // title
@@ -36,26 +38,29 @@ pub fn build_map_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) 
                 },))
                 .with_children(|parent| {
                     // title
-                    parent.spawn((Text::new("Maps".to_string()), TextColor::WHITE));
+                    parent.spawn((Text::new("Missions".to_string()), TextColor::WHITE));
                 });
 
-            UiButton::new("New map".to_string())
+            UiButton::new("New Mission".to_string())
                 .variant(UiButtonVariant::Success)
-                .spawn(parent, MapMenuInteractions::New);
-            // card that will hold the maps
-            parent.spawn((ui_card_list(), MapListUi));
+                .spawn(parent, MissionDevMenuInteractions::New);
+            // card that will hold the missions
+            parent.spawn((ui_card_list(), MissionDevListUi));
 
             UiButton::new("Back".to_string())
                 .variant(UiButtonVariant::Primary)
-                .spawn(parent, MapMenuInteractions::Back);
+                .spawn(parent, MissionDevMenuInteractions::Back);
         })
         .id()
 }
 
-pub fn despawn_map_menu(mut commands: Commands, map_menu_query: Query<(Entity, &MapMenuUi)>) {
-    let Ok(map_menu_entity) = map_menu_query.single() else {
+pub fn despawn_missions_menu(
+    mut commands: Commands,
+    missions_menu_query: Query<(Entity, &MissionDevMenuUi)>,
+) {
+    let Ok(missions_menu_entity) = missions_menu_query.single() else {
         return;
     };
 
-    commands.entity(map_menu_entity.0).despawn();
+    commands.entity(missions_menu_entity.0).despawn();
 }

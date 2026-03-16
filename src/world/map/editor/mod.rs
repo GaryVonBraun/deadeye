@@ -4,7 +4,7 @@ use crate::{
     core::states::AppState,
     world::map::{
         editor::systems::*,
-        messages::{CreateMapMessage, EditMapMessage},
+        messages::{CreateMissionMessage, EditMissionMessage},
     },
 };
 
@@ -17,11 +17,11 @@ impl Plugin for MapEditorPlugin {
         app.add_systems(OnEnter(AppState::MapEditor), init_map_editor);
         app.add_systems(
             Update,
-            handle_edit_map_message.run_if(on_message::<EditMapMessage>),
+            handle_edit_map_message.run_if(on_message::<EditMissionMessage>),
         );
         app.add_systems(
             Update,
-            handle_create_map_message.run_if(on_message::<CreateMapMessage>),
+            handle_create_map_message.run_if(on_message::<CreateMissionMessage>),
         );
         app.add_systems(
             Update,
