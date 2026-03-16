@@ -3,9 +3,7 @@ use crate::ui::{
         bundles::ui_card_list,
         button::{UiButton, UiButtonVariant},
     },
-    mission_dev_menu::components::{
-        MissionDevListUi, MissionDevMenuInteractions, MissionDevMenuUi,
-    },
+    missions_menu::components::{MissionDevListUi, MissionDevMenuInteractions, MissionDevMenuUi},
 };
 use bevy::prelude::*;
 pub fn spawn_missions_menu(mut commands: Commands, asset_server: Res<AssetServer>) {

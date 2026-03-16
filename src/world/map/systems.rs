@@ -11,7 +11,7 @@ use crate::{
         components::GameEntity,
         io::{read_ron_file, remove_ron_file, write_ron_file},
     },
-    ui::mission_dev_menu::messages::RefreshMissionDevListMessage,
+    ui::missions_menu::messages::RefreshMissionDevListMessage,
     world::map::{
         components::WorldMap,
         io::{

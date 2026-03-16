@@ -2,12 +2,12 @@ use bevy::prelude::*;
 
 use crate::ui::{
     common::button::ui_button_interaction, main_menu::MainMenuPlugin,
-    mission_dev_menu::MissionDevMenuPlugin,
+    missions_menu::MissionDevMenuPlugin,
 };
 
 mod common;
 mod main_menu;
-pub mod mission_dev_menu;
+pub mod missions_menu;
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

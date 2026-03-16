@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::AppState,
-    ui::mission_dev_menu::components::{MissionDevListInteractions, MissionDevMenuInteractions},
+    ui::missions_menu::components::{MissionDevListInteractions, MissionDevMenuInteractions},
     world::map::messages::{CreateMissionMessage, DeleteMissionMessage, EditMissionMessage},
 };
 

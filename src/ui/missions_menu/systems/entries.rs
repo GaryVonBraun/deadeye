@@ -6,7 +6,7 @@ use crate::{
             bundles::ui_card,
             button::{UiButton, UiButtonVariant},
         },
-        mission_dev_menu::components::{MissionDevListInteractions, MissionDevListUi},
+        missions_menu::components::{MissionDevListInteractions, MissionDevListUi},
     },
     world::map::io::operations::read_map_manifest,
 };
