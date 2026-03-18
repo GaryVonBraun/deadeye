@@ -14,7 +14,6 @@ pub struct MapEditorPlugin;
 
 impl Plugin for MapEditorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::Editor), init_map_editor);
         app.add_systems(
             Update,
             handle_edit_map_message.run_if(on_message::<EditMapMessage>),

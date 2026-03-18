@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    core::states::AppState,
-    world::map::{editor::MapEditorPlugin, messages::*, resources::ActiveMap, systems::*},
-};
+use crate::world::map::{editor::MapEditorPlugin, messages::*, resources::ActiveMap, systems::*};
 
-mod components;
+pub mod components;
 mod editor;
 pub mod io;
 pub mod messages;
@@ -26,7 +23,7 @@ impl Plugin for MapPlugin {
             Update,
             create_new_map.run_if(on_message::<CreateMapMessage>),
         );
-        app.add_systems(Update, load_map_data);
+        app.add_systems(Update, load_map_data.run_if(on_message::<LoadMapMessage>));
         app.add_systems(
             Update,
             delete_map_message.run_if(on_message::<DeleteMapMessage>),
