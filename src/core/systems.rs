@@ -8,7 +8,7 @@ use crate::{
 use bevy::prelude::*;
 
 pub fn load_app(mut state: ResMut<NextState<AppState>>) {
-    const INITIAL_STATE: AppState = AppState::MainMenu;
+    const INITIAL_STATE: AppState = AppState::MissionMenu;
 
     info!("Finished loading, setting AppState to {:?}", INITIAL_STATE);
     state.set(INITIAL_STATE);
