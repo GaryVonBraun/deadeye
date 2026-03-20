@@ -5,6 +5,7 @@ use bevy_egui::{
 };
 
 use crate::{
+    core::states::AppState,
     mission::{messages::SaveMissionMessage, resources::ActiveMission},
     world::map::{editor::resources::ActiveTile, resources::ActiveMap},
 };
@@ -35,6 +36,7 @@ pub fn editor_left_panel(
     mut contexts: EguiContexts,
     mut active_mission: ResMut<ActiveMission>,
     mut save_mission_writer: MessageWriter<SaveMissionMessage>,
+    mut next_state: ResMut<NextState<AppState>>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
     let mission = &mut active_mission.mission;
@@ -49,6 +51,10 @@ pub fn editor_left_panel(
         let save_button = ui.button("save changes");
         if save_button.clicked() {
             save_mission_writer.write(SaveMissionMessage);
+        }
+        let back_to_missions = ui.button("back to missions");
+        if back_to_missions.clicked() {
+            next_state.set(AppState::MissionMenu);
         }
     });
 

@@ -32,7 +32,7 @@ impl Plugin for MissionEditorPlugin {
         app.add_systems(OnEnter(AppState::Editor), setup_editor);
         app.add_systems(
             Update,
-            (debug_click_position, editor_camera_controller).run_if(in_state(AppState::Editor)),
+            (editor_camera_controller).run_if(in_state(AppState::Editor)),
         );
     }
 }

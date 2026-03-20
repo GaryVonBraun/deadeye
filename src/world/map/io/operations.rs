@@ -35,6 +35,13 @@ pub fn write_map(world_map: &WorldMap) {
     };
 }
 
+pub fn update_map_data(mission_map: &WorldMap) {
+    if let Err(_) = write_ron_file(&mission_map, map_data_path(&mission_map.id)) {
+        error!("failed to store world map data");
+        return;
+    };
+}
+
 pub fn read_map_data(id: &Uuid) -> Result<WorldMap, ()> {
     read_ron_file(map_data_path(id))
 }

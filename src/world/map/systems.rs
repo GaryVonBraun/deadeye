@@ -81,7 +81,7 @@ pub fn load_map_data(
         commands.spawn((
             WorldMap {
                 name: world_map.name.clone(),
-                id: Uuid::new_v4(),
+                id: world_map.id,
                 tiles: world_map.tiles.clone(),
                 tileset_name: world_map.tileset_name.clone(),
             },

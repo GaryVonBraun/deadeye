@@ -2,7 +2,11 @@ use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
 use bevy_egui::EguiContexts;
 
 use crate::world::map::{
-    components::WorldMap, editor::resources::ActiveTile, systems::convert_tiles,
+    components::WorldMap,
+    editor::resources::ActiveTile,
+    io::operations::{update_map_data, write_map},
+    resources::ActiveMap,
+    systems::convert_tiles,
 };
 
 pub fn tile_paint_system(
@@ -55,4 +59,17 @@ pub fn tile_paint_system(
 
     // rebuild chunk data
     *tile_data = TilemapChunkTileData(convert_tiles(&world_map.tiles));
+}
+
+pub fn save_mission_map(map_query: Query<&WorldMap>) {
+    for map in map_query.iter() {
+        info!("saving map with id: {}", map.id);
+        update_map_data(&map);
+    }
+}
+
+pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<WorldMap>>) {
+    for entity in map_query.iter() {
+        commands.entity(entity).despawn();
+    }
 }

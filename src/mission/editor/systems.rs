@@ -109,23 +109,6 @@ pub fn setup_editor(
     });
 }
 
-pub fn debug_click_position(
-    mouse: Res<ButtonInput<MouseButton>>,
-    window: Single<&Window>,
-    camera_query: Single<(&Camera, &GlobalTransform)>,
-) {
-    if mouse.just_pressed(MouseButton::Left) {
-        if let Some(cursor_pos) = window.cursor_position() {
-            if let Ok(world_pos) = camera_query
-                .0
-                .viewport_to_world_2d(camera_query.1, cursor_pos)
-            {
-                info!("world click: {:?}", world_pos);
-            }
-        }
-    }
-}
-
 const CAMERA_SPEED: f32 = 100.;
 
 pub fn editor_camera_controller(
