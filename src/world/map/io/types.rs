@@ -17,8 +17,8 @@ pub struct MapManifest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TileDef {
-    index: i32,
-    name: String,
+    pub index: u16,
+    pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

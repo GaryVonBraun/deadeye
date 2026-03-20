@@ -1,13 +1,9 @@
 use bevy::prelude::*;
-use uuid::Uuid;
+
+use crate::world::map::{components::WorldMap, io::types::TileSet};
 
 #[derive(Debug, Resource)]
 pub struct ActiveMap {
-    pub id: Uuid,
-}
-
-impl Default for ActiveMap {
-    fn default() -> Self {
-        Self { id: Uuid::nil() }
-    }
+    pub mission_map: WorldMap,
+    pub tileset: TileSet,
 }

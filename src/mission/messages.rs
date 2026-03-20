@@ -5,3 +5,6 @@ use uuid::Uuid;
 pub struct LoadMissionMessage {
     pub id: Uuid,
 }
+
+#[derive(Debug, Message)]
+pub struct SaveMissionMessage;

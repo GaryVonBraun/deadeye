@@ -16,6 +16,7 @@ use crate::{
         components::WorldMap,
         io::{operations::*, paths::*, types::MapManifest, *},
         messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
+        resources::ActiveMap,
     },
 };
 
@@ -65,12 +66,13 @@ pub fn load_map_data(
         };
 
         let Ok(tileset) = read_tileset(tileset_path(world_map.tileset_name.clone())) else {
+            info!("failed to load tileset needed for loading map");
             return;
         };
 
         //TEMPORARY - The tilemap texture is currently hardcoded, maps might have different textures
         let texture = assets_server.load_with_settings(
-            tileset.texture,
+            tileset.texture.clone(),
             |settings: &mut ImageLoaderSettings| {
                 settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 4 });
             },
@@ -78,13 +80,13 @@ pub fn load_map_data(
 
         commands.spawn((
             WorldMap {
-                name: "test_map".to_string(),
+                name: world_map.name.clone(),
                 id: Uuid::new_v4(),
                 tiles: world_map.tiles.clone(),
-                tileset_name: world_map.tileset_name,
+                tileset_name: world_map.tileset_name.clone(),
             },
             TilemapChunk {
-                chunk_size: UVec2::new(10, 10),      // 20x20 tiles
+                chunk_size: UVec2::new(10, 10),      // 10x10 tiles
                 tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
                 tileset: texture,
                 ..default()
@@ -92,6 +94,10 @@ pub fn load_map_data(
             TilemapChunkTileData(convert_tiles(&world_map.tiles)),
             GameEntity,
         ));
+        commands.insert_resource(ActiveMap {
+            mission_map: world_map,
+            tileset,
+        });
     }
 }
 
@@ -122,9 +128,10 @@ pub fn create_new_map(mut map_message_reader: MessageReader<CreateMapMessage>) {
     }
 }
 
-fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
+pub fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {
     tiles
         .iter()
+        .rev() // flip row order
         .flatten()
         .map(|tile_id| Some(TileData::from_tileset_index(*tile_id as u16)))
         .collect()

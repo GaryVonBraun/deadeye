@@ -1,75 +1,58 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
+use bevy_egui::EguiContexts;
 
-use crate::{
-    core::states::AppState,
-    world::map::{
-        messages::{EditMapMessage, LoadMapMessage},
-        resources::ActiveMap,
-        systems::create_new_map,
-    },
+use crate::world::map::{
+    components::WorldMap, editor::resources::ActiveTile, systems::convert_tiles,
 };
 
-const CAMERA_SPEED: f32 = 100.;
-
-pub fn init_map_editor(
-    active_map: Res<ActiveMap>,
-    mut message_writer: MessageWriter<LoadMapMessage>,
+pub fn tile_paint_system(
+    mouse: Res<ButtonInput<MouseButton>>,
+    window: Single<&Window>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+    active_tile: Res<ActiveTile>,
+    mut map_query: Query<(&mut WorldMap, &mut TilemapChunkTileData)>,
+    mut contexts: EguiContexts,
 ) {
-    message_writer.write(LoadMapMessage { id: active_map.id });
-}
-
-pub fn handle_edit_map_message(
-    mut next_state: ResMut<NextState<AppState>>,
-    mut active_map: ResMut<ActiveMap>,
-    mut edit_map_message_reader: MessageReader<EditMapMessage>,
-) {
-    for message in edit_map_message_reader.read() {
-        active_map.id = message.id;
-        next_state.set(AppState::Editor);
+    // dont paint if hovering egui
+    //FIXME - we dont check if mouse pointer is over ui
+    // if contexts.ctx_mut().is_pointer_over_area() {
+    //     return;
+    // }
+    if !mouse.pressed(MouseButton::Left) {
+        return;
     }
-}
 
-// pub fn handle_create_map_message(
-//     mut next_state: ResMut<NextState<AppState>>,
-//     mut active_map: ResMut<ActiveMap>,
-// ) {
-//     let world_map = create_new_map();
-//     active_map.id = world_map.id;
-//     next_state.set(AppState::Editor);
-// }
-
-pub fn editor_camera_controller(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut camera_query: Query<&mut Transform, With<Camera>>,
-    time: Res<Time>,
-) {
-    let Ok(mut camera_transform) = camera_query.single_mut() else {
-        error!("no camera found");
+    let Some(cursor_pos) = window.cursor_position() else {
         return;
     };
-    let mut direction = Vec2::default();
-    let mut speed_multiplier: f32 = 1.;
+    let Ok(world_pos) = camera_query
+        .0
+        .viewport_to_world_2d(camera_query.1, cursor_pos)
+    else {
+        return;
+    };
 
-    if keys.pressed(KeyCode::KeyA) {
-        direction.x += -1.;
-    }
-    if keys.pressed(KeyCode::KeyD) {
-        direction.x += 1.;
-    }
-    if keys.pressed(KeyCode::KeyW) {
-        direction.y += 1.;
+    let Ok((mut world_map, mut tile_data)) = map_query.single_mut() else {
+        return;
+    };
+
+    let tile_size = 64.0;
+    let map_width = world_map.tiles[0].len();
+    let map_height = world_map.tiles.len();
+    let map_half_width = (map_width as f32 * tile_size) / 2.0;
+    let map_half_height = (map_height as f32 * tile_size) / 2.0;
+
+    let tile_x = ((world_pos.x + map_half_width) / tile_size) as i32;
+    let tile_y = (map_height as i32 - 1) - ((world_pos.y + map_half_height) / tile_size) as i32;
+
+    // bounds check
+    if tile_x < 0 || tile_y < 0 || tile_x >= map_width as i32 || tile_y >= map_height as i32 {
+        return;
     }
 
-    if keys.pressed(KeyCode::KeyS) {
-        direction.y += -1.;
-    }
+    // update tile
+    world_map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
 
-    //TEMPORARY - for now we just keep it simple and can increase speed with shift
-    if keys.pressed(KeyCode::ShiftLeft) {
-        speed_multiplier = 2.
-    }
-
-    let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
-
-    camera_transform.translation += displacement.extend(0.0)
+    // rebuild chunk data
+    *tile_data = TilemapChunkTileData(convert_tiles(&world_map.tiles));
 }

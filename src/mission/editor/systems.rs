@@ -10,7 +10,10 @@ use crate::{
         resources::{ActiveMission, Mission},
     },
     ui::missions_menu::messages::RefreshMissionListMessage,
-    world::map::{components::WorldMap, io::operations::write_map},
+    world::map::{
+        components::WorldMap, editor::resources::ActiveTile, io::operations::write_map,
+        messages::LoadMapMessage,
+    },
 };
 
 pub fn create_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) {
@@ -26,7 +29,9 @@ pub fn create_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) 
         map_id: mission_map.id,
     };
 
+    //FIXME - Better if we create a save_mission system
     write_mission(&mission);
+
     load_editor_writer.write(LoadEditorMessage { id: mission.id });
 }
 
@@ -86,10 +91,75 @@ pub fn load_editor(
         };
 
         commands.insert_resource(ActiveMission { mission });
+
+        //TEMPORARY - maybe its better if we insert this resource in the map plugin
+        commands.insert_resource(ActiveTile { index: 0 });
+
         next_state.set(AppState::Editor);
     }
 }
 
-pub fn enter_editor(active_mission_res: Res<ActiveMission>) {
-    info!("Enter editor for: {:?}", active_mission_res.mission.name)
+pub fn setup_editor(
+    active_mission_res: Res<ActiveMission>,
+    mut load_map_writer: MessageWriter<LoadMapMessage>,
+) {
+    info!("Enter editor for: {:?}", active_mission_res.mission.name);
+    load_map_writer.write(LoadMapMessage {
+        id: active_mission_res.mission.map_id,
+    });
+}
+
+pub fn debug_click_position(
+    mouse: Res<ButtonInput<MouseButton>>,
+    window: Single<&Window>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+) {
+    if mouse.just_pressed(MouseButton::Left) {
+        if let Some(cursor_pos) = window.cursor_position() {
+            if let Ok(world_pos) = camera_query
+                .0
+                .viewport_to_world_2d(camera_query.1, cursor_pos)
+            {
+                info!("world click: {:?}", world_pos);
+            }
+        }
+    }
+}
+
+const CAMERA_SPEED: f32 = 100.;
+
+pub fn editor_camera_controller(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut camera_query: Query<&mut Transform, With<Camera>>,
+    time: Res<Time>,
+) {
+    let Ok(mut camera_transform) = camera_query.single_mut() else {
+        error!("no camera found");
+        return;
+    };
+    let mut direction = Vec2::default();
+    let mut speed_multiplier: f32 = 1.;
+
+    if keys.pressed(KeyCode::KeyA) {
+        direction.x += -1.;
+    }
+    if keys.pressed(KeyCode::KeyD) {
+        direction.x += 1.;
+    }
+    if keys.pressed(KeyCode::KeyW) {
+        direction.y += 1.;
+    }
+
+    if keys.pressed(KeyCode::KeyS) {
+        direction.y += -1.;
+    }
+
+    //TEMPORARY - for now we just keep it simple and can increase speed with shift
+    if keys.pressed(KeyCode::ShiftLeft) {
+        speed_multiplier = 2.
+    }
+
+    let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
+
+    camera_transform.translation += displacement.extend(0.0)
 }

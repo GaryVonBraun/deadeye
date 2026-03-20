@@ -29,6 +29,10 @@ impl Plugin for MissionEditorPlugin {
             edit_mission.run_if(on_message::<EditMissionMessage>),
         );
         app.add_systems(Update, load_editor.run_if(on_message::<LoadEditorMessage>));
-        app.add_systems(OnEnter(AppState::Editor), enter_editor);
+        app.add_systems(OnEnter(AppState::Editor), setup_editor);
+        app.add_systems(
+            Update,
+            (debug_click_position, editor_camera_controller).run_if(in_state(AppState::Editor)),
+        );
     }
 }
