@@ -1,10 +1,18 @@
-use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
+use bevy::{
+    ecs::message,
+    prelude::*,
+    sprite_render::{TilemapChunk, TilemapChunkTileData},
+};
 use bevy_egui::EguiContexts;
 
 use crate::world::map::{
     components::WorldMap,
-    editor::resources::ActiveTile,
-    io::operations::{update_map_data, write_map},
+    editor::{
+        messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
+        resources::ActiveTile,
+    },
+    io::operations::update_map_data,
+    messages::LoadMapFromResMessage,
     resources::ActiveMap,
     systems::convert_tiles,
 };
@@ -15,6 +23,7 @@ pub fn tile_paint_system(
     camera_query: Single<(&Camera, &GlobalTransform)>,
     active_tile: Res<ActiveTile>,
     mut map_query: Query<(&mut WorldMap, &mut TilemapChunkTileData)>,
+    mut active_map: ResMut<ActiveMap>,
     mut contexts: EguiContexts,
 ) {
     // dont paint if hovering egui
@@ -59,6 +68,85 @@ pub fn tile_paint_system(
 
     // rebuild chunk data
     *tile_data = TilemapChunkTileData(convert_tiles(&world_map.tiles));
+
+    active_map.tiles = world_map.clone();
+}
+
+pub fn update_map_bounds(
+    mut active_map: ResMut<ActiveMap>,
+    mut map_bounds_reader: MessageReader<UpdateMapBoundsMessage>,
+    mut load_map_from_res_writer: MessageWriter<LoadMapFromResMessage>,
+) {
+    for message in map_bounds_reader.read() {
+        let mission_map_info = active_map.tiles.clone();
+
+        match message.action {
+            MapBoundOperationEnum::Shrink(amount) => match message.direction {
+                MapBoundDirectionEnum::North => {
+                    active_map.tiles.tiles.remove(0);
+                }
+                MapBoundDirectionEnum::East => {
+                    active_map.tiles.tiles =
+                        row_operations(RowOperation::EastShrink, active_map.tiles.tiles.clone());
+                }
+                MapBoundDirectionEnum::South => {
+                    active_map.tiles.tiles.pop();
+                }
+                MapBoundDirectionEnum::West => {
+                    active_map.tiles.tiles =
+                        row_operations(RowOperation::WestShrink, active_map.tiles.tiles.clone());
+                }
+            },
+            MapBoundOperationEnum::Expand(amount) => match message.direction {
+                MapBoundDirectionEnum::North => {
+                    active_map
+                        .tiles
+                        .tiles
+                        .insert(0, vec![0; mission_map_info.tiles[0].len()]);
+                }
+                MapBoundDirectionEnum::East => {
+                    active_map.tiles.tiles =
+                        row_operations(RowOperation::EastExpand, active_map.tiles.tiles.clone());
+                    active_map.tiles.bounds.east += amount
+                }
+                MapBoundDirectionEnum::South => {
+                    active_map
+                        .tiles
+                        .tiles
+                        .push(vec![0; mission_map_info.tiles[0].len()]);
+                }
+                MapBoundDirectionEnum::West => {
+                    active_map.tiles.tiles =
+                        row_operations(RowOperation::WestExpand, active_map.tiles.tiles.clone());
+                    active_map.tiles.bounds.west += amount
+                }
+            },
+        }
+        load_map_from_res_writer.write(LoadMapFromResMessage);
+    }
+}
+
+enum RowOperation {
+    WestExpand,
+    EastExpand,
+    WestShrink,
+    EastShrink,
+}
+
+fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<u32>> {
+    for row in tiles.iter_mut() {
+        match operation {
+            RowOperation::WestExpand => row.insert(0, 0),
+            RowOperation::EastExpand => row.push(0),
+            RowOperation::WestShrink => {
+                row.remove(0);
+            }
+            RowOperation::EastShrink => {
+                row.pop();
+            }
+        }
+    }
+    tiles
 }
 
 pub fn save_mission_map(map_query: Query<&WorldMap>) {

@@ -4,17 +4,12 @@ use bevy::{
     sprite_render::{TileData, TilemapChunk, TilemapChunkTileData},
 };
 use rand::RngExt;
-use uuid::Uuid;
 
 use crate::{
-    core::{
-        components::GameEntity,
-        io::{read_ron_file, remove_ron_file, write_ron_file},
-    },
-    ui::missions_menu::messages::RefreshMissionListMessage,
+    core::{components::GameEntity, io::read_ron_file},
     world::map::{
-        components::WorldMap,
-        io::{operations::*, paths::*, types::MapManifest, *},
+        components::{MapBounds, WorldMap},
+        io::{operations::*, paths::*, types::MapManifest},
         messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
         resources::ActiveMap,
     },
@@ -84,9 +79,13 @@ pub fn load_map_data(
                 id: world_map.id,
                 tiles: world_map.tiles.clone(),
                 tileset_name: world_map.tileset_name.clone(),
+                bounds: world_map.bounds.clone(),
             },
             TilemapChunk {
-                chunk_size: UVec2::new(10, 10),      // 10x10 tiles
+                chunk_size: UVec2::new(
+                    world_map.tiles[0].len() as u32,
+                    world_map.tiles.len() as u32,
+                ),
                 tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
                 tileset: texture,
                 ..default()
@@ -95,37 +94,56 @@ pub fn load_map_data(
             GameEntity,
         ));
         commands.insert_resource(ActiveMap {
-            mission_map: world_map,
+            tiles: world_map,
             tileset,
         });
     }
 }
 
-pub fn create_new_map(mut map_message_reader: MessageReader<CreateMapMessage>) {
-    for map_message in map_message_reader.read() {
-        let raw_matrix: Vec<Vec<u32>> = vec![
-            vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
-            vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-            vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        ];
-
-        let mut rng = rand::rng();
-
-        let world_map = WorldMap {
-            name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
-            id: map_message.id,
-            tiles: raw_matrix,
-            tileset_name: "base".to_string(),
-        };
-        write_map(&world_map);
+//FIXME - this system is almost the same as load_map, should see to re-use the code
+pub fn load_map_from_resource(
+    active_map: Res<ActiveMap>,
+    assets_server: Res<AssetServer>,
+    map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
+    mut commands: Commands,
+) {
+    // despawn all existing maps
+    //NOTE - technically it should not be possible to have multiple maps, but its for safety
+    for (map_entity, world_map_info) in map_query.iter() {
+        info!("despawning {:?}", world_map_info.name);
+        commands.entity(map_entity).despawn();
     }
+
+    //TEMPORARY - The tilemap texture is currently hardcoded, maps might have different textures
+    let texture = assets_server.load_with_settings(
+        active_map.tileset.texture.clone(),
+        |settings: &mut ImageLoaderSettings| {
+            settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 4 });
+        },
+    );
+
+    let mission_map = &active_map.tiles;
+
+    commands.spawn((
+        WorldMap {
+            name: mission_map.name.clone(),
+            id: mission_map.id,
+            tiles: mission_map.tiles.clone(),
+            tileset_name: mission_map.tileset_name.clone(),
+            bounds: mission_map.bounds.clone(),
+        },
+        TilemapChunk {
+            chunk_size: UVec2::new(
+                mission_map.tiles[0].len() as u32,
+                mission_map.tiles.len() as u32,
+            ),
+            tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
+            tileset: texture,
+            ..default()
+        },
+        TilemapChunkTileData(convert_tiles(&mission_map.tiles)),
+        GameEntity,
+    ));
 }
 
 pub fn convert_tiles(tiles: &Vec<Vec<u32>>) -> Vec<Option<TileData>> {

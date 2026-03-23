@@ -11,7 +11,9 @@ use crate::{
     },
     ui::missions_menu::messages::RefreshMissionListMessage,
     world::map::{
-        components::WorldMap, editor::resources::ActiveTile, io::operations::write_map,
+        components::{MapBounds, WorldMap},
+        editor::resources::ActiveTile,
+        io::operations::write_map,
         messages::LoadMapMessage,
     },
 };
@@ -55,18 +57,7 @@ pub fn edit_mission(
 }
 
 fn create_map_for_mission() -> WorldMap {
-    let raw_matrix: Vec<Vec<u32>> = vec![
-        vec![0, 0, 0, 0, 1, 0, 0, 1, 2, 3],
-        vec![1, 1, 1, 1, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 1, 1, 1, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-        vec![0, 0, 0, 0, 1, 0, 0, 0, 2, 3],
-    ];
+    let raw_matrix: Vec<Vec<u32>> = vec![vec![0]];
 
     let mut rng = rand::rng();
 
@@ -75,6 +66,7 @@ fn create_map_for_mission() -> WorldMap {
         id: Uuid::new_v4(),
         tiles: raw_matrix,
         tileset_name: "base".to_string(),
+        bounds: MapBounds::default(),
     };
     write_map(&world_map);
     world_map

@@ -1,23 +1,53 @@
-use bevy::prelude::*;
+use bevy::{ecs::message, prelude::*};
 use bevy_egui::{
     EguiContexts,
-    egui::{self},
+    egui::{self, Ui},
 };
 
 use crate::{
     core::states::AppState,
     mission::{messages::SaveMissionMessage, resources::ActiveMission},
-    world::map::{editor::resources::ActiveTile, resources::ActiveMap},
+    world::map::{
+        components::MapBounds,
+        editor::{
+            messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
+            resources::ActiveTile,
+        },
+        resources::ActiveMap,
+    },
 };
 
 pub fn editor_tile_picker_panel(
     mut contexts: EguiContexts,
     active_map: Res<ActiveMap>,
     mut active_tile: ResMut<ActiveTile>,
+    mut update_bounds: MessageWriter<UpdateMapBoundsMessage>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
 
     egui::SidePanel::right("tile_picker").show(ctx, |ui| {
+        ui.label("MapDetails");
+
+        //FIXME - There has to be a way to fix this:
+        let mut write_message: Option<UpdateMapBoundsMessage> = None;
+
+        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::East, ui) {
+            write_message = Some(message);
+        };
+        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::West, ui) {
+            write_message = Some(message);
+        };
+        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::North, ui) {
+            write_message = Some(message);
+        };
+        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::South, ui) {
+            write_message = Some(message);
+        };
+
+        if let Some(message) = write_message {
+            update_bounds.write(message);
+        }
+
         ui.label("Tiles");
         ui.separator();
         for tile in active_map.tileset.tiles.iter() {
@@ -30,6 +60,26 @@ pub fn editor_tile_picker_panel(
         }
     });
     Ok(())
+}
+
+fn size_control_buttons(
+    direction: MapBoundDirectionEnum,
+    ui: &mut Ui,
+) -> Option<UpdateMapBoundsMessage> {
+    ui.label(format!("{:?}", direction));
+    if ui.button("+").clicked() {
+        return Some(UpdateMapBoundsMessage {
+            direction: direction.clone(),
+            action: MapBoundOperationEnum::Expand(1),
+        });
+    }
+    if ui.button("-").clicked() {
+        return Some(UpdateMapBoundsMessage {
+            direction: direction.clone(),
+            action: MapBoundOperationEnum::Shrink(1),
+        });
+    }
+    None
 }
 
 pub fn editor_left_panel(
