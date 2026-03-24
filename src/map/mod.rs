@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::world::map::{editor::MapEditorPlugin, messages::*, resources::ActiveMap, systems::*};
+use crate::map::{editor::MapEditorPlugin, messages::*, systems::*};
 
 pub mod components;
 pub mod editor;

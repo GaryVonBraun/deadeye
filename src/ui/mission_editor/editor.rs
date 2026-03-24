@@ -1,4 +1,4 @@
-use bevy::{ecs::message, prelude::*};
+use bevy::prelude::*;
 use bevy_egui::{
     EguiContexts,
     egui::{self, Ui},
@@ -6,15 +6,14 @@ use bevy_egui::{
 
 use crate::{
     core::states::AppState,
-    mission::{messages::SaveMissionMessage, resources::ActiveMission},
-    world::map::{
-        components::MapBounds,
+    map::{
         editor::{
             messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
             resources::ActiveTile,
         },
         resources::ActiveMap,
     },
+    mission::{messages::SaveMissionMessage, resources::ActiveMission},
 };
 
 pub fn editor_tile_picker_panel(

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_egui::EguiPrimaryContextPass;
 
 use crate::{
-    core::states::AppState, mission::resources::ActiveMission, ui::mission_editor::editor::*,
-    world::map::resources::ActiveMap,
+    core::states::AppState, map::resources::ActiveMap, mission::resources::ActiveMission,
+    ui::mission_editor::editor::*,
 };
 
 mod components;

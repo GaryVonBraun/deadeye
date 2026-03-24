@@ -1,11 +1,7 @@
-use bevy::{
-    ecs::message,
-    prelude::*,
-    sprite_render::{TilemapChunk, TilemapChunkTileData},
-};
+use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
 use bevy_egui::EguiContexts;
 
-use crate::world::map::{
+use crate::map::{
     components::WorldMap,
     editor::{
         messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},

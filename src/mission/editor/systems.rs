@@ -4,18 +4,14 @@ use uuid::Uuid;
 
 use crate::{
     core::states::AppState,
-    mission::{
-        editor::messages::*,
-        io::operations::{read_mission_data, remove_mission_file, write_mission},
-        resources::{ActiveMission, Mission},
-    },
-    ui::missions_menu::messages::RefreshMissionListMessage,
-    world::map::{
+    map::{
         components::{MapBounds, WorldMap},
         editor::resources::ActiveTile,
         io::operations::write_map,
         messages::LoadMapMessage,
     },
+    mission::{editor::messages::*, io::operations::*, resources::*},
+    ui::missions_menu::messages::RefreshMissionListMessage,
 };
 
 pub fn create_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) {

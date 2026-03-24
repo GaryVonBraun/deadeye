@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::world::map::{components::WorldMap, io::types::TileSet};
+use crate::map::{components::WorldMap, io::types::TileSet};
 
 #[derive(Debug, Resource)]
 pub struct ActiveMap {

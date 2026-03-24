@@ -2,11 +2,11 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::AppState,
-    mission::messages::SaveMissionMessage,
-    world::map::{
+    map::{
         editor::{messages::UpdateMapBoundsMessage, systems::*},
         resources::ActiveMap,
     },
+    mission::messages::SaveMissionMessage,
 };
 
 pub mod messages;

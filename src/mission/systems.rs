@@ -1,17 +1,6 @@
 use bevy::prelude::*;
-use rand::RngExt;
-use uuid::Uuid;
 
-use crate::{
-    core::states::AppState,
-    mission::{
-        io::operations::{read_mission_data, remove_mission_file, write_mission},
-        messages::LoadMissionMessage,
-        resources::Mission,
-    },
-    ui::missions_menu::messages::RefreshMissionListMessage,
-    world::map::messages::CreateMapMessage,
-};
+use crate::mission::{io::operations::read_mission_data, messages::LoadMissionMessage};
 
 pub fn load_mission(mut load_mission_reader: MessageReader<LoadMissionMessage>) {
     for message in load_mission_reader.read() {

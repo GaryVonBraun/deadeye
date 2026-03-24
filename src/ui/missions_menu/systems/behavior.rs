@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::AppState,
+    map::messages::DeleteMapMessage,
     mission::editor::messages::{CreateMissionMessage, DeleteMissionMessage, EditMissionMessage},
     ui::missions_menu::components::{MissionListInteractions, MissionMenuInteractions},
-    world::map::messages::{DeleteMapMessage, EditMapMessage},
 };
 
 pub fn mission_menu_interactions(

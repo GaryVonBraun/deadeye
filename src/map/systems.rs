@@ -3,14 +3,13 @@ use bevy::{
     prelude::*,
     sprite_render::{TileData, TilemapChunk, TilemapChunkTileData},
 };
-use rand::RngExt;
 
 use crate::{
     core::{components::GameEntity, io::read_ron_file},
-    world::map::{
-        components::{MapBounds, WorldMap},
+    map::{
+        components::WorldMap,
         io::{operations::*, paths::*, types::MapManifest},
-        messages::{CreateMapMessage, DeleteMapMessage, LoadMapMessage},
+        messages::{DeleteMapMessage, LoadMapMessage},
         resources::ActiveMap,
     },
 };
