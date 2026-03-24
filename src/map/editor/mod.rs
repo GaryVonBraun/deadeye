@@ -22,10 +22,7 @@ impl Plugin for MapEditorPlugin {
             Update,
             tile_paint_system.run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMap>)),
         );
-        app.add_systems(
-            Update,
-            save_mission_map.run_if(on_message::<SaveMissionMessage>),
-        );
+        app.add_systems(Update, save_map.run_if(on_message::<SaveMissionMessage>));
         app.add_systems(
             Update,
             update_map_bounds.run_if(on_message::<UpdateMapBoundsMessage>),

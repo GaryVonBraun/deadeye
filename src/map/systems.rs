@@ -7,14 +7,14 @@ use bevy::{
 use crate::{
     core::{components::GameEntity, io::read_ron_file},
     map::{
-        components::WorldMap,
+        components::MissionMap,
         io::{operations::*, paths::*, types::MapManifest},
         messages::{DeleteMapMessage, LoadMapMessage},
         resources::ActiveMap,
     },
 };
 
-pub fn spawn_world_map(mut message_writer: MessageWriter<LoadMapMessage>) {
+pub fn spawn_map(mut message_writer: MessageWriter<LoadMapMessage>) {
     // load manifest needed for map selection
     let Ok(manifest) = read_ron_file::<MapManifest>(manifest_path()) else {
         error!("failed to get manifest needed for spawning map");
@@ -41,7 +41,7 @@ pub fn delete_map_message(mut message_reader: MessageReader<DeleteMapMessage>) {
 
 pub fn load_map_data(
     mut message_reader: MessageReader<LoadMapMessage>,
-    map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
+    map_query: Query<(Entity, &MissionMap), With<MissionMap>>,
     mut commands: Commands,
     assets_server: Res<AssetServer>,
 ) {
@@ -49,17 +49,17 @@ pub fn load_map_data(
     for message in message_reader.read() {
         // despawn all existing maps
         //NOTE - technically it should not be possible to have multiple maps, but its for safety
-        for (map_entity, world_map_info) in map_query.iter() {
-            info!("despawning {:?}", world_map_info.name);
+        for (map_entity, map_info) in map_query.iter() {
+            info!("despawning {:?}", map_info.name);
             commands.entity(map_entity).despawn();
         }
 
-        let Ok(world_map) = read_map_data(&message.id) else {
+        let Ok(map) = read_map_data(&message.id) else {
             error!("failed to load world map with id: {:?}", message.id);
             return;
         };
 
-        let Ok(tileset) = read_tileset(tileset_path(world_map.tileset_name.clone())) else {
+        let Ok(tileset) = read_tileset(tileset_path(map.tileset_name.clone())) else {
             info!("failed to load tileset needed for loading map");
             return;
         };
@@ -73,27 +73,27 @@ pub fn load_map_data(
         );
 
         commands.spawn((
-            WorldMap {
-                name: world_map.name.clone(),
-                id: world_map.id,
-                tiles: world_map.tiles.clone(),
-                tileset_name: world_map.tileset_name.clone(),
-                bounds: world_map.bounds.clone(),
+            MissionMap {
+                name: map.name.clone(),
+                id: map.id,
+                tiles: map.tiles.clone(),
+                tileset_name: map.tileset_name.clone(),
+                bounds: map.bounds.clone(),
             },
             TilemapChunk {
                 chunk_size: UVec2::new(
-                    world_map.tiles[0].len() as u32,
-                    world_map.tiles.len() as u32,
+                    map.tiles[0].len() as u32,
+                    map.tiles.len() as u32,
                 ),
                 tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
                 tileset: texture,
                 ..default()
             },
-            TilemapChunkTileData(convert_tiles(&world_map.tiles)),
+            TilemapChunkTileData(convert_tiles(&map.tiles)),
             GameEntity,
         ));
         commands.insert_resource(ActiveMap {
-            tiles: world_map,
+            tiles: map,
             tileset,
         });
     }
@@ -103,13 +103,13 @@ pub fn load_map_data(
 pub fn load_map_from_resource(
     active_map: Res<ActiveMap>,
     assets_server: Res<AssetServer>,
-    map_query: Query<(Entity, &WorldMap), With<WorldMap>>,
+    map_query: Query<(Entity, &MissionMap), With<MissionMap>>,
     mut commands: Commands,
 ) {
     // despawn all existing maps
     //NOTE - technically it should not be possible to have multiple maps, but its for safety
-    for (map_entity, world_map_info) in map_query.iter() {
-        info!("despawning {:?}", world_map_info.name);
+    for (map_entity, map_info) in map_query.iter() {
+        info!("despawning {:?}", map_info.name);
         commands.entity(map_entity).despawn();
     }
 
@@ -121,26 +121,26 @@ pub fn load_map_from_resource(
         },
     );
 
-    let mission_map = &active_map.tiles;
+    let map = &active_map.tiles;
 
     commands.spawn((
-        WorldMap {
-            name: mission_map.name.clone(),
-            id: mission_map.id,
-            tiles: mission_map.tiles.clone(),
-            tileset_name: mission_map.tileset_name.clone(),
-            bounds: mission_map.bounds.clone(),
+        MissionMap {
+            name: map.name.clone(),
+            id: map.id,
+            tiles: map.tiles.clone(),
+            tileset_name: map.tileset_name.clone(),
+            bounds: map.bounds.clone(),
         },
         TilemapChunk {
             chunk_size: UVec2::new(
-                mission_map.tiles[0].len() as u32,
-                mission_map.tiles.len() as u32,
+                map.tiles[0].len() as u32,
+                map.tiles.len() as u32,
             ),
             tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
             tileset: texture,
             ..default()
         },
-        TilemapChunkTileData(convert_tiles(&mission_map.tiles)),
+        TilemapChunkTileData(convert_tiles(&map.tiles)),
         GameEntity,
     ));
 }

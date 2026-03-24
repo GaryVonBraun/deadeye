@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     core::io::{read_ron_file, remove_ron_file, write_ron_file},
     map::{
-        components::WorldMap,
+        components::MissionMap,
         io::{
             paths::{manifest_path, map_data_path},
             types::{MapManifest, MapManifestEntry, TileSet},
@@ -14,35 +14,35 @@ use crate::{
     },
 };
 
-pub fn write_map(world_map: &WorldMap) {
+pub fn write_map(map: &MissionMap) {
     info!("saving world map");
     fs::create_dir_all("content/maps/map_data").unwrap();
 
     let mut manifest = read_or_write_map_manifest();
 
     manifest.maps.push(MapManifestEntry {
-        id: world_map.id.clone(),
-        name: world_map.name.clone(),
+        id: map.id.clone(),
+        name: map.name.clone(),
     });
 
     if let Err(_) = write_ron_file(&manifest, manifest_path()) {
         error!("failed to save updated entry");
         return;
     }
-    if let Err(_) = write_ron_file(&world_map, map_data_path(&world_map.id)) {
+    if let Err(_) = write_ron_file(&map, map_data_path(&map.id)) {
         error!("failed to store world map data");
         return;
     };
 }
 
-pub fn update_map_data(mission_map: &WorldMap) {
-    if let Err(_) = write_ron_file(&mission_map, map_data_path(&mission_map.id)) {
+pub fn update_map_data(map: &MissionMap) {
+    if let Err(_) = write_ron_file(&map, map_data_path(&map.id)) {
         error!("failed to store world map data");
         return;
     };
 }
 
-pub fn read_map_data(id: &Uuid) -> Result<WorldMap, ()> {
+pub fn read_map_data(id: &Uuid) -> Result<MissionMap, ()> {
     read_ron_file(map_data_path(id))
 }
 

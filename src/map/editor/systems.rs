@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
 use bevy_egui::EguiContexts;
 
 use crate::map::{
-    components::WorldMap,
+    components::MissionMap,
     editor::{
         messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
         resources::ActiveTile,
@@ -18,7 +18,7 @@ pub fn tile_paint_system(
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     active_tile: Res<ActiveTile>,
-    mut map_query: Query<(&mut WorldMap, &mut TilemapChunkTileData)>,
+    mut map_query: Query<(&mut MissionMap, &mut TilemapChunkTileData)>,
     mut active_map: ResMut<ActiveMap>,
     mut contexts: EguiContexts,
 ) {
@@ -41,13 +41,13 @@ pub fn tile_paint_system(
         return;
     };
 
-    let Ok((mut world_map, mut tile_data)) = map_query.single_mut() else {
+    let Ok((mut map, mut tile_data)) = map_query.single_mut() else {
         return;
     };
 
     let tile_size = 64.0;
-    let map_width = world_map.tiles[0].len();
-    let map_height = world_map.tiles.len();
+    let map_width = map.tiles[0].len();
+    let map_height = map.tiles.len();
     let map_half_width = (map_width as f32 * tile_size) / 2.0;
     let map_half_height = (map_height as f32 * tile_size) / 2.0;
 
@@ -60,12 +60,12 @@ pub fn tile_paint_system(
     }
 
     // update tile
-    world_map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
+    map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
 
     // rebuild chunk data
-    *tile_data = TilemapChunkTileData(convert_tiles(&world_map.tiles));
+    *tile_data = TilemapChunkTileData(convert_tiles(&map.tiles));
 
-    active_map.tiles = world_map.clone();
+    active_map.tiles = map.clone();
 }
 
 pub fn update_map_bounds(
@@ -74,7 +74,7 @@ pub fn update_map_bounds(
     mut load_map_from_res_writer: MessageWriter<LoadMapFromResMessage>,
 ) {
     for message in map_bounds_reader.read() {
-        let mission_map_info = active_map.tiles.clone();
+        let map_info = active_map.tiles.clone();
 
         match message.action {
             MapBoundOperationEnum::Shrink(amount) => match message.direction {
@@ -98,7 +98,7 @@ pub fn update_map_bounds(
                     active_map
                         .tiles
                         .tiles
-                        .insert(0, vec![0; mission_map_info.tiles[0].len()]);
+                        .insert(0, vec![0; map_info.tiles[0].len()]);
                 }
                 MapBoundDirectionEnum::East => {
                     active_map.tiles.tiles =
@@ -109,7 +109,7 @@ pub fn update_map_bounds(
                     active_map
                         .tiles
                         .tiles
-                        .push(vec![0; mission_map_info.tiles[0].len()]);
+                        .push(vec![0; map_info.tiles[0].len()]);
                 }
                 MapBoundDirectionEnum::West => {
                     active_map.tiles.tiles =
@@ -145,14 +145,14 @@ fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<
     tiles
 }
 
-pub fn save_mission_map(map_query: Query<&WorldMap>) {
+pub fn save_map(map_query: Query<&MissionMap>) {
     for map in map_query.iter() {
         info!("saving map with id: {}", map.id);
         update_map_data(&map);
     }
 }
 
-pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<WorldMap>>) {
+pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMap>>) {
     for entity in map_query.iter() {
         commands.entity(entity).despawn();
     }

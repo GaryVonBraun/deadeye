@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct WorldMap {
+pub struct MissionMap {
     pub name: String,
     pub id: Uuid,
     pub tileset_name: String,

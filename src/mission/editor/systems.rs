@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     core::states::AppState,
     map::{
-        components::{MapBounds, WorldMap},
+        components::{MapBounds, MissionMap},
         editor::resources::ActiveTile,
         io::operations::write_map,
         messages::LoadMapMessage,
@@ -17,14 +17,14 @@ use crate::{
 pub fn create_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) {
     info!("creating mission");
 
-    let mission_map = create_map_for_mission();
+    let map = create_map_for_mission();
 
     let mut rng = rand::rng();
 
     let mission = Mission {
         id: Uuid::new_v4(),
         name: format!("test mission {:?}", rng.random_range(1..1000)).to_string(),
-        map_id: mission_map.id,
+        map_id: map.id,
     };
 
     //FIXME - Better if we create a save_mission system
@@ -52,20 +52,20 @@ pub fn edit_mission(
     }
 }
 
-fn create_map_for_mission() -> WorldMap {
+fn create_map_for_mission() -> MissionMap {
     let raw_matrix: Vec<Vec<u32>> = vec![vec![0]];
 
     let mut rng = rand::rng();
 
-    let world_map = WorldMap {
+    let map = MissionMap {
         name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
         id: Uuid::new_v4(),
         tiles: raw_matrix,
         tileset_name: "base".to_string(),
         bounds: MapBounds::default(),
     };
-    write_map(&world_map);
-    world_map
+    write_map(&map);
+    map
 }
 
 pub fn load_editor(
