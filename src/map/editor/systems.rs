@@ -59,6 +59,11 @@ pub fn tile_paint_system(
         return;
     }
 
+    // check if tile is the same already
+    if map.tiles[tile_y as usize][tile_x as usize] == active_tile.index as u32 {
+        return;
+    }
+
     // update tile
     map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
 
@@ -75,7 +80,6 @@ pub fn update_map_bounds(
 ) {
     for message in map_bounds_reader.read() {
         let map_info = active_map.tiles.clone();
-
         match message.action {
             MapBoundOperationEnum::Shrink(amount) => match message.direction {
                 MapBoundDirectionEnum::North => {
