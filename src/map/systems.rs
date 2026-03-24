@@ -81,10 +81,7 @@ pub fn load_map_data(
                 bounds: map.bounds.clone(),
             },
             TilemapChunk {
-                chunk_size: UVec2::new(
-                    map.tiles[0].len() as u32,
-                    map.tiles.len() as u32,
-                ),
+                chunk_size: UVec2::new(map.tiles[0].len() as u32, map.tiles.len() as u32),
                 tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
                 tileset: texture,
                 ..default()
@@ -92,10 +89,7 @@ pub fn load_map_data(
             TilemapChunkTileData(convert_tiles(&map.tiles)),
             GameEntity,
         ));
-        commands.insert_resource(ActiveMap {
-            tiles: map,
-            tileset,
-        });
+        commands.insert_resource(ActiveMap { map, tileset });
     }
 }
 
@@ -121,7 +115,7 @@ pub fn load_map_from_resource(
         },
     );
 
-    let map = &active_map.tiles;
+    let map = &active_map.map;
 
     commands.spawn((
         MissionMap {
@@ -132,10 +126,7 @@ pub fn load_map_from_resource(
             bounds: map.bounds.clone(),
         },
         TilemapChunk {
-            chunk_size: UVec2::new(
-                map.tiles[0].len() as u32,
-                map.tiles.len() as u32,
-            ),
+            chunk_size: UVec2::new(map.tiles[0].len() as u32, map.tiles.len() as u32),
             tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
             tileset: texture,
             ..default()

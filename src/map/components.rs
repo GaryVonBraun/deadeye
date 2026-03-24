@@ -22,9 +22,9 @@ pub struct MapBounds {
 impl MapBounds {
     pub fn default() -> Self {
         MapBounds {
-            north: 0,
+            north: 1,
             south: 0,
-            east: 0,
+            east: 1,
             west: 0,
         }
     }
