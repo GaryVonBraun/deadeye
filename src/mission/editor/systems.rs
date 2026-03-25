@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
+};
 use rand::RngExt;
 use uuid::Uuid;
 
@@ -101,10 +104,11 @@ const CAMERA_SPEED: f32 = 100.;
 
 pub fn editor_camera_controller(
     keys: Res<ButtonInput<KeyCode>>,
-    mut camera_query: Query<&mut Transform, With<Camera>>,
+    mut camera_query: Query<(&mut Transform, &mut Projection), With<Camera>>,
     time: Res<Time>,
+    mut evr_scroll: MessageReader<MouseWheel>,
 ) {
-    let Ok(mut camera_transform) = camera_query.single_mut() else {
+    let Ok((mut camera_transform, mut projection)) = camera_query.single_mut() else {
         error!("no camera found");
         return;
     };
@@ -132,5 +136,20 @@ pub fn editor_camera_controller(
 
     let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
 
-    camera_transform.translation += displacement.extend(0.0)
+    camera_transform.translation += displacement.extend(0.0);
+
+    //FIXME - this is currently a funky way of doing it, i'll see later to clean it up
+    for ev in evr_scroll.read() {
+        match ev.unit {
+            MouseScrollUnit::Line => {
+                if let Projection::Orthographic(ref mut ortho) = *projection {
+                    ortho.scale -= ev.y * 0.1;
+                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
+                }
+            }
+            MouseScrollUnit::Pixel => {
+                // do nothing
+            }
+        }
+    }
 }
