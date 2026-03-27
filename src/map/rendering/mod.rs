@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::map::{rendering::systems::*, resources::ActiveMap};
 
+mod components;
 mod systems;
 pub struct MapRenderingPlugin;
 

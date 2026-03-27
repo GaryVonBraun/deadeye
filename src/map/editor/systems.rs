@@ -18,7 +18,6 @@ pub fn tile_paint_system(
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     active_tile: Res<ActiveTile>,
-    mut map_query: Query<(&mut MissionMap, &mut TilemapChunkTileData)>,
     mut active_map: ResMut<ActiveMap>,
     mut contexts: EguiContexts,
 ) {
@@ -41,18 +40,14 @@ pub fn tile_paint_system(
         return;
     };
 
-    let Ok((mut map, mut tile_data)) = map_query.single_mut() else {
-        return;
-    };
-
     let tile_size = 64.0;
-    let map_width = map.tiles[0].len();
-    let map_height = map.tiles.len();
-    let map_half_width = (map_width as f32 * tile_size) / 2.0;
-    let map_half_height = (map_height as f32 * tile_size) / 2.0;
+    let map_width = active_map.map.tiles[0].len();
+    let map_height = active_map.map.tiles.len();
 
-    let tile_x = ((world_pos.x + map_half_width) / tile_size) as i32;
-    let tile_y = (map_height as i32 - 1) - ((world_pos.y + map_half_height) / tile_size) as i32;
+    let tile_x = ((world_pos.x + active_map.map.bounds.west as f32 * tile_size) / tile_size).floor() as i32;
+    let tile_y = ((active_map.map.bounds.north as f32 * tile_size - world_pos.y) / tile_size).floor() as i32;
+
+    info!(tile_x, tile_y);
 
     // bounds check
     if tile_x < 0 || tile_y < 0 || tile_x >= map_width as i32 || tile_y >= map_height as i32 {
@@ -60,18 +55,15 @@ pub fn tile_paint_system(
     }
 
     // check if tile is the same already
-    if map.tiles[tile_y as usize][tile_x as usize] == active_tile.index as u32 {
+    if active_map.map.tiles[tile_y as usize][tile_x as usize] == active_tile.index as u32 {
         return;
     }
 
     // update tile
-    map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
-
-    // rebuild chunk data
-    *tile_data = TilemapChunkTileData(convert_tiles(&map.tiles));
-
-    active_map.map = map.clone();
+    active_map.map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
 }
+
+const TILE_INDEX: u32 = 1;
 
 pub fn update_map_bounds(
     mut active_map: ResMut<ActiveMap>,
@@ -106,7 +98,7 @@ pub fn update_map_bounds(
                     active_map
                         .map
                         .tiles
-                        .insert(0, vec![0; map_info.tiles[0].len()]);
+                        .insert(0, vec![TILE_INDEX; map_info.tiles[0].len()]);
                     active_map.map.bounds.north += amount
                 }
                 MapBoundDirectionEnum::East => {
@@ -115,7 +107,10 @@ pub fn update_map_bounds(
                     active_map.map.bounds.east += amount
                 }
                 MapBoundDirectionEnum::South => {
-                    active_map.map.tiles.push(vec![0; map_info.tiles[0].len()]);
+                    active_map
+                        .map
+                        .tiles
+                        .push(vec![TILE_INDEX; map_info.tiles[0].len()]);
                     active_map.map.bounds.south += amount
                 }
                 MapBoundDirectionEnum::West => {
@@ -125,7 +120,7 @@ pub fn update_map_bounds(
                 }
             },
         }
-        load_map_from_res_writer.write(LoadMapFromResMessage);
+        // load_map_from_res_writer.write(LoadMapFromResMessage);
     }
 }
 
@@ -139,8 +134,8 @@ enum RowOperation {
 fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<u32>> {
     for row in tiles.iter_mut() {
         match operation {
-            RowOperation::WestExpand => row.insert(0, 0),
-            RowOperation::EastExpand => row.push(0),
+            RowOperation::WestExpand => row.insert(0, TILE_INDEX),
+            RowOperation::EastExpand => row.push(TILE_INDEX),
             RowOperation::WestShrink => {
                 row.remove(0);
             }
@@ -152,11 +147,9 @@ fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<
     tiles
 }
 
-pub fn save_map(map_query: Query<&MissionMap>) {
-    for map in map_query.iter() {
-        info!("saving map with id: {}", map.id);
-        update_map_data(&map);
-    }
+pub fn save_map(active_map: Res<ActiveMap>) {
+    info!("saving map with id: {}", active_map.map.id);
+    update_map_data(&active_map.map);
 }
 
 pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMap>>) {

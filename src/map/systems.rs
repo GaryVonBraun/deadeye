@@ -65,30 +65,30 @@ pub fn load_map_data(
         };
 
         //TEMPORARY - The tilemap texture is currently hardcoded, maps might have different textures
-        let texture = assets_server.load_with_settings(
-            tileset.texture.clone(),
-            |settings: &mut ImageLoaderSettings| {
-                settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 4 });
-            },
-        );
+        // let texture = assets_server.load_with_settings(
+        //     tileset.texture.clone(),
+        //     |settings: &mut ImageLoaderSettings| {
+        //         settings.array_layout = Some(ImageArrayLayout::RowCount { rows: 4 });
+        //     },
+        // );
 
-        commands.spawn((
-            MissionMap {
-                name: map.name.clone(),
-                id: map.id,
-                tiles: map.tiles.clone(),
-                tileset_name: map.tileset_name.clone(),
-                bounds: map.bounds.clone(),
-            },
-            TilemapChunk {
-                chunk_size: UVec2::new(map.tiles[0].len() as u32, map.tiles.len() as u32),
-                tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
-                tileset: texture,
-                ..default()
-            },
-            TilemapChunkTileData(convert_tiles(&map.tiles)),
-            GameEntity,
-        ));
+        // commands.spawn((
+        //     MissionMap {
+        //         name: map.name.clone(),
+        //         id: map.id,
+        //         tiles: map.tiles.clone(),
+        //         tileset_name: map.tileset_name.clone(),
+        //         bounds: map.bounds.clone(),
+        //     },
+        //     TilemapChunk {
+        //         chunk_size: UVec2::new(map.tiles[0].len() as u32, map.tiles.len() as u32),
+        //         tile_display_size: UVec2::splat(64), // each tile is 64x64 pixels
+        //         tileset: texture,
+        //         ..default()
+        //     },
+        //     TilemapChunkTileData(convert_tiles(&map.tiles)),
+        //     GameEntity,
+        // ));
         commands.insert_resource(ActiveMap { map, tileset });
     }
 }

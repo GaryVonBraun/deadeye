@@ -23,9 +23,9 @@ impl MapBounds {
     pub fn default() -> Self {
         MapBounds {
             north: 1,
-            south: 0,
+            south: 1,
             east: 1,
-            west: 0,
+            west: 1,
         }
     }
 }
