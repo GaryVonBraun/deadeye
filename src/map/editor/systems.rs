@@ -1,16 +1,14 @@
-use bevy::{prelude::*, sprite_render::TilemapChunkTileData};
+use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 
 use crate::map::{
-    components::MissionMap,
+    components::MissionMapChunk,
     editor::{
         messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
         resources::ActiveTile,
     },
     io::operations::update_map_data,
-    messages::LoadMapFromResMessage,
     resources::ActiveMap,
-    systems::convert_tiles,
 };
 
 pub fn tile_paint_system(
@@ -68,7 +66,6 @@ const TILE_INDEX: u32 = 1;
 pub fn update_map_bounds(
     mut active_map: ResMut<ActiveMap>,
     mut map_bounds_reader: MessageReader<UpdateMapBoundsMessage>,
-    mut load_map_from_res_writer: MessageWriter<LoadMapFromResMessage>,
 ) {
     for message in map_bounds_reader.read() {
         let map_info = active_map.map.clone();
@@ -120,7 +117,6 @@ pub fn update_map_bounds(
                 }
             },
         }
-        // load_map_from_res_writer.write(LoadMapFromResMessage);
     }
 }
 
@@ -152,7 +148,7 @@ pub fn save_map(active_map: Res<ActiveMap>) {
     update_map_data(&active_map.map);
 }
 
-pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMap>>) {
+pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMapChunk>>) {
     for entity in map_query.iter() {
         commands.entity(entity).despawn();
     }

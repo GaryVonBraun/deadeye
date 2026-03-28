@@ -14,7 +14,6 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<LoadMapMessage>();
-        app.add_message::<LoadMapFromResMessage>();
         app.add_message::<DeleteMapMessage>();
         app.add_message::<CreateMapMessage>();
         app.add_message::<EditMapMessage>();
@@ -23,10 +22,6 @@ impl Plugin for MapPlugin {
         app.add_systems(
             Update,
             delete_map_message.run_if(on_message::<DeleteMapMessage>),
-        );
-        app.add_systems(
-            Update,
-            load_map_from_resource.run_if(on_message::<LoadMapFromResMessage>),
         );
     }
 }

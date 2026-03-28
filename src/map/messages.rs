@@ -7,9 +7,6 @@ pub struct LoadMapMessage {
 }
 
 #[derive(Message)]
-pub struct LoadMapFromResMessage;
-
-#[derive(Message)]
 pub struct DeleteMapMessage {
     pub id: Uuid,
 }
