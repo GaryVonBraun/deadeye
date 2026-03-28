@@ -121,11 +121,14 @@ fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]
 
             // corners of tile texture
             //TEMPORARY - currently the texture map 10x10 hardcoded but this should be based on data
-            let start_x = tile_def.uv_coordinate[0] as f32 / 10.;
-            let end_x = tile_def.uv_coordinate[0] as f32 / 10. + 0.1;
+            let columns = 10.0_f32;
+            let rows = 10.0_f32;
 
-            let start_y = tile_def.uv_coordinate[1] as f32 / 10.;
-            let end_y = tile_def.uv_coordinate[1] as f32 / 10. + 0.1;
+            let padding = 0.0;
+            let start_x = tile_def.uv_coordinate[0] as f32 / columns + padding;
+            let end_x = (tile_def.uv_coordinate[0] as f32 + 1.0) / columns - padding;
+            let start_y = tile_def.uv_coordinate[1] as f32 / rows + padding;
+            let end_y = (tile_def.uv_coordinate[1] as f32 + 1.0) / rows - padding;
 
             // putting values as uv
             uvs.push([start_x, end_y]);
@@ -180,11 +183,7 @@ fn calculate_offset(start: &usize, end: &usize, side: &ChunkSide) -> usize {
         ChunkSide::Border(positive) => {
             // border represents the center grid
             // if it has less than 0 positive tiles it needs to be offset
-            if *positive > 8 {
-                0
-            } else {
-                8 - positive
-            }
+            if *positive > 8 { 0 } else { 8 - positive }
         }
         ChunkSide::Negative => 0,
     }
@@ -204,11 +203,9 @@ fn chunk_ranges(negative: u32, positive: u32) -> Vec<(usize, usize, ChunkSide)> 
 
     let mut ranges: Vec<(usize, usize, ChunkSide)> = vec![];
 
-
     // border start is the beginning tile of the center chunk and end is the last
     let border_start = positive_leftover as usize;
     let border_end = (positive + negative) as usize - negative_leftover as usize;
-    
 
     // we get all negative ranges
     if positive_leftover > 0 {
@@ -236,7 +233,6 @@ fn chunk_ranges(negative: u32, positive: u32) -> Vec<(usize, usize, ChunkSide)> 
         border_end,
         ChunkSide::Border(positive as usize),
     ));
-
 
     if negative_leftover > 0 {
         let full_chunks = negative_leftover / 16;
