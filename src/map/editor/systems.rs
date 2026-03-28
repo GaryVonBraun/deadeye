@@ -44,10 +44,10 @@ pub fn tile_paint_system(
     let map_width = active_map.map.tiles[0].len();
     let map_height = active_map.map.tiles.len();
 
-    let tile_x = ((world_pos.x + active_map.map.bounds.west as f32 * tile_size) / tile_size).floor() as i32;
-    let tile_y = ((active_map.map.bounds.north as f32 * tile_size - world_pos.y) / tile_size).floor() as i32;
-
-    info!(tile_x, tile_y);
+    let tile_x =
+        ((world_pos.x + active_map.map.bounds.west as f32 * tile_size) / tile_size).floor() as i32;
+    let tile_y =
+        ((active_map.map.bounds.north as f32 * tile_size - world_pos.y) / tile_size).floor() as i32;
 
     // bounds check
     if tile_x < 0 || tile_y < 0 || tile_x >= map_width as i32 || tile_y >= map_height as i32 {

@@ -56,7 +56,7 @@ pub fn edit_mission(
 }
 
 fn create_map_for_mission() -> MissionMap {
-    let raw_matrix: Vec<Vec<u32>> = vec![vec![0, 0], vec![0, 0]];
+    let raw_matrix: Vec<Vec<u32>> = vec![vec![2, 2], vec![2, 2]];
 
     let mut rng = rand::rng();
 

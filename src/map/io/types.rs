@@ -19,6 +19,7 @@ pub struct MapManifest {
 pub struct TileDef {
     pub index: u16,
     pub name: String,
+    pub uv_coordinate: [u32; 2],
 }
 
 #[derive(Serialize, Deserialize, Debug)]
