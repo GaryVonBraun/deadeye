@@ -192,3 +192,13 @@ pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<Mission
         commands.entity(entity).despawn();
     }
 }
+
+pub fn render_gizmos(active_mission: Res<ActiveMission>, mut gizmos: Gizmos) {
+    let spawn_position = active_mission.mission.player_spawn;
+
+    gizmos.rounded_rect_2d(
+        Isometry2d::from_xy(spawn_position.x, spawn_position.y),
+        Vec2::splat(50.),
+        Color::linear_rgb(1., 0.4, 0.4),
+    );
+}

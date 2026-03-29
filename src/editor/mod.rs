@@ -7,6 +7,7 @@ use crate::{
         ui::EditorUiPlugin,
     },
     map::resources::ActiveMap,
+    mission::resources::ActiveMission,
 };
 
 pub mod messages;
@@ -47,6 +48,10 @@ impl Plugin for EditorPlugin {
         app.add_systems(
             Update,
             (editor_camera_controller).run_if(in_state(AppState::Editor)),
+        );
+        app.add_systems(
+            Update,
+            render_gizmos.run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMission>)),
         );
     }
 }
