@@ -35,7 +35,7 @@ pub fn load_mission(
         next_state.set(AppState::InGame);
 
         //set active map
-        load_map_writer.write(LoadMapMessage { id: message.id });
+        load_map_writer.write(LoadMapMessage { id: mission.map_id });
     }
 }
 
