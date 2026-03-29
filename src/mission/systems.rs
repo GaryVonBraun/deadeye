@@ -1,9 +1,21 @@
 use bevy::prelude::*;
+use rand::RngExt;
+use uuid::Uuid;
 
 use crate::{
     core::states::AppState,
-    map::messages::LoadMapMessage,
-    mission::{io::operations::read_mission_data, messages::LoadMissionMessage},
+    editor::messages::LoadEditorMessage,
+    map::{
+        components::{MapBounds, MissionMap},
+        io::operations::write_map,
+        messages::LoadMapMessage,
+    },
+    mission::{
+        io::operations::{read_mission_data, remove_mission_file, write_mission},
+        messages::*,
+        resources::Mission,
+    },
+    ui::missions_menu::messages::RefreshMissionListMessage,
 };
 
 pub fn load_mission(
@@ -23,6 +35,68 @@ pub fn load_mission(
         next_state.set(AppState::InGame);
 
         //set active map
-        load_map_writer.write(LoadMapMessage { id: mission.map_id });
+        load_map_writer.write(LoadMapMessage { id: message.id });
+    }
+}
+
+// crud systems
+pub fn save_mission() {
+    //TEMPORARY - currently does not actually do something
+    info!("saving mission");
+}
+
+pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) {
+    info!("creating mission");
+
+    //NOTE - i am not really a fan of this but this is the simplest way for now
+    let map = create_map_for_mission();
+
+    let mut rng = rand::rng();
+
+    let mission = Mission {
+        id: Uuid::new_v4(),
+        name: format!("test mission {:?}", rng.random_range(1..1000)).to_string(),
+        map_id: map.id,
+        player_spawn: Vec2::splat(0.),
+    };
+
+    // write the new mission to drive
+    write_mission(&mission);
+
+    load_editor_writer.write(LoadEditorMessage { id: mission.id });
+}
+
+fn create_map_for_mission() -> MissionMap {
+    let raw_matrix: Vec<Vec<u32>> = vec![vec![2, 2], vec![2, 2]];
+
+    let mut rng = rand::rng();
+
+    let map = MissionMap {
+        name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
+        id: Uuid::new_v4(),
+        tiles: raw_matrix,
+        tileset_name: "base".to_string(),
+        bounds: MapBounds::default(),
+    };
+    write_map(&map);
+    map
+}
+
+pub fn delete_mission(
+    mut delete_mission_reader: MessageReader<DeleteMissionMessage>,
+    mut refresh_mission_writer: MessageWriter<RefreshMissionListMessage>,
+) {
+    for message in delete_mission_reader.read() {
+        remove_mission_file(message.id);
+    }
+    refresh_mission_writer.write(RefreshMissionListMessage);
+}
+
+pub fn edit_mission(
+    mut edit_mission_reader: MessageReader<EditMissionMessage>,
+    mut load_editor_writer: MessageWriter<LoadEditorMessage>,
+) {
+    for mission in edit_mission_reader.read() {
+        load_editor_writer.write(LoadEditorMessage { id: mission.id });
     }
 }

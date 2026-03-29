@@ -20,3 +20,6 @@ pub struct CreateMapMessage {
 pub struct EditMapMessage {
     pub id: Uuid,
 }
+
+#[derive(Message)]
+pub struct SaveMapMessage;

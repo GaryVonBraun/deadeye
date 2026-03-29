@@ -6,14 +6,15 @@ use bevy_egui::{
 
 use crate::{
     core::states::AppState,
-    map::{
-        editor::{
-            messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
-            resources::ActiveTile,
+    editor::{
+        messages::{
+            MapBoundDirectionEnum, MapBoundOperationEnum, SaveEditorChangesMessage,
+            UpdateMapBoundsMessage,
         },
-        resources::ActiveMap,
+        resources::ActiveTile,
     },
-    mission::{messages::SaveMissionMessage, resources::ActiveMission},
+    map::resources::ActiveMap,
+    mission::resources::ActiveMission,
 };
 
 pub fn editor_tile_picker_panel(
@@ -84,7 +85,7 @@ fn size_control_buttons(
 pub fn editor_left_panel(
     mut contexts: EguiContexts,
     mut active_mission: ResMut<ActiveMission>,
-    mut save_mission_writer: MessageWriter<SaveMissionMessage>,
+    mut save_edits_writer: MessageWriter<SaveEditorChangesMessage>,
     mut next_state: ResMut<NextState<AppState>>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
@@ -99,7 +100,7 @@ pub fn editor_left_panel(
         ui.separator();
         let save_button = ui.button("save changes");
         if save_button.clicked() {
-            save_mission_writer.write(SaveMissionMessage);
+            save_edits_writer.write(SaveEditorChangesMessage);
         }
         let back_to_missions = ui.button("back to missions");
         if back_to_missions.clicked() {

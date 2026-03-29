@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use uuid::Uuid;
 
 #[derive(Debug, Message, Clone)]
 pub struct UpdateMapBoundsMessage {
@@ -19,3 +20,11 @@ pub enum MapBoundOperationEnum {
     Expand(u32),
     Shrink(u32),
 }
+
+#[derive(Message)]
+pub struct LoadEditorMessage {
+    pub id: Uuid,
+}
+
+#[derive(Debug, Message)]
+pub struct SaveEditorChangesMessage;

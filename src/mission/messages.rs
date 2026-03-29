@@ -8,3 +8,16 @@ pub struct LoadMissionMessage {
 
 #[derive(Debug, Message)]
 pub struct SaveMissionMessage;
+
+#[derive(Debug, Message)]
+pub struct CreateMissionMessage;
+
+#[derive(Debug, Message)]
+pub struct DeleteMissionMessage {
+    pub id: Uuid,
+}
+
+#[derive(Message)]
+pub struct EditMissionMessage {
+    pub id: Uuid,
+}

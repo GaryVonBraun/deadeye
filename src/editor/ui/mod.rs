@@ -2,15 +2,15 @@ use bevy::prelude::*;
 use bevy_egui::EguiPrimaryContextPass;
 
 use crate::{
-    core::states::AppState, map::resources::ActiveMap, mission::resources::ActiveMission,
-    ui::mission_editor::editor::*,
+    core::states::AppState, editor::ui::editor::*, map::resources::ActiveMap,
+    mission::resources::ActiveMission,
 };
 
 mod components;
 mod editor;
-pub struct MissionEditorUiPlugin;
+pub struct EditorUiPlugin;
 
-impl Plugin for MissionEditorUiPlugin {
+impl Plugin for EditorUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             EguiPrimaryContextPass,

@@ -4,8 +4,8 @@ use crate::{
     core::states::AppState,
     map::messages::DeleteMapMessage,
     mission::{
-        editor::messages::{CreateMissionMessage, DeleteMissionMessage, EditMissionMessage},
         messages::LoadMissionMessage,
+        messages::{CreateMissionMessage, DeleteMissionMessage, EditMissionMessage},
     },
     ui::missions_menu::components::{MissionListInteractions, MissionMenuInteractions},
 };

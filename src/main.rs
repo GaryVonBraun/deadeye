@@ -4,14 +4,15 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
 use crate::{
     actor::ActorPlugin, ai::AiPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
-    map::MapPlugin, mission::MissionPlugin, player::PlayerPlugin, simulation::SimulationPlugin,
-    ui::UiPlugin,
+    editor::EditorPlugin, map::MapPlugin, mission::MissionPlugin, player::PlayerPlugin,
+    simulation::SimulationPlugin, ui::UiPlugin,
 };
 mod actor;
 mod ai;
 mod combat;
 mod core;
 mod debug;
+mod editor;
 mod map;
 mod mission;
 mod player;
@@ -45,6 +46,7 @@ fn main() {
             AiPlugin,
             MapPlugin,
             MissionPlugin,
+            EditorPlugin,
         ))
         .add_plugins(DebugPlugin)
         .add_plugins(UiPlugin)

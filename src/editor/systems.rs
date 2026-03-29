@@ -1,64 +1,99 @@
-use bevy::prelude::*;
-use bevy_egui::EguiContexts;
-
-use crate::map::{
-    components::MissionMapChunk,
-    editor::{
-        messages::{MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage},
-        resources::ActiveTile,
-    },
-    io::operations::update_map_data,
-    resources::ActiveMap,
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
 };
 
-pub fn tile_paint_system(
-    mouse: Res<ButtonInput<MouseButton>>,
-    window: Single<&Window>,
-    camera_query: Single<(&Camera, &GlobalTransform)>,
-    active_tile: Res<ActiveTile>,
-    mut active_map: ResMut<ActiveMap>,
-    mut contexts: EguiContexts,
+use crate::{
+    core::states::AppState,
+    editor::{
+        messages::{
+            LoadEditorMessage, MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage,
+        },
+        resources::ActiveTile,
+    },
+    map::{
+        components::MissionMapChunk,
+        messages::{LoadMapMessage, SaveMapMessage},
+        resources::ActiveMap,
+    },
+    mission::{
+        io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
+    },
+};
+
+pub fn load_editor(
+    mut load_editor_reader: MessageReader<LoadEditorMessage>,
+    mut load_map_writer: MessageWriter<LoadMapMessage>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut commands: Commands,
 ) {
-    // dont paint if hovering egui
-    //FIXME - we dont check if mouse pointer is over ui
-    // if contexts.ctx_mut().is_pointer_over_area() {
-    //     return;
-    // }
-    if !mouse.pressed(MouseButton::Left) {
-        return;
-    }
+    for message in load_editor_reader.read() {
+        let Ok(mission) = read_mission_data(&message.id) else {
+            return;
+        };
 
-    let Some(cursor_pos) = window.cursor_position() else {
+        load_map_writer.write(LoadMapMessage { id: mission.map_id });
+        commands.insert_resource(ActiveMission { mission });
+
+        //TEMPORARY - maybe its better if we insert this resource in the map plugin
+        commands.insert_resource(ActiveTile { index: 0 });
+
+        next_state.set(AppState::Editor);
+    }
+}
+
+const CAMERA_SPEED: f32 = 100.;
+
+pub fn editor_camera_controller(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut camera_query: Query<(&mut Transform, &mut Projection), With<Camera>>,
+    time: Res<Time>,
+    mut evr_scroll: MessageReader<MouseWheel>,
+) {
+    let Ok((mut camera_transform, mut projection)) = camera_query.single_mut() else {
+        error!("no camera found");
         return;
     };
-    let Ok(world_pos) = camera_query
-        .0
-        .viewport_to_world_2d(camera_query.1, cursor_pos)
-    else {
-        return;
-    };
+    let mut direction = Vec2::default();
+    let mut speed_multiplier: f32 = 1.;
 
-    let tile_size = 64.0;
-    let map_width = active_map.map.tiles[0].len();
-    let map_height = active_map.map.tiles.len();
-
-    let tile_x =
-        ((world_pos.x + active_map.map.bounds.west as f32 * tile_size) / tile_size).floor() as i32;
-    let tile_y =
-        ((active_map.map.bounds.north as f32 * tile_size - world_pos.y) / tile_size).floor() as i32;
-
-    // bounds check
-    if tile_x < 0 || tile_y < 0 || tile_x >= map_width as i32 || tile_y >= map_height as i32 {
-        return;
+    if keys.pressed(KeyCode::KeyA) {
+        direction.x += -1.;
+    }
+    if keys.pressed(KeyCode::KeyD) {
+        direction.x += 1.;
+    }
+    if keys.pressed(KeyCode::KeyW) {
+        direction.y += 1.;
     }
 
-    // check if tile is the same already
-    if active_map.map.tiles[tile_y as usize][tile_x as usize] == active_tile.index as u32 {
-        return;
+    if keys.pressed(KeyCode::KeyS) {
+        direction.y += -1.;
     }
 
-    // update tile
-    active_map.map.tiles[tile_y as usize][tile_x as usize] = active_tile.index as u32;
+    //TEMPORARY - for now we just keep it simple and can increase speed with shift
+    if keys.pressed(KeyCode::ShiftLeft) {
+        speed_multiplier = 2.
+    }
+
+    let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
+
+    camera_transform.translation += displacement.extend(0.0);
+
+    //FIXME - this is currently a funky way of doing it, i'll see later to clean it up
+    for ev in evr_scroll.read() {
+        match ev.unit {
+            MouseScrollUnit::Line => {
+                if let Projection::Orthographic(ref mut ortho) = *projection {
+                    ortho.scale -= ev.y * 0.1;
+                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
+                }
+            }
+            MouseScrollUnit::Pixel => {
+                // do nothing
+            }
+        }
+    }
 }
 
 const TILE_INDEX: u32 = 1;
@@ -143,12 +178,16 @@ fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<
     tiles
 }
 
-pub fn save_map(active_map: Res<ActiveMap>) {
-    info!("saving map with id: {}", active_map.map.id);
-    update_map_data(&active_map.map);
+pub fn save_editor_changes(
+    mut save_map_writer: MessageWriter<SaveMapMessage>,
+    mut save_mission_writer: MessageWriter<SaveMissionMessage>,
+) {
+    save_map_writer.write(SaveMapMessage);
+    save_mission_writer.write(SaveMissionMessage);
 }
 
 pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMapChunk>>) {
+    // despawning map
     for entity in map_query.iter() {
         commands.entity(entity).despawn();
     }

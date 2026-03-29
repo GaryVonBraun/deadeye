@@ -39,3 +39,8 @@ pub fn load_map_data(
         commands.insert_resource(ActiveMap { map, tileset });
     }
 }
+
+pub fn save_map(active_map: Res<ActiveMap>) {
+    info!("saving map with id: {}", active_map.map.id);
+    update_map_data(&active_map.map);
+}

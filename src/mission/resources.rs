@@ -7,6 +7,7 @@ pub struct Mission {
     pub id: Uuid,
     pub name: String,
     pub map_id: Uuid,
+    pub player_spawn: Vec2,
 }
 
 #[derive(Debug, Resource)]
