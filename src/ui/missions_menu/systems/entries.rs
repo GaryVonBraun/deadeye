@@ -34,6 +34,7 @@ pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<M
                                 height: Val::Px(120.),
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
+
                                 ..Default::default()
                             },))
                             .with_children(|parent| {
@@ -43,6 +44,14 @@ pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<M
                                     TextColor::from(TextColor::WHITE),
                                 ));
                             });
+                        UiButton::new("Play".to_string())
+                            .variant(UiButtonVariant::Success)
+                            .spawn(parent, MissionListInteractions::Play(mission.id));
+
+                        UiButton::new("Edit".to_string())
+                            .variant(UiButtonVariant::Success)
+                            .spawn(parent, MissionListInteractions::Edit(mission.id));
+
                         UiButton::new("Delete".to_string())
                             .variant(UiButtonVariant::Danger)
                             .spawn(
@@ -52,9 +61,6 @@ pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<M
                                     map_id: mission.map_id,
                                 },
                             );
-                        UiButton::new("Edit".to_string())
-                            .variant(UiButtonVariant::Success)
-                            .spawn(parent, MissionListInteractions::Edit(mission.id));
 
                         // card that will hold the missions
                     })

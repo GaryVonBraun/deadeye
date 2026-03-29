@@ -18,10 +18,11 @@ pub fn ui_card() -> impl Bundle {
         BackgroundColor(CARD_BACKGROUND_COLOR),
         BorderColor::all(CARD_BORDER_COLOR),
         Node {
-            height: Val::Percent(20.),
+            height: Val::Percent(25.),
             width: Val::Percent(20.),
             justify_content: JustifyContent::FlexStart,
             flex_direction: FlexDirection::Column,
+            row_gap: Val::Px(10.),
             border: UiRect::all(Val::Px(5.)),
             ..default()
         },

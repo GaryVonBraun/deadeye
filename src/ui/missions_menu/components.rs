@@ -11,6 +11,7 @@ pub struct MissionListUi;
 pub enum MissionListInteractions {
     Delete { mission_id: Uuid, map_id: Uuid },
     Edit(Uuid),
+    Play(Uuid),
 }
 
 #[derive(Component, Debug, Clone, Copy)]
