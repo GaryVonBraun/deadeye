@@ -11,7 +11,7 @@ use crate::{
             MapBoundDirectionEnum, MapBoundOperationEnum, SaveEditorChangesMessage,
             UpdateMapBoundsMessage,
         },
-        resources::ActiveTile,
+        resources::{ActiveTile, EditorTool},
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
@@ -87,6 +87,7 @@ pub fn editor_left_panel(
     mut active_mission: ResMut<ActiveMission>,
     mut save_edits_writer: MessageWriter<SaveEditorChangesMessage>,
     mut next_state: ResMut<NextState<AppState>>,
+    mut editor_tool: ResMut<EditorTool>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
     let mission = &mut active_mission.mission;
@@ -105,6 +106,17 @@ pub fn editor_left_panel(
         let back_to_missions = ui.button("back to missions");
         if back_to_missions.clicked() {
             next_state.set(AppState::MissionMenu);
+        }
+
+        ui.separator();
+        ui.label("mission spawnables");
+        let save_button = ui.button("Tile painter");
+        if save_button.clicked() {
+            *editor_tool = EditorTool::TilePainter;
+        }
+        let back_to_missions = ui.button("Player spawnpoint");
+        if back_to_missions.clicked() {
+            *editor_tool = EditorTool::PlayerSpawn;
         }
     });
 

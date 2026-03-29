@@ -6,6 +6,7 @@ use crate::{
         appearance::bundles::*,
         bundles::{AiActorBundle, CoreActorBundle},
         locomotion::components::Locomotion,
+        messages::SpawnPlayerMessage,
     },
     ai::bundles::AiBundle,
     combat::weapon::{component::ShootingIntent, factories::spawn_debug_weapon},
@@ -33,32 +34,41 @@ use crate::{
 //     info!("spawned basic humanoid entity");
 // }
 
-pub fn spawn_player_humanoid(mut commands: Commands, asset_server: Res<AssetServer>) {
-    //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
-    let weapon = spawn_debug_weapon(
-        &mut commands,
-        &asset_server,
-        Vec3 {
-            x: 10.0,
-            y: 0.,
-            z: 1.,
-        },
-    );
-    let entity = commands
-        .spawn((
-            CoreActorBundle::default_with_translation(Vec3::default()),
-            AppearanceBundle {
-                sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-                appearance: Appearance,
+pub fn spawn_player_humanoid(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut player_spawn_reader: MessageReader<SpawnPlayerMessage>,
+) {
+    for message in player_spawn_reader.read() {
+        //TEMPORARY - we are spawning the weapon before the player for the moment and giving the weapon directly
+        let weapon = spawn_debug_weapon(
+            &mut commands,
+            &asset_server,
+            Vec3 {
+                x: 10.0,
+                y: 0.,
+                z: 1.,
             },
-            Locomotion::from_speed(100.),
-            PlayerMovementIntent::default(),
-            ShootingIntent::default(),
-            Player,
-        ))
-        .add_children(&[weapon])
-        .id();
-    info!("spawned player, id: {:?}", entity);
+        );
+
+        info!("spawning player at: {:?}", message.position);
+
+        let entity = commands
+            .spawn((
+                CoreActorBundle::default_with_translation(message.position.extend(0.)),
+                AppearanceBundle {
+                    sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                    appearance: Appearance,
+                },
+                Locomotion::from_speed(100.),
+                PlayerMovementIntent::default(),
+                ShootingIntent::default(),
+                Player,
+            ))
+            .add_children(&[weapon])
+            .id();
+        info!("spawned player, id: {:?}", entity);
+    }
 }
 
 pub fn spawn_training_dummy(mut commands: Commands, asset_server: Res<AssetServer>) {

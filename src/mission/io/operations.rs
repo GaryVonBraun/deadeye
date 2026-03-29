@@ -31,7 +31,14 @@ pub fn write_mission(mission: &Mission) {
         return;
     }
     if let Err(_) = write_ron_file(&mission, missions_data_path(&mission.id)) {
-        error!("failed to store world map data");
+        error!("failed to mission data");
+        return;
+    };
+}
+
+pub fn update_mission_data(mission: &Mission) {
+    if let Err(_) = write_ron_file(&mission, missions_data_path(&mission.id)) {
+        error!("failed to store mission data");
         return;
     };
 }

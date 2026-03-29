@@ -1,8 +1,9 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::commands};
 use rand::RngExt;
 use uuid::Uuid;
 
 use crate::{
+    actor::{humanoid::factories::spawn_player_humanoid, messages::SpawnPlayerMessage},
     core::states::AppState,
     editor::messages::LoadEditorMessage,
     map::{
@@ -11,9 +12,11 @@ use crate::{
         messages::LoadMapMessage,
     },
     mission::{
-        io::operations::{read_mission_data, remove_mission_file, write_mission},
+        io::operations::{
+            read_mission_data, remove_mission_file, update_mission_data, write_mission,
+        },
         messages::*,
-        resources::Mission,
+        resources::{ActiveMission, Mission},
     },
     ui::missions_menu::messages::RefreshMissionListMessage,
 };
@@ -22,6 +25,7 @@ pub fn load_mission(
     mut load_mission_reader: MessageReader<LoadMissionMessage>,
     mut next_state: ResMut<NextState<AppState>>,
     mut load_map_writer: MessageWriter<LoadMapMessage>,
+    mut spawn_player_writer: MessageWriter<SpawnPlayerMessage>,
 ) {
     for message in load_mission_reader.read() {
         info!("load mission: {:?}", message.id);
@@ -36,13 +40,16 @@ pub fn load_mission(
 
         //set active map
         load_map_writer.write(LoadMapMessage { id: mission.map_id });
+        spawn_player_writer.write(SpawnPlayerMessage {
+            position: mission.player_spawn,
+        });
     }
 }
 
 // crud systems
-pub fn save_mission() {
-    //TEMPORARY - currently does not actually do something
-    info!("saving mission");
+pub fn save_mission(active_mission: Res<ActiveMission>) {
+    info!("{:?}", active_mission);
+    update_mission_data(&active_mission.mission);
 }
 
 pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessage>) {

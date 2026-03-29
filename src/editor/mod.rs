@@ -26,7 +26,8 @@ impl Plugin for EditorPlugin {
 
         app.add_systems(
             Update,
-            editor_click_system.run_if(resource_exists::<ActiveMap>),
+            editor_click_system
+                .run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMap>)),
         );
         app.add_message::<UpdateMapBoundsMessage>();
         app.add_systems(

@@ -23,6 +23,7 @@ pub struct TileDef {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TileSet {
     pub tile_size: f32,
+    pub chunk_size: f32,
     pub name: String,
     pub texture: String,
     pub tiles: Vec<TileDef>,
