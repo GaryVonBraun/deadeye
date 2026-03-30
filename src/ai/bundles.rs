@@ -11,12 +11,11 @@ pub struct BaseAiBundle {
 }
 
 impl BaseAiBundle {
-    pub fn default() -> Self {
+    pub fn with_controller(ai_controller: AiController) -> Self {
         BaseAiBundle {
-            controller: AiController::default(),
+            controller: ai_controller,
             locomotion_intent: AiLocomotionIntent::default(),
             action_intent: AiActionIntent::default(),
-
             movement_intent: AiMovementIntent {
                 move_direction: Vec2::default(),
             },
@@ -34,7 +33,7 @@ impl SentientAiBundle {
     pub fn with_vision_range(vision_range: f32) -> Self {
         SentientAiBundle {
             base_ai: BaseAiBundle {
-                controller: AiController::default(),
+                controller: AiController::default_human(),
                 locomotion_intent: AiLocomotionIntent::default(),
                 action_intent: AiActionIntent::default(),
 

@@ -13,6 +13,10 @@ pub enum AiLocomotionIntent {
     Chase(Entity),
 }
 
+#[derive(Component, Debug)]
+pub struct SeekNearestTarget;
+
+// ai decision making
 #[derive(Component, Default, Debug)]
 pub enum AiActionIntent {
     #[default]
@@ -28,6 +32,11 @@ pub struct Blackboard {
     pub action_intent: AiActionIntent,
 }
 
+#[derive(Component, Debug)]
+pub struct AiMovementIntent {
+    pub move_direction: Vec2,
+}
+
 #[derive(Component)]
 pub struct AiController {
     pub black_board: Blackboard,
@@ -36,7 +45,7 @@ pub struct AiController {
 }
 
 impl AiController {
-    pub fn default() -> Self {
+    pub fn default_human() -> Self {
         let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
@@ -65,9 +74,33 @@ impl AiController {
             locomotion_tree,
         }
     }
-}
+    pub fn zombie() -> Self {
+        let action_tree = Box::new(Selector {
+            children: vec![
+                Box::new(Sequence {
+                    children: vec![Box::new(HasTarget), Box::new(ActionShoot)],
+                }),
+                Box::new(ActionIdle),
+            ],
+        });
+        let locomotion_tree = Box::new(Selector {
+            children: vec![
+                Box::new(Sequence {
+                    children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
+                }),
+                Box::new(LocomotionIdle),
+            ],
+        });
 
-#[derive(Component, Debug)]
-pub struct AiMovementIntent {
-    pub move_direction: Vec2,
+        AiController {
+            black_board: Blackboard {
+                visible_actors: [].to_vec(),
+                current_target: None,
+                locomotion_intent: AiLocomotionIntent::Idle,
+                action_intent: AiActionIntent::Idle,
+            },
+            action_tree,
+            locomotion_tree,
+        }
+    }
 }

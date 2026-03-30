@@ -7,10 +7,14 @@ use crate::{
     actor::{
         appearance::bundles::{Appearance, AppearanceBundle},
         bundles::CoreActorBundle,
+        components::Team,
         locomotion::components::Locomotion,
         messages::SpawnActorMessage,
     },
-    ai::bundles::{BaseAiBundle, SentientAiBundle},
+    ai::{
+        bundles::{BaseAiBundle, SentientAiBundle},
+        components::{AiController, SeekNearestTarget},
+    },
     combat::weapon::{component::ShootingIntent, factories::spawn_debug_weapon},
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
@@ -36,6 +40,8 @@ pub struct ActorDefinition {
     pub speed: f32,
     pub vision_range: f32,
     pub sprite: PathBuf,
+    pub team: Team,
+    pub collision_radius: f32,
 }
 
 pub fn spawn_actor_handler(
@@ -99,7 +105,10 @@ pub fn spawn_actor_handler(
             ActorArchetype::Human => {
                 let entity = commands
                     .spawn((
-                        CoreActorBundle::default_with_translation(message.position.extend(0.)),
+                        CoreActorBundle::from_actor_with_position(
+                            message.position.extend(0.),
+                            actor,
+                        ),
                         SentientAiBundle::with_vision_range(actor.vision_range),
                         Locomotion::with_speed(actor.speed),
                         AppearanceBundle {
@@ -112,9 +121,13 @@ pub fn spawn_actor_handler(
             ActorArchetype::Zombie => {
                 let entity = commands
                     .spawn((
-                        CoreActorBundle::default_with_translation(message.position.extend(0.)),
-                        BaseAiBundle::default(),
+                        CoreActorBundle::from_actor_with_position(
+                            message.position.extend(0.),
+                            actor,
+                        ),
+                        BaseAiBundle::with_controller(AiController::zombie()),
                         Locomotion::with_speed(actor.speed),
+                        SeekNearestTarget,
                         AppearanceBundle {
                             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                             appearance: Appearance,

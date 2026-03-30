@@ -8,6 +8,7 @@ pub mod components;
 pub mod locomotion;
 pub mod messages;
 mod system;
+pub mod teams;
 pub struct ActorPlugin;
 
 impl Plugin for ActorPlugin {

@@ -7,6 +7,6 @@ pub struct Collision {
 
 impl Collision {
     pub fn from_radius(radius: f32) -> Self {
-        Collision {radius: radius}
+        Collision { radius: radius }
     }
 }

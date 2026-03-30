@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{components::*, system::ActorDefinition},
-    ai::bundles::BaseAiBundle,
     combat::health::components::Health,
     core::components::GameEntity,
     simulation::collision::components::Collision,
@@ -15,25 +14,18 @@ pub struct CoreActorBundle {
     pub health: Health,
     pub collision: Collision,
     pub game_entity: GameEntity,
+    pub team: Team,
 }
 
 impl CoreActorBundle {
-    pub fn default_with_translation(translation: Vec3) -> Self {
-        CoreActorBundle {
-            actor: Actor,
-            transform: Transform::from_translation(translation),
-            health: Health::default(),
-            collision: Collision::from_radius(16.),
-            game_entity: GameEntity,
-        }
-    }
     pub fn from_actor_with_position(translation: Vec3, actor: &ActorDefinition) -> Self {
         CoreActorBundle {
             actor: Actor,
             transform: Transform::from_translation(translation),
             health: Health::default(),
-            collision: Collision::from_radius(actor.vision_range),
+            collision: Collision::from_radius(actor.collision_radius.clone()),
             game_entity: GameEntity,
+            team: actor.team.clone(),
         }
     }
 }
