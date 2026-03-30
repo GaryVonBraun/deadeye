@@ -10,7 +10,8 @@ use crate::{
         locomotion::components::Locomotion,
         messages::SpawnActorMessage,
     },
-    combat::weapon::component::ShootingIntent,
+    ai::bundles::{BaseAiBundle, SentientAiBundle},
+    combat::weapon::{component::ShootingIntent, factories::spawn_debug_weapon},
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
 };
@@ -18,7 +19,7 @@ use crate::{
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ActorArchetype {
     Player,
-    HumanNPC,
+    Human,
     Zombie,
 }
 
@@ -67,6 +68,16 @@ pub fn spawn_actor_handler(
 
         match actor.archetype {
             ActorArchetype::Player => {
+                let weapon = spawn_debug_weapon(
+                    &mut commands,
+                    &asset_server,
+                    Vec3 {
+                        x: 0.0,
+                        y: 0.,
+                        z: 1.,
+                    },
+                );
+
                 let entity = commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
@@ -82,30 +93,35 @@ pub fn spawn_actor_handler(
                         ShootingIntent::default(),
                         Player,
                     ))
+                    .add_child(weapon)
                     .id();
             }
-            ActorArchetype::HumanNPC => todo!(),
-            ActorArchetype::Zombie => todo!(),
+            ActorArchetype::Human => {
+                let entity = commands
+                    .spawn((
+                        CoreActorBundle::default_with_translation(message.position.extend(0.)),
+                        SentientAiBundle::with_vision_range(actor.vision_range),
+                        Locomotion::with_speed(actor.speed),
+                        AppearanceBundle {
+                            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                            appearance: Appearance,
+                        },
+                    ))
+                    .id();
+            }
+            ActorArchetype::Zombie => {
+                let entity = commands
+                    .spawn((
+                        CoreActorBundle::default_with_translation(message.position.extend(0.)),
+                        BaseAiBundle::default(),
+                        Locomotion::with_speed(actor.speed),
+                        AppearanceBundle {
+                            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                            appearance: Appearance,
+                        },
+                    ))
+                    .id();
+            }
         }
-
-        // let mut rng = rand::rng();
-        // let entity2 = commands
-        //     .spawn((
-        //         AiActorBundle {
-        //             core: CoreActorBundle::default_with_translation(Vec3 {
-        //                 x: rng.random_range(-700..700) as f32,
-        //                 y: rng.random_range(-700..700) as f32,
-        //                 z: 0.,
-        //             }),
-        //             ai: AiBundle::with_vision_range(200.),
-        //         },
-        //         Locomotion::with_speed(50.),
-        //         ShootingIntent::default(),
-        //         AppearanceBundle {
-        //             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-        //             appearance: Appearance,
-        //         },
-        //     ))
-        //     .id();
     }
 }

@@ -45,6 +45,16 @@ pub fn load_mission(
             id: "player".to_string(),
             position: mission.player_spawn,
         });
+
+        //TEMPORARY - for now we spawn a zombie and npc like this just to be able to test it
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "zombie".to_string(),
+            position: Vec2 { x: 200., y: 200. },
+        });
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "npc".to_string(),
+            position: Vec2 { x: 210., y: 210. },
+        });
     }
 }
 

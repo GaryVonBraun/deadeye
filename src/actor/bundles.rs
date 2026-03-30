@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{components::*, system::ActorDefinition},
-    ai::bundles::AiBundle,
+    ai::bundles::BaseAiBundle,
     combat::health::components::Health,
     core::components::GameEntity,
     simulation::collision::components::Collision,
@@ -36,10 +36,4 @@ impl CoreActorBundle {
             game_entity: GameEntity,
         }
     }
-}
-
-#[derive(Bundle)]
-pub struct AiActorBundle {
-    pub core: CoreActorBundle,
-    pub ai: AiBundle,
 }
