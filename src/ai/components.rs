@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::ai::tree::{
     BtNode, Selector, Sequence,
-    actions::{ActionIdle, LocomotionChase, LocomotionIdle, ActionShoot},
+    actions::{ActionIdle, ActionShoot, LocomotionChase, LocomotionIdle},
     conditions::HasTarget,
 };
 
@@ -70,5 +70,4 @@ impl AiController {
 #[derive(Component, Debug)]
 pub struct AiMovementIntent {
     pub move_direction: Vec2,
-    pub speed: f32,
 }

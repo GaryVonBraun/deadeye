@@ -7,11 +7,10 @@ pub struct Locomotion {
 }
 
 impl Locomotion {
-    pub fn from_speed(speed: f32) -> Self {
+    pub fn with_speed(speed: f32) -> Self {
         Locomotion {
             move_direction: Vec2::default(),
             speed: speed,
         }
     }
 }
-

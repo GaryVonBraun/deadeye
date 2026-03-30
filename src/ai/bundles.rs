@@ -12,7 +12,7 @@ pub struct AiBundle {
 }
 
 impl AiBundle {
-    pub fn with_range(vision_range: f32) -> Self {
+    pub fn with_vision_range(vision_range: f32) -> Self {
         AiBundle {
             controller: AiController::default(),
             locomotion_intent: AiLocomotionIntent::default(),
@@ -22,7 +22,6 @@ impl AiBundle {
             },
             movement_intent: AiMovementIntent {
                 move_direction: Vec2::default(),
-                speed: 50.,
             },
         }
     }

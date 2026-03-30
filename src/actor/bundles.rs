@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::components::*, ai::bundles::AiBundle, combat::health::components::Health,
-    core::components::GameEntity, simulation::collision::components::Collision,
+    actor::{components::*, system::ActorDefinition},
+    ai::bundles::AiBundle,
+    combat::health::components::Health,
+    core::components::GameEntity,
+    simulation::collision::components::Collision,
 };
 
 #[derive(Bundle)]
@@ -21,6 +24,15 @@ impl CoreActorBundle {
             transform: Transform::from_translation(translation),
             health: Health::default(),
             collision: Collision::from_radius(16.),
+            game_entity: GameEntity,
+        }
+    }
+    pub fn from_actor_with_position(translation: Vec3, actor: &ActorDefinition) -> Self {
+        CoreActorBundle {
+            actor: Actor,
+            transform: Transform::from_translation(translation),
+            health: Health::default(),
+            collision: Collision::from_radius(actor.vision_range),
             game_entity: GameEntity,
         }
     }

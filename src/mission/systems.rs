@@ -1,9 +1,9 @@
-use bevy::{prelude::*, transform::commands};
+use bevy::prelude::*;
 use rand::RngExt;
 use uuid::Uuid;
 
 use crate::{
-    actor::{humanoid::factories::spawn_player_humanoid, messages::SpawnPlayerMessage},
+    actor::messages::SpawnActorMessage,
     core::states::AppState,
     editor::messages::LoadEditorMessage,
     map::{
@@ -25,13 +25,13 @@ pub fn load_mission(
     mut load_mission_reader: MessageReader<LoadMissionMessage>,
     mut next_state: ResMut<NextState<AppState>>,
     mut load_map_writer: MessageWriter<LoadMapMessage>,
-    mut spawn_player_writer: MessageWriter<SpawnPlayerMessage>,
+    mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
 ) {
     for message in load_mission_reader.read() {
-        info!("load mission: {:?}", message.id);
         let Ok(mission) = read_mission_data(&message.id) else {
             return;
         };
+        info!("load mission: {:?}", message.id);
 
         info!("found mission called: {:?}", mission.name);
 
@@ -40,7 +40,9 @@ pub fn load_mission(
 
         //set active map
         load_map_writer.write(LoadMapMessage { id: mission.map_id });
-        spawn_player_writer.write(SpawnPlayerMessage {
+
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "player".to_string(),
             position: mission.player_spawn,
         });
     }
