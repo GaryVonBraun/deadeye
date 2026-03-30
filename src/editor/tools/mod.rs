@@ -86,6 +86,6 @@ pub fn editor_click_system(
 }
 
 fn position_tile_center(position: f32, tile_size: f32) -> f32 {
-    let ceiled_position = (position / tile_size).signum() * (position / tile_size).abs().ceil();
-    ceiled_position * 64. + 32.
+    let floored = (position / tile_size).floor();
+    floored * tile_size + tile_size / 2.0
 }
