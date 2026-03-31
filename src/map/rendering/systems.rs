@@ -5,8 +5,6 @@ use crate::{
     map::{components::MissionMapChunk, io::types::TileSet, resources::ActiveMap},
 };
 
-const CHUNK_SIZE: f32 = 16. * 64.;
-
 pub fn render_map(
     active_map: Res<ActiveMap>,
     mut commands: Commands,
@@ -31,10 +29,12 @@ pub fn render_map(
             let chunk_y_position = y_offset as i32 - y as i32;
             let chunk_x_position = x_offset as i32 - x as i32;
 
+            let chunk_pixel_size = active_map.tileset.chunk_size * active_map.tileset.tile_size;
+
             // precise world position  of the chunks for rendering tiles and chunk placement
             let chunk_world_position = Vec2 {
-                x: chunk_x_position as f32 * CHUNK_SIZE,
-                y: chunk_y_position as f32 * CHUNK_SIZE,
+                x: chunk_x_position as f32 * chunk_pixel_size,
+                y: chunk_y_position as f32 * chunk_pixel_size,
             };
 
             // 16x16 grid created filled with the tiles from defined ranges
@@ -107,17 +107,21 @@ fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]
     for (y, col) in grid.iter().enumerate() {
         for (x, tile_type) in col.iter().enumerate() {
             // x decreases as column index increases (index 0 = easternmost after row reversal).
-            let tile_left = (7.5 - x as f32) * 64. - 32.;
-            let tile_bottom = (7.5 - y as f32) * 64. - 32.;
+            let tile_left = (7.5 - x as f32) * tileset.tile_size - (tileset.tile_size / 2.);
+            let tile_bottom = (7.5 - y as f32) * tileset.tile_size - (tileset.tile_size / 2.);
             let Some(tile_def) = tileset.tiles.iter().find(|t| t.index == *tile_type as u16) else {
                 continue;
             };
 
             // creating 4 positions for each corner of a tile
             positions.push([tile_left, tile_bottom, 0.]);
-            positions.push([tile_left + 64., tile_bottom, 0.]);
-            positions.push([tile_left + 64., tile_bottom + 64., 0.]);
-            positions.push([tile_left, tile_bottom + 64., 0.]);
+            positions.push([tile_left + tileset.tile_size, tile_bottom, 0.]);
+            positions.push([
+                tile_left + tileset.tile_size,
+                tile_bottom + tileset.tile_size,
+                0.,
+            ]);
+            positions.push([tile_left, tile_bottom + tileset.tile_size, 0.]);
 
             // corners of tile texture
             //TEMPORARY - currently the texture map 10x10 hardcoded but this should be based on data
@@ -273,27 +277,17 @@ pub fn rerender_map(
     render_map(active_map, commands, meshes, asset_server, materials);
 }
 pub fn chunk_rendering_gizmos(
+    active_map: Res<ActiveMap>,
     chunk_query: Query<(&Transform, &MissionMapChunk), With<MissionMapChunk>>,
     mut gizmos: Gizmos,
 ) {
     for (transform, chunk) in chunk_query.iter() {
-        // for (y, col) in chunk.grid.iter().enumerate() {
-        //     for row in 0..col.len() {
-        //         gizmos.rect_2d(
-        //             Isometry2d::from_xy(
-        //                 transform.translation.x - row as f32 * 64. + 7.5 * 64.,
-        //                 transform.translation.y - y as f32 * 64. + 7.5 * 64.,
-        //             ),
-        //             Vec2 { x: 64., y: 64. },
-        //             Color::linear_rgb(0., 0., 0.2 * chunk.grid[y][row] as f32),
-        //         );
-        //     }
-        // }
+        let chunk_pixel_size = active_map.tileset.chunk_size * active_map.tileset.tile_size;
         gizmos.rect_2d(
             Isometry2d::from_xy(transform.translation.x, transform.translation.y),
             Vec2 {
-                x: CHUNK_SIZE,
-                y: CHUNK_SIZE,
+                x: chunk_pixel_size,
+                y: chunk_pixel_size,
             },
             Color::linear_rgb(0.7, 0., 0.7),
         );

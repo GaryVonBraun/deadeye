@@ -9,7 +9,7 @@ use crate::{
     simulation::collision::components::Collision,
 };
 
-pub fn melee_attack_handler(
+pub fn tick_melee_intents(
     mut intent_query: Query<(&mut MeleeIntent, &Transform, &Collision), With<Actor>>,
     actors: Query<(&Transform, &Collision), With<Actor>>,
     time: Res<Time>,
