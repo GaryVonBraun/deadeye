@@ -149,24 +149,22 @@ pub fn seek_nearest_target(
             }
         }
 
-        if let Some(entity) = nearest_entity {
-            seeker_controller.black_board.current_target = Some(entity);
-        }
+        seeker_controller.black_board.current_target = nearest_entity;
     }
 }
 
 pub fn ai_melee_system(
-    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform), With<Actor>>,
-    actor_query: Query<&Transform, With<Actor>>,
+    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform, &Collision), With<Actor>>,
+    actor_query: Query<(&Transform, &Collision), With<Actor>>,
 ) {
-    for (ai_controller, mut melee_intent, ai_transform) in ai_query.iter_mut() {
+    for (ai_controller, mut melee_intent, ai_transform, ai_collision) in ai_query.iter_mut() {
         match ai_controller.black_board.action_intent {
             AiActionIntent::Melee(entity) => {
                 if melee_intent.melee_state != MeleeState::Ready {
                     continue;
                 }
 
-                let Ok(actor_transform) = actor_query.get(entity) else {
+                let Ok((actor_transform, actor_collision)) = actor_query.get(entity) else {
                     error!("Failed to find target entity");
                     return;
                 };
@@ -174,9 +172,10 @@ pub fn ai_melee_system(
                 if Vec2::distance(
                     ai_transform.translation.truncate(),
                     actor_transform.translation.truncate(),
-                ) <= melee_intent.range + 64.
+                ) <= melee_intent.range + ai_collision.radius + actor_collision.radius
                 {
-                    melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay)
+                    melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay);
+                    melee_intent.target = Some(entity);
                 }
             }
             _ => {}

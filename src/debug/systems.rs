@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use crate::{
     actor::components::Actor,
     ai::{components::AiController, vision::components::Vision},
+    combat::components::MeleeIntent,
     debug::components::DebugMovementIntent,
+    simulation::collision::{self, components::Collision},
 };
 
 //TEMPORARY - This is a quick implementation to see if the locomotion system works
@@ -43,6 +45,19 @@ pub fn debug_vision_gizmo(query: Query<(&Transform, &Vision)>, mut gizmos: Gizmo
     }
 }
 
+pub fn debug_melee_range_gizmo(
+    query: Query<(&Transform, &MeleeIntent, &Collision)>,
+    mut gizmos: Gizmos,
+) {
+    for (transform, melee_intent, collision) in query.iter() {
+        gizmos.circle_2d(
+            transform.translation.truncate(),
+            melee_intent.range + collision.radius,
+            Color::srgba(1.0, 0., 0.0, 0.5),
+        );
+    }
+}
+
 pub fn debug_visible_entities_gizmo(
     ai_query: Query<(&Transform, &AiController)>,
     actor_query: Query<&Transform, With<Actor>>,
@@ -73,11 +88,13 @@ pub fn debug_target_entity_gizmo(
                 continue;
             };
 
-            gizmos.arrow_2d(
-                ai_transform.translation.truncate(),
-                actor_transform.translation.truncate(),
-                Color::srgba(1., 0., 0., 0.1),
-            ).with_tip_length(10.);
+            gizmos
+                .arrow_2d(
+                    ai_transform.translation.truncate(),
+                    actor_transform.translation.truncate(),
+                    Color::srgba(1., 0., 0., 0.1),
+                )
+                .with_tip_length(10.);
         }
     }
 }
