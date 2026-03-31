@@ -22,13 +22,15 @@ impl Plugin for AiPlugin {
         app.add_plugins((VisionPlugin, BehaviorTreePlugin));
         app.add_systems(
             Update,
-            (ai_targeting_system, ai_movement_system, ai_shooting_system)
+            (
+                vision_targeting_system,
+                ai_movement_system,
+                ai_shooting_system,
+                ai_melee_system,
+                seek_nearest_target,
+            )
                 .in_set(AiSet::Targeting)
                 .run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            Update,
-            seek_nearest_target.run_if(in_state(AppState::InGame)),
         );
     }
 }

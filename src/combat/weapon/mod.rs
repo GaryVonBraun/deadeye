@@ -6,7 +6,7 @@ use crate::{
 };
 
 mod bundles;
-pub mod component;
+pub mod components;
 pub mod factories;
 mod systems;
 

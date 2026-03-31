@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    combat::{messages::ShootMessage, weapon::component::ShootingIntent},
+    combat::{components::ShootingIntent, messages::ShootMessage},
     player::components::{Player, PlayerMovementIntent},
 };
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{combat::weapon::component::Weapon, core::components::GameEntity};
+use crate::{combat::weapon::components::Weapon, core::components::GameEntity};
 
 #[derive(Bundle)]
 pub struct WeaponBundle {

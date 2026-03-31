@@ -3,10 +3,12 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 use crate::{
     actor::components::Actor,
     combat::{
+        components::ShootingIntent,
         messages::ShootMessage,
         projectiles::{bundles::ProjectileBundle, component::Projectile},
-        weapon::component::{ShootingIntent, Weapon},
-    }, core::components::GameEntity,
+        weapon::components::Weapon,
+    },
+    core::components::GameEntity,
 };
 
 pub fn shoot_weapon(
@@ -37,7 +39,7 @@ pub fn shoot_weapon(
                             direction: message.direction,
                             lifetime: 3.,
                             damage: weapon.damage,
-                            owner: message.owner
+                            owner: message.owner,
                         },
                         sprite: Sprite::from_image(asset_server.load("debug_bullet.png")),
                         transform: Transform {
@@ -45,7 +47,7 @@ pub fn shoot_weapon(
                             translation: global_transform.translation(),
                             scale: Vec3::ONE,
                         },
-                        game_entity: GameEntity
+                        game_entity: GameEntity,
                     });
 
                     weapon.cooldown = weapon.fire_delay;
@@ -55,7 +57,10 @@ pub fn shoot_weapon(
     }
 }
 
-pub fn rotate_weapons(parent_query: Query<&ShootingIntent>, mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>) {
+pub fn rotate_weapons(
+    parent_query: Query<&ShootingIntent>,
+    mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>,
+) {
     for (parent, mut transform) in weapon_query.iter_mut() {
         if let Ok(intent) = parent_query.get(parent.get()) {
             let angle = intent.direction.to_angle();

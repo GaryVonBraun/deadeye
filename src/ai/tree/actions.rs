@@ -1,3 +1,5 @@
+use bevy::log::info;
+
 use crate::ai::{
     components::{AiActionIntent, AiLocomotionIntent, Blackboard},
     tree::{BtNode, BtStatus},
@@ -26,7 +28,6 @@ impl BtNode for LocomotionChase {
     }
 }
 
-
 // Action
 pub struct ActionIdle;
 
@@ -42,6 +43,19 @@ impl BtNode for ActionShoot {
     fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
         if let Some(target) = blackboard.current_target {
             blackboard.action_intent = AiActionIntent::Shoot(target);
+            BtStatus::Running
+        } else {
+            BtStatus::Failure
+        }
+    }
+}
+
+pub struct ActionMelee;
+
+impl BtNode for ActionMelee {
+    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+        if let Some(target) = blackboard.current_target {
+            blackboard.action_intent = AiActionIntent::Melee(target);
             BtStatus::Running
         } else {
             BtStatus::Failure

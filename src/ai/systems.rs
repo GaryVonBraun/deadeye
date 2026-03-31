@@ -1,3 +1,5 @@
+use core::f32;
+
 use bevy::prelude::*;
 
 use crate::{
@@ -5,15 +7,21 @@ use crate::{
         components::{Actor, Team},
         teams::{TeamStanding, get_standing},
     },
-    ai::components::{
-        AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, SeekNearestTarget,
+    ai::{
+        components::{
+            AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, SeekNearestTarget,
+        },
+        vision::components::Vision,
     },
-    combat::{messages::ShootMessage, weapon::component::ShootingIntent},
+    combat::{
+        components::{MeleeIntent, MeleeState, ShootingIntent},
+        messages::ShootMessage,
+    },
     simulation::collision::components::Collision,
 };
 
-pub fn ai_targeting_system(
-    mut ai_query: Query<(&Transform, &mut AiController)>,
+pub fn vision_targeting_system(
+    mut ai_query: Query<(&Transform, &mut AiController), With<Vision>>,
     actor_query: Query<(Entity, &Transform), With<Actor>>,
 ) {
     for (ai_transform, mut ai_controller) in ai_query.iter_mut() {
@@ -114,7 +122,7 @@ pub fn seek_nearest_target(
 ) {
     for (mut seeker_controller, seeker_transform, seeker_team) in query_seeking_actor.iter_mut() {
         let mut nearest_entity: Option<Entity> = None;
-        let mut nearest_distance: f32 = 0.;
+        let mut nearest_distance: f32 = f32::MAX;
 
         for (actor_entity, actor_transform, actor_team) in query_actors.iter() {
             if get_standing(&seeker_team.0, &actor_team.0) != TeamStanding::Hostile {
@@ -143,7 +151,35 @@ pub fn seek_nearest_target(
 
         if let Some(entity) = nearest_entity {
             seeker_controller.black_board.current_target = Some(entity);
-            seeker_controller.black_board.locomotion_intent = AiLocomotionIntent::Chase(entity);
+        }
+    }
+}
+
+pub fn ai_melee_system(
+    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform), With<Actor>>,
+    actor_query: Query<&Transform, With<Actor>>,
+) {
+    for (ai_controller, mut melee_intent, ai_transform) in ai_query.iter_mut() {
+        match ai_controller.black_board.action_intent {
+            AiActionIntent::Melee(entity) => {
+                if melee_intent.melee_state != MeleeState::Ready {
+                    continue;
+                }
+
+                let Ok(actor_transform) = actor_query.get(entity) else {
+                    error!("Failed to find target entity");
+                    return;
+                };
+
+                if Vec2::distance(
+                    ai_transform.translation.truncate(),
+                    actor_transform.translation.truncate(),
+                ) <= melee_intent.range + 64.
+                {
+                    melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay)
+                }
+            }
+            _ => {}
         }
     }
 }

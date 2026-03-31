@@ -15,7 +15,10 @@ use crate::{
         bundles::{BaseAiBundle, SentientAiBundle},
         components::{AiController, SeekNearestTarget},
     },
-    combat::weapon::{component::ShootingIntent, factories::spawn_debug_weapon},
+    combat::{
+        components::{MeleeIntent, MeleeState, ShootingIntent},
+        weapon::factories::spawn_debug_weapon,
+    },
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
 };
@@ -42,6 +45,12 @@ pub struct ActorDefinition {
     pub sprite: PathBuf,
     pub team: Team,
     pub collision_radius: f32,
+
+    // melee stats
+    pub melee_delay: f32,
+    pub melee_cooldown: f32,
+    pub melee_range: f32,
+    pub melee_damage: f32,
 }
 
 pub fn spawn_actor_handler(
@@ -131,6 +140,14 @@ pub fn spawn_actor_handler(
                         AppearanceBundle {
                             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                             appearance: Appearance,
+                        },
+                        MeleeIntent {
+                            target: None,
+                            melee_state: MeleeState::Ready,
+                            delay: actor.melee_delay,
+                            cooldown: actor.melee_cooldown,
+                            range: actor.melee_range,
+                            damage: actor.melee_damage,
                         },
                     ))
                     .id();

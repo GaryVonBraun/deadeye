@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::ai::tree::{
     BtNode, Selector, Sequence,
-    actions::{ActionIdle, ActionShoot, LocomotionChase, LocomotionIdle},
+    actions::{ActionIdle, ActionMelee, ActionShoot, LocomotionChase, LocomotionIdle},
     conditions::HasTarget,
 };
 
@@ -22,6 +22,7 @@ pub enum AiActionIntent {
     #[default]
     Idle,
     Shoot(Entity),
+    Melee(Entity),
 }
 
 #[derive(Component)]
@@ -78,7 +79,7 @@ impl AiController {
         let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(ActionShoot)],
+                    children: vec![Box::new(HasTarget), Box::new(ActionMelee)],
                 }),
                 Box::new(ActionIdle),
             ],

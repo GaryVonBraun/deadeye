@@ -55,14 +55,14 @@ pub fn load_mission(
             id: "zombie".to_string(),
             position: Vec2 { x: 300., y: 200. },
         });
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 400., y: 200. },
-        });
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 500., y: 200. },
-        });
+        // spawn_actor_writer.write(SpawnActorMessage {
+        //     id: "zombie".to_string(),
+        //     position: Vec2 { x: 400., y: 200. },
+        // });
+        // spawn_actor_writer.write(SpawnActorMessage {
+        //     id: "zombie".to_string(),
+        //     position: Vec2 { x: 500., y: 200. },
+        // });
         // spawn_actor_writer.write(SpawnActorMessage {
         //     id: "npc".to_string(),
         //     position: Vec2 { x: 210., y: 210. },
