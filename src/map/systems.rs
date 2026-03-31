@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::map::{
-    components::MissionMap,
     io::{operations::*, paths::*},
     messages::{DeleteMapMessage, LoadMapMessage},
     resources::ActiveMap,
@@ -13,19 +12,11 @@ pub fn delete_map_message(mut message_reader: MessageReader<DeleteMapMessage>) {
     }
 }
 
-pub fn load_map_data(
-    mut message_reader: MessageReader<LoadMapMessage>,
-    map_query: Query<(Entity, &MissionMap), With<MissionMap>>,
-    mut commands: Commands,
-) {
+pub fn load_map_data(mut message_reader: MessageReader<LoadMapMessage>, mut commands: Commands) {
     //NOTE - currently just taking the first message to prevent loading and unloading if multiple messages are present
     for message in message_reader.read() {
         // despawn all existing maps
         //NOTE - technically it should not be possible to have multiple maps, but its for safety
-        for (map_entity, map_info) in map_query.iter() {
-            info!("despawning {:?}", map_info.name);
-            commands.entity(map_entity).despawn();
-        }
 
         let Ok(map) = read_map_data(&message.id) else {
             error!("failed to load world map with id: {:?}", message.id);

@@ -5,12 +5,9 @@ use uuid::Uuid;
 
 use crate::{
     core::io::{read_ron_file, remove_ron_file, write_ron_file},
-    map::{
-        components::MissionMap,
-        io::{
-            paths::{manifest_path, map_data_path},
-            types::{MapManifest, MapManifestEntry, TileSet},
-        },
+    map::io::{
+        paths::{manifest_path, map_data_path},
+        types::{MapManifest, MapManifestEntry, MissionMap, TileSet},
     },
 };
 

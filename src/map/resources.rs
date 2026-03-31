@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::map::{components::MissionMap, io::types::TileSet};
+use crate::map::io::types::{MissionMap, TileSet};
 
 #[derive(Debug, Resource)]
 pub struct ActiveMap {

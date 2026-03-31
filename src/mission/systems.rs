@@ -7,8 +7,10 @@ use crate::{
     core::states::AppState,
     editor::messages::LoadEditorMessage,
     map::{
-        components::{MapBounds, MissionMap},
-        io::operations::write_map,
+        io::{
+            operations::write_map,
+            types::{MapBounds, MissionMap},
+        },
         messages::LoadMapMessage,
     },
     mission::{
