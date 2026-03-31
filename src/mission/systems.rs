@@ -110,6 +110,7 @@ fn create_map_for_mission() -> MissionMap {
         tiles: raw_matrix,
         tileset_name: "base".to_string(),
         bounds: MapBounds::default(),
+        placed_props: vec![],
     };
     write_map(&map);
     map

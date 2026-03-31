@@ -8,5 +8,6 @@ pub struct ActiveTile {
 pub enum EditorTool {
     #[default]
     TilePainter,
+    Prop,
     PlayerSpawn,
 }

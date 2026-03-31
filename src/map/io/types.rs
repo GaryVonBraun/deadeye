@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::props::io::types::PlacedProp;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MapManifestEntry {
     pub id: Uuid,
@@ -36,6 +38,7 @@ pub struct MissionMap {
     pub tileset_name: String,
     pub tiles: Vec<Vec<u32>>,
     pub bounds: MapBounds,
+    pub placed_props: Vec<PlacedProp>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

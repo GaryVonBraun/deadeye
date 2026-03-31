@@ -15,6 +15,7 @@ use crate::{
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
+    props::io::operations::read_prop_definitions,
 };
 
 pub fn editor_tile_picker_panel(
@@ -118,6 +119,12 @@ pub fn editor_left_panel(
         if back_to_missions.clicked() {
             *editor_tool = EditorTool::PlayerSpawn;
         }
+
+        let Ok(definitions) = read_prop_definitions() else {
+            return;
+        };
+
+        info!("definitions: {:?}", definitions);
     });
 
     Ok(())

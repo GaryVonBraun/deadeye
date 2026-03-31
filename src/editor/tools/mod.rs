@@ -82,6 +82,7 @@ pub fn editor_click_system(
                 position_tile_center(world_pos.y, active_map.tileset.tile_size),
             )
         }
+        EditorTool::Prop => {}
     };
 }
 
