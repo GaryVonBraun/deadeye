@@ -1,24 +1,15 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Resource, Default)]
-pub enum EditorTool {
+#[derive(Debug, Resource, Default, Clone)]
+pub enum EditorTools {
     #[default]
-    TilePainter,
+    None,
+    TilePainter(u16),
     PropTool(ToolAction),
     PlayerSpawn,
 }
 
-#[derive(Debug, Resource)]
-pub struct ActiveTile {
-    pub index: u16,
-}
-
-#[derive(Debug, Resource)]
-pub struct SelectedProp {
-    pub name: String,
-}
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum ToolAction {
-    Place,
+    Place(String),
 }

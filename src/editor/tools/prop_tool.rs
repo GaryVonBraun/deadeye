@@ -1,20 +1,16 @@
 use bevy::prelude::*;
 
-use crate::{
-    editor::resources::{SelectedProp, ToolAction},
-    props::messages::SpawnPropMessage,
-};
+use crate::{editor::resources::ToolAction, props::messages::SpawnPropMessage};
 
 pub fn prop_tool_system(
-    action: ToolAction,
+    action: &ToolAction,
     world_pos: Vec2,
     mut place_prop_writer: MessageWriter<SpawnPropMessage>,
-    selected_prop: Res<SelectedProp>,
 ) {
     match action {
-        ToolAction::Place => {
+        ToolAction::Place(name) => {
             place_prop_writer.write(SpawnPropMessage {
-                name: selected_prop.name.clone(),
+                name: name.to_string(),
                 position: world_pos,
             });
         }

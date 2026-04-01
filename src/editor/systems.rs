@@ -5,12 +5,7 @@ use bevy::{
 
 use crate::{
     core::states::AppState,
-    editor::{
-        messages::{
-            LoadEditorMessage, MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage,
-        },
-        resources::{ActiveTile, SelectedProp},
-    },
+    editor::{component::PlacementPreview, messages::*, resources::*},
     map::{
         components::MissionMapChunk,
         messages::{LoadMapMessage, SaveMapMessage},
@@ -19,7 +14,7 @@ use crate::{
     mission::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
-    props::messages::LoadPropsMessage,
+    props::{io::operations::read_prop_definitions, messages::LoadPropsMessage},
 };
 
 pub fn load_editor(
@@ -39,13 +34,12 @@ pub fn load_editor(
 
         commands.insert_resource(ActiveMission { mission });
 
-        //TEMPORARY - maybe its better if we insert this resource in the map plugin
-        commands.insert_resource(ActiveTile { index: 0 });
-
-        //FIXME - i will think of a better way of inserting this, and perhaps it should be Option<> instead of hardcoded none
-        commands.insert_resource(SelectedProp {
-            name: "none".to_string(),
-        });
+        commands.spawn((
+            PlacementPreview,
+            Sprite::default(),
+            Transform::default(),
+            Visibility::Hidden,
+        ));
 
         next_state.set(AppState::Editor);
     }
@@ -195,9 +189,17 @@ pub fn save_editor_changes(
     save_mission_writer.write(SaveMissionMessage);
 }
 
-pub fn exit_editor(mut commands: Commands, map_query: Query<Entity, With<MissionMapChunk>>) {
+pub fn exit_editor(
+    mut commands: Commands,
+    map_query: Query<Entity, With<MissionMapChunk>>,
+    placement_preview_query: Query<Entity, With<PlacementPreview>>,
+) {
     // despawning map
     for entity in map_query.iter() {
+        commands.entity(entity).despawn();
+    }
+
+    if let Ok(entity) = placement_preview_query.single() {
         commands.entity(entity).despawn();
     }
 }
@@ -210,4 +212,73 @@ pub fn render_gizmos(active_mission: Res<ActiveMission>, mut gizmos: Gizmos) {
         Vec2::splat(50.),
         Color::linear_rgb(1., 0.4, 0.4),
     );
+}
+
+pub fn update_preview_image(
+    mut query: Query<(&mut Visibility, &mut Sprite), With<PlacementPreview>>,
+    editor_tool: Res<EditorTools>,
+    asset_server: Res<AssetServer>,
+) {
+    let Ok((mut visibility, mut sprite)) = query.single_mut() else {
+        warn!("Trying to update placement image but None found");
+        return;
+    };
+
+    match &*editor_tool {
+        EditorTools::None => {}
+        EditorTools::TilePainter(_) => {
+            *visibility = Visibility::Hidden;
+        }
+        EditorTools::PropTool(tool_action) => match tool_action {
+            ToolAction::Place(name) => {
+                let Ok(definitions) = read_prop_definitions() else {
+                    return;
+                };
+
+                *visibility = Visibility::Visible;
+
+                let Some(prop_definition) = definitions
+                    .props
+                    .iter()
+                    .find(|definition| definition.name == name.to_string())
+                else {
+                    error!("Failed to find definition for placed prop");
+                    //TODO - perhaps in the future we can spawn the prop but show a missing texture
+                    return;
+                };
+
+                sprite.image = asset_server.load(format!("props/{}.png", prop_definition.sprite));
+                sprite.color = Color::srgba(1.0, 1.0, 1.0, 0.5);
+            }
+        },
+        EditorTools::PlayerSpawn => todo!(),
+    }
+}
+
+pub fn update_preview_position(
+    window: Single<&Window>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+    mut query: Query<&mut Transform, With<PlacementPreview>>,
+) {
+    let Ok(mut transform) = query.single_mut() else {
+        warn!("Trying to draw placement position but None found");
+        return;
+    };
+
+    let Some(cursor_pos) = window.cursor_position() else {
+        return;
+    };
+
+    let Ok(world_pos) = camera_query
+        .0
+        .viewport_to_world_2d(camera_query.1, cursor_pos)
+    else {
+        return;
+    };
+
+    transform.translation = Vec3 {
+        x: world_pos.x,
+        y: world_pos.y,
+        z: 0.,
+    };
 }

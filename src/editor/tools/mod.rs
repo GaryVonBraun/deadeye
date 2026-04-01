@@ -3,7 +3,7 @@ use bevy_egui::EguiContexts;
 
 use crate::{
     editor::{
-        resources::{ActiveTile, EditorTool, SelectedProp},
+        resources::EditorTools,
         tools::{prop_tool::prop_tool_system, tile_painter::tile_paint_system},
     },
     map::resources::ActiveMap,
@@ -18,15 +18,13 @@ pub fn editor_click_system(
     mouse: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    editor_tool: Res<EditorTool>,
-    active_tile: Res<ActiveTile>,
+    editor_tool: Res<EditorTools>,
     active_map: ResMut<ActiveMap>,
     mut active_mission: ResMut<ActiveMission>,
     mut contexts: EguiContexts,
 
     // props
     place_prop_writer: MessageWriter<SpawnPropMessage>,
-    selected_prop: Res<SelectedProp>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else {
         return;
@@ -68,11 +66,11 @@ pub fn editor_click_system(
         return;
     }
 
-    match *editor_tool {
-        EditorTool::TilePainter => {
-            tile_paint_system(active_tile, active_map, tile_position);
+    match &*editor_tool {
+        EditorTools::TilePainter(tile_index) => {
+            tile_paint_system(tile_index, active_map, tile_position);
         }
-        EditorTool::PlayerSpawn => {
+        EditorTools::PlayerSpawn => {
             info!("setting player spawnpoint");
 
             info!(
@@ -88,9 +86,13 @@ pub fn editor_click_system(
                 position_tile_center(world_pos.y, active_map.tileset.tile_size),
             )
         }
-        EditorTool::PropTool(action) => {
-            prop_tool_system(action, world_pos, place_prop_writer, selected_prop)
+        EditorTools::PropTool(action) => {
+            if !mouse.just_pressed(MouseButton::Left) {
+                return;
+            }
+            prop_tool_system(action, world_pos, place_prop_writer)
         }
+        EditorTools::None => {}
     };
 }
 

@@ -3,13 +3,14 @@ use bevy::prelude::*;
 use crate::{
     core::states::AppState,
     editor::{
-        messages::*, resources::EditorTool, systems::*, tools::editor_click_system,
+        messages::*, resources::EditorTools, systems::*, tools::editor_click_system,
         ui::EditorUiPlugin,
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
 };
 
+mod component;
 pub mod messages;
 mod resources;
 mod systems;
@@ -20,14 +21,18 @@ pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<EditorTool>();
+        app.init_resource::<EditorTools>();
         app.add_plugins(EditorUiPlugin);
         app.add_message::<LoadEditorMessage>();
         app.add_message::<SaveEditorChangesMessage>();
 
         app.add_systems(
             Update,
-            editor_click_system
+            (
+                editor_click_system,
+                update_preview_position,
+                update_preview_image,
+            )
                 .run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMap>)),
         );
         app.add_message::<UpdateMapBoundsMessage>();

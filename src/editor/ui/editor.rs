@@ -11,7 +11,7 @@ use crate::{
             MapBoundDirectionEnum, MapBoundOperationEnum, SaveEditorChangesMessage,
             UpdateMapBoundsMessage,
         },
-        resources::{ActiveTile, EditorTool, SelectedProp, ToolAction},
+        resources::{EditorTools, ToolAction},
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
@@ -21,8 +21,8 @@ use crate::{
 pub fn editor_tile_picker_panel(
     mut contexts: EguiContexts,
     active_map: Res<ActiveMap>,
-    mut active_tile: ResMut<ActiveTile>,
     mut update_bounds: MessageWriter<UpdateMapBoundsMessage>,
+    mut editor_tools: ResMut<EditorTools>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
 
@@ -54,11 +54,11 @@ pub fn editor_tile_picker_panel(
         ui.label("Tiles");
         ui.separator();
         for tile in active_map.tileset.tiles.iter() {
-            let tile_button = ui.add(
-                egui::Button::new(tile.name.clone()).selected(tile.index == active_tile.index),
-            );
+            let selected = matches!(*editor_tools, EditorTools::TilePainter(i) if i == tile.index);
+
+            let tile_button = ui.add(egui::Button::new(tile.name.clone()).selected(selected));
             if tile_button.clicked() {
-                active_tile.index = tile.index;
+                *editor_tools = EditorTools::TilePainter(tile.index);
             }
         }
     });
@@ -90,8 +90,7 @@ pub fn editor_left_panel(
     mut active_mission: ResMut<ActiveMission>,
     mut save_edits_writer: MessageWriter<SaveEditorChangesMessage>,
     mut next_state: ResMut<NextState<AppState>>,
-    mut editor_tool: ResMut<EditorTool>,
-    mut selected_prop: ResMut<SelectedProp>,
+    mut editor_tools: ResMut<EditorTools>,
 ) -> Result {
     //TEMPORARY - this is very rough ui code, when things are more certain it should be organized
 
@@ -116,13 +115,13 @@ pub fn editor_left_panel(
 
         ui.separator();
         ui.label("mission spawnables");
-        let save_button = ui.button("Tile painter");
-        if save_button.clicked() {
-            *editor_tool = EditorTool::TilePainter;
+        let tile_painter = ui.button("Tile painter");
+        if tile_painter.clicked() {
+            *editor_tools = EditorTools::TilePainter(0);
         }
         let back_to_missions = ui.button("Player spawnpoint");
         if back_to_missions.clicked() {
-            *editor_tool = EditorTool::PlayerSpawn;
+            *editor_tools = EditorTools::PlayerSpawn;
         }
 
         ui.separator();
@@ -134,8 +133,7 @@ pub fn editor_left_panel(
 
         for prop_definition in definitions.props {
             if ui.button(&prop_definition.name).clicked() {
-                *editor_tool = EditorTool::PropTool(ToolAction::Place);
-                selected_prop.name = prop_definition.name;
+                *editor_tools = EditorTools::PropTool(ToolAction::Place(prop_definition.name));
             };
         }
     });
