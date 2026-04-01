@@ -3,13 +3,15 @@ use bevy_egui::EguiContexts;
 
 use crate::{
     editor::{
-        resources::{ActiveTile, EditorTool},
-        tools::tile_painter::tile_paint_system,
+        resources::{ActiveTile, EditorTool, SelectedProp},
+        tools::{prop_tool::prop_tool_system, tile_painter::tile_paint_system},
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
+    props::messages::SpawnPropMessage,
 };
 
+mod prop_tool;
 mod tile_painter;
 
 pub fn editor_click_system(
@@ -21,6 +23,10 @@ pub fn editor_click_system(
     active_map: ResMut<ActiveMap>,
     mut active_mission: ResMut<ActiveMission>,
     mut contexts: EguiContexts,
+
+    // props
+    place_prop_writer: MessageWriter<SpawnPropMessage>,
+    selected_prop: Res<SelectedProp>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else {
         return;
@@ -82,7 +88,9 @@ pub fn editor_click_system(
                 position_tile_center(world_pos.y, active_map.tileset.tile_size),
             )
         }
-        EditorTool::Prop => {}
+        EditorTool::PropTool(action) => {
+            prop_tool_system(action, world_pos, place_prop_writer, selected_prop)
+        }
     };
 }
 

@@ -9,7 +9,7 @@ use crate::{
         messages::{
             LoadEditorMessage, MapBoundDirectionEnum, MapBoundOperationEnum, UpdateMapBoundsMessage,
         },
-        resources::ActiveTile,
+        resources::{ActiveTile, SelectedProp},
     },
     map::{
         components::MissionMapChunk,
@@ -19,11 +19,13 @@ use crate::{
     mission::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
+    props::messages::LoadPropsMessage,
 };
 
 pub fn load_editor(
     mut load_editor_reader: MessageReader<LoadEditorMessage>,
     mut load_map_writer: MessageWriter<LoadMapMessage>,
+    mut load_props_writer: MessageWriter<LoadPropsMessage>,
     mut next_state: ResMut<NextState<AppState>>,
     mut commands: Commands,
 ) {
@@ -33,10 +35,17 @@ pub fn load_editor(
         };
 
         load_map_writer.write(LoadMapMessage { id: mission.map_id });
+        load_props_writer.write(LoadPropsMessage { id: mission.map_id });
+
         commands.insert_resource(ActiveMission { mission });
 
         //TEMPORARY - maybe its better if we insert this resource in the map plugin
         commands.insert_resource(ActiveTile { index: 0 });
+
+        //FIXME - i will think of a better way of inserting this, and perhaps it should be Option<> instead of hardcoded none
+        commands.insert_resource(SelectedProp {
+            name: "none".to_string(),
+        });
 
         next_state.set(AppState::Editor);
     }

@@ -3,17 +3,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PlacedProp {
-    definition_id: String,
-    position: Vec2,
+    pub definition_name: String,
+    pub position: Vec2,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PropDefinition {
-    name: String,
-    sprite: String,
+    pub name: String,
+    pub sprite: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PropDefinitions {
-    props: Vec<PropDefinition>,
+    pub props: Vec<PropDefinition>,
 }

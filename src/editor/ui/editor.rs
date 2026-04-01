@@ -11,7 +11,7 @@ use crate::{
             MapBoundDirectionEnum, MapBoundOperationEnum, SaveEditorChangesMessage,
             UpdateMapBoundsMessage,
         },
-        resources::{ActiveTile, EditorTool},
+        resources::{ActiveTile, EditorTool, SelectedProp, ToolAction},
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
@@ -25,6 +25,8 @@ pub fn editor_tile_picker_panel(
     mut update_bounds: MessageWriter<UpdateMapBoundsMessage>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
+
+    //TEMPORARY - this is very rough ui code, when things are more certain it should be organized
 
     egui::SidePanel::right("tile_picker").show(ctx, |ui| {
         ui.label("MapDetails");
@@ -89,7 +91,10 @@ pub fn editor_left_panel(
     mut save_edits_writer: MessageWriter<SaveEditorChangesMessage>,
     mut next_state: ResMut<NextState<AppState>>,
     mut editor_tool: ResMut<EditorTool>,
+    mut selected_prop: ResMut<SelectedProp>,
 ) -> Result {
+    //TEMPORARY - this is very rough ui code, when things are more certain it should be organized
+
     let ctx = contexts.ctx_mut()?;
     let mission = &mut active_mission.mission;
     egui::SidePanel::left("mission_properties").show(ctx, |ui| {
@@ -120,11 +125,19 @@ pub fn editor_left_panel(
             *editor_tool = EditorTool::PlayerSpawn;
         }
 
+        ui.separator();
+        ui.label("mission props");
+
         let Ok(definitions) = read_prop_definitions() else {
             return;
         };
 
-        info!("definitions: {:?}", definitions);
+        for prop_definition in definitions.props {
+            if ui.button(&prop_definition.name).clicked() {
+                *editor_tool = EditorTool::PropTool(ToolAction::Place);
+                selected_prop.name = prop_definition.name;
+            };
+        }
     });
 
     Ok(())
