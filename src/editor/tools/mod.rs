@@ -190,7 +190,8 @@ pub fn update_preview_position(
     };
 
     if editor_settings.snap_to_grid {
-        transform.translation = prop_tile_aligned(world_pos, active_map, sprite_size).extend(0.);
+        transform.translation =
+            prop_tile_aligned(world_pos, active_map.tileset.tile_size, sprite_size).extend(0.);
     } else {
         transform.translation = world_pos.extend(0.);
     }
