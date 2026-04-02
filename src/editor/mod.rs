@@ -2,10 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::AppState,
-    editor::{
-        messages::*, resources::EditorTools, systems::*, tools::editor_click_system,
-        ui::EditorUiPlugin,
-    },
+    editor::{messages::*, systems::*, tools::*, ui::EditorUiPlugin},
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
 };
@@ -21,7 +18,6 @@ pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<EditorTools>();
         app.add_plugins(EditorUiPlugin);
         app.add_message::<LoadEditorMessage>();
         app.add_message::<SaveEditorChangesMessage>();

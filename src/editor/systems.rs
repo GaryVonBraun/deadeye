@@ -14,7 +14,7 @@ use crate::{
     mission::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
-    props::{io::operations::read_prop_definitions, messages::LoadPropsMessage},
+    props::messages::LoadPropsMessage,
 };
 
 pub fn load_editor(
@@ -33,6 +33,8 @@ pub fn load_editor(
         load_props_writer.write(LoadPropsMessage { id: mission.map_id });
 
         commands.insert_resource(ActiveMission { mission });
+        commands.insert_resource(EditorTool::None);
+        commands.insert_resource(EditorSettings { snap_to_grid: true });
 
         commands.spawn((
             PlacementPreview,
@@ -45,58 +47,25 @@ pub fn load_editor(
     }
 }
 
-const CAMERA_SPEED: f32 = 100.;
-
-pub fn editor_camera_controller(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut camera_query: Query<(&mut Transform, &mut Projection), With<Camera>>,
-    time: Res<Time>,
-    mut evr_scroll: MessageReader<MouseWheel>,
+pub fn exit_editor(
+    mut commands: Commands,
+    map_query: Query<Entity, With<MissionMapChunk>>,
+    placement_preview_query: Query<Entity, With<PlacementPreview>>,
 ) {
-    let Ok((mut camera_transform, mut projection)) = camera_query.single_mut() else {
-        error!("no camera found");
-        return;
-    };
-    let mut direction = Vec2::default();
-    let mut speed_multiplier: f32 = 1.;
-
-    if keys.pressed(KeyCode::KeyA) {
-        direction.x += -1.;
-    }
-    if keys.pressed(KeyCode::KeyD) {
-        direction.x += 1.;
-    }
-    if keys.pressed(KeyCode::KeyW) {
-        direction.y += 1.;
+    // despawning map
+    for entity in map_query.iter() {
+        commands.entity(entity).despawn();
     }
 
-    if keys.pressed(KeyCode::KeyS) {
-        direction.y += -1.;
+    // despawning preview
+    if let Ok(entity) = placement_preview_query.single() {
+        commands.entity(entity).despawn();
     }
 
-    //TEMPORARY - for now we just keep it simple and can increase speed with shift
-    if keys.pressed(KeyCode::ShiftLeft) {
-        speed_multiplier = 2.
-    }
-
-    let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
-
-    camera_transform.translation += displacement.extend(0.0);
-
-    //FIXME - this is currently a funky way of doing it, i'll see later to clean it up
-    for ev in evr_scroll.read() {
-        match ev.unit {
-            MouseScrollUnit::Line => {
-                if let Projection::Orthographic(ref mut ortho) = *projection {
-                    ortho.scale -= ev.y * 0.1;
-                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
-                }
-            }
-            MouseScrollUnit::Pixel => {
-                // do nothing
-            }
-        }
-    }
+    //removing editor resources
+    commands.remove_resource::<ActiveMission>();
+    commands.remove_resource::<EditorTool>();
+    commands.remove_resource::<EditorSettings>();
 }
 
 const TILE_INDEX: u32 = 1;
@@ -189,21 +158,6 @@ pub fn save_editor_changes(
     save_mission_writer.write(SaveMissionMessage);
 }
 
-pub fn exit_editor(
-    mut commands: Commands,
-    map_query: Query<Entity, With<MissionMapChunk>>,
-    placement_preview_query: Query<Entity, With<PlacementPreview>>,
-) {
-    // despawning map
-    for entity in map_query.iter() {
-        commands.entity(entity).despawn();
-    }
-
-    if let Ok(entity) = placement_preview_query.single() {
-        commands.entity(entity).despawn();
-    }
-}
-
 pub fn render_gizmos(active_mission: Res<ActiveMission>, mut gizmos: Gizmos) {
     let spawn_position = active_mission.mission.player_spawn;
 
@@ -214,71 +168,56 @@ pub fn render_gizmos(active_mission: Res<ActiveMission>, mut gizmos: Gizmos) {
     );
 }
 
-pub fn update_preview_image(
-    mut query: Query<(&mut Visibility, &mut Sprite), With<PlacementPreview>>,
-    editor_tool: Res<EditorTools>,
-    asset_server: Res<AssetServer>,
+const CAMERA_SPEED: f32 = 100.;
+
+pub fn editor_camera_controller(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut camera_query: Query<(&mut Transform, &mut Projection), With<Camera>>,
+    time: Res<Time>,
+    mut evr_scroll: MessageReader<MouseWheel>,
 ) {
-    let Ok((mut visibility, mut sprite)) = query.single_mut() else {
-        warn!("Trying to update placement image but None found");
+    let Ok((mut camera_transform, mut projection)) = camera_query.single_mut() else {
+        error!("no camera found");
         return;
     };
+    let mut direction = Vec2::default();
+    let mut speed_multiplier: f32 = 1.;
 
-    match &*editor_tool {
-        EditorTools::None => {}
-        EditorTools::TilePainter(_) => {
-            *visibility = Visibility::Hidden;
-        }
-        EditorTools::PropTool(tool_action) => match tool_action {
-            ToolAction::Place(name) => {
-                let Ok(definitions) = read_prop_definitions() else {
-                    return;
-                };
-
-                *visibility = Visibility::Visible;
-
-                let Some(prop_definition) = definitions
-                    .props
-                    .iter()
-                    .find(|definition| definition.name == name.to_string())
-                else {
-                    error!("Failed to find definition for placed prop");
-                    //TODO - perhaps in the future we can spawn the prop but show a missing texture
-                    return;
-                };
-
-                sprite.image = asset_server.load(format!("props/{}.png", prop_definition.sprite));
-                sprite.color = Color::srgba(1.0, 1.0, 1.0, 0.5);
-            }
-        },
-        EditorTools::PlayerSpawn => todo!(),
+    if keys.pressed(KeyCode::KeyA) {
+        direction.x += -1.;
     }
-}
+    if keys.pressed(KeyCode::KeyD) {
+        direction.x += 1.;
+    }
+    if keys.pressed(KeyCode::KeyW) {
+        direction.y += 1.;
+    }
 
-pub fn update_preview_position(
-    window: Single<&Window>,
-    camera_query: Single<(&Camera, &GlobalTransform)>,
-    mut query: Query<&mut Transform, With<PlacementPreview>>,
-) {
-    let Ok(mut transform) = query.single_mut() else {
-        warn!("Trying to draw placement position but None found");
-        return;
-    };
+    if keys.pressed(KeyCode::KeyS) {
+        direction.y += -1.;
+    }
 
-    let Some(cursor_pos) = window.cursor_position() else {
-        return;
-    };
+    //TEMPORARY - for now we just keep it simple and can increase speed with shift
+    if keys.pressed(KeyCode::ShiftLeft) {
+        speed_multiplier = 2.
+    }
 
-    let Ok(world_pos) = camera_query
-        .0
-        .viewport_to_world_2d(camera_query.1, cursor_pos)
-    else {
-        return;
-    };
+    let displacement = direction * (CAMERA_SPEED * speed_multiplier) * time.delta_secs();
 
-    transform.translation = Vec3 {
-        x: world_pos.x,
-        y: world_pos.y,
-        z: 0.,
-    };
+    camera_transform.translation += displacement.extend(0.0);
+
+    //FIXME - this is currently a funky way of doing it, i'll see later to clean it up
+    for ev in evr_scroll.read() {
+        match ev.unit {
+            MouseScrollUnit::Line => {
+                if let Projection::Orthographic(ref mut ortho) = *projection {
+                    ortho.scale -= ev.y * 0.1;
+                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
+                }
+            }
+            MouseScrollUnit::Pixel => {
+                // do nothing
+            }
+        }
+    }
 }

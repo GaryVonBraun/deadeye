@@ -11,7 +11,7 @@ use crate::{
             MapBoundDirectionEnum, MapBoundOperationEnum, SaveEditorChangesMessage,
             UpdateMapBoundsMessage,
         },
-        resources::{EditorTools, ToolAction},
+        resources::{EditorSettings, EditorTool, ToolAction},
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
@@ -22,7 +22,7 @@ pub fn editor_tile_picker_panel(
     mut contexts: EguiContexts,
     active_map: Res<ActiveMap>,
     mut update_bounds: MessageWriter<UpdateMapBoundsMessage>,
-    mut editor_tools: ResMut<EditorTools>,
+    mut editor_tools: ResMut<EditorTool>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
 
@@ -54,11 +54,11 @@ pub fn editor_tile_picker_panel(
         ui.label("Tiles");
         ui.separator();
         for tile in active_map.tileset.tiles.iter() {
-            let selected = matches!(*editor_tools, EditorTools::TilePainter(i) if i == tile.index);
+            let selected = matches!(*editor_tools, EditorTool::TilePainter(i) if i == tile.index);
 
             let tile_button = ui.add(egui::Button::new(tile.name.clone()).selected(selected));
             if tile_button.clicked() {
-                *editor_tools = EditorTools::TilePainter(tile.index);
+                *editor_tools = EditorTool::TilePainter(tile.index);
             }
         }
     });
@@ -90,7 +90,8 @@ pub fn editor_left_panel(
     mut active_mission: ResMut<ActiveMission>,
     mut save_edits_writer: MessageWriter<SaveEditorChangesMessage>,
     mut next_state: ResMut<NextState<AppState>>,
-    mut editor_tools: ResMut<EditorTools>,
+    mut editor_tools: ResMut<EditorTool>,
+    mut editor_settings: ResMut<EditorSettings>,
 ) -> Result {
     //TEMPORARY - this is very rough ui code, when things are more certain it should be organized
 
@@ -115,16 +116,19 @@ pub fn editor_left_panel(
 
         ui.separator();
         ui.label("mission spawnables");
-        let tile_painter = ui.button("Tile painter");
-        if tile_painter.clicked() {
-            *editor_tools = EditorTools::TilePainter(0);
-        }
+
         let back_to_missions = ui.button("Player spawnpoint");
         if back_to_missions.clicked() {
-            *editor_tools = EditorTools::PlayerSpawn;
+            *editor_tools = EditorTool::PlayerSpawn;
         }
 
         ui.separator();
+        let toggle_grid =
+            ui.add(egui::Button::new("Snap to grid").selected(editor_settings.snap_to_grid));
+
+        if toggle_grid.clicked() {
+            editor_settings.snap_to_grid = !editor_settings.snap_to_grid;
+        }
         ui.label("mission props");
 
         let Ok(definitions) = read_prop_definitions() else {
@@ -133,7 +137,7 @@ pub fn editor_left_panel(
 
         for prop_definition in definitions.props {
             if ui.button(&prop_definition.name).clicked() {
-                *editor_tools = EditorTools::PropTool(ToolAction::Place(prop_definition.name));
+                *editor_tools = EditorTool::PropTool(ToolAction::Place(prop_definition.name));
             };
         }
     });

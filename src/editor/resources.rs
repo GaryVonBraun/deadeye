@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Debug, Resource, Default, Clone)]
-pub enum EditorTools {
+pub enum EditorTool {
     #[default]
     None,
     TilePainter(u16),
@@ -12,4 +12,9 @@ pub enum EditorTools {
 #[derive(Debug, Clone)]
 pub enum ToolAction {
     Place(String),
+}
+
+#[derive(Debug, Resource)]
+pub struct EditorSettings {
+    pub snap_to_grid: bool,
 }
