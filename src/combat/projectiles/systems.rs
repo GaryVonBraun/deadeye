@@ -32,21 +32,21 @@ pub fn projectile_collision(
     mut message: MessageWriter<DamageMessage>,
 ) {
     for (entity, projectile, transform, collision) in projectile_query.iter() {
-        for (health_entity, target_collision, health_transform) in health_query.iter() {
-            if projectile.owner == health_entity {
+        for (target_entity, target_collision, target_transform) in health_query.iter() {
+            if projectile.owner == target_entity {
                 continue;
             }
 
             if check_collision(
                 transform.translation.truncate(),
                 collision,
-                health_transform.translation.truncate(),
+                target_transform.translation.truncate(),
                 target_collision,
             ) {
                 commands.entity(entity).despawn();
                 info!("{:?} hit something", entity);
                 message.write(DamageMessage {
-                    target: health_entity,
+                    target: target_entity,
                     amount: projectile.damage,
                 });
             };

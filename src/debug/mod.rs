@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{core::states::SimulationState, debug::systems::*};
+use crate::debug::systems::*;
 
 pub mod components;
 mod systems;
@@ -17,6 +17,7 @@ impl Plugin for DebugPlugin {
                 debug_visible_entities_gizmo,
                 debug_target_entity_gizmo,
                 debug_melee_range_gizmo,
+                debug_collision_gizmo,
             ),
         );
     }

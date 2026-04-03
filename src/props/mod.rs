@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::props::{messages::*, systems::*};
 
+mod bundles;
 pub mod components;
 pub mod io;
 pub mod messages;

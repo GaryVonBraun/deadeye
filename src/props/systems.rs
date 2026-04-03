@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    map::{io::operations::read_map_data, resources::ActiveMap},
+    collision::components::Collision,
+    core::components::GameEntity,
+    map::io::operations::read_map_data,
     props::{
+        bundles::PropBundle,
         components::Prop,
         io::{operations::read_prop_definitions, types::PlacedProp},
         messages::{LoadPropsMessage, RemovePropMessage, SpawnPropMessage},
@@ -47,13 +50,12 @@ pub fn load_map_props(
                     warn!("Failed to find definition for placed prop called {}, missing texture placed at - x: {} y: {} ", prop.id, prop.position.x, prop.position.y);
 
                     let entity = commands
-                        .spawn((
-                            Prop {
-                                size: Vec2::splat(64.),
-                            },
-                            Sprite::from_image(asset_server.load("props/missing_prop_64.png")),
-                            Transform::from_xyz(prop.position.x, prop.position.y, 0.),
-                        ))
+                        .spawn(PropBundle{
+                             prop: Prop::default(), 
+                             sprite: Sprite::from_image(asset_server.load("props/missing_prop_64.png")), 
+                             transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
+                             collision: Collision::default(), 
+                             game_entity: GameEntity } )
                         .id();
 
                     return PlacedProp {
@@ -62,17 +64,16 @@ pub fn load_map_props(
                     };
                 };
 
+                info!("collision: {:?}", prop_definition.collision);
+
                 let entity = commands
-                    .spawn((
-                        Prop {
-                            size: prop_definition.size,
-                        },
-                        Sprite::from_image(
-                            asset_server.load(format!("props/{}.png", prop_definition.sprite)),
-                        ),
-                        Transform::from_xyz(prop.position.x, prop.position.y, 0.),
-                    ))
-                    .id();
+                        .spawn(PropBundle{
+                             prop: Prop::with_size(prop_definition.size), 
+                             sprite: Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))), 
+                             transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
+                             collision: prop_definition.collision.clone(),  
+                             game_entity: GameEntity } )
+                        .id();
 
                 PlacedProp {
                     entity: Some(entity),
@@ -108,16 +109,14 @@ pub fn spawn_prop(
         };
 
         let entity = commands
-            .spawn((
-                Prop {
-                    size: prop_definition.size,
-                },
-                Sprite::from_image(
-                    asset_server.load(format!("props/{}.png", prop_definition.sprite)),
-                ),
-                Transform::from_xyz(message.position.x, message.position.y, 0.),
-            ))
+            .spawn(PropBundle{
+                 prop: Prop::with_size(prop_definition.size), 
+                 sprite: Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))), 
+                 transform: Transform::from_xyz(message.position.x, message.position.y, 0.), 
+                 collision: prop_definition.collision.clone(), 
+                 game_entity: GameEntity } )
             .id();
+
 
         active_map_props.props.push(PlacedProp {
             id: message.name.clone(),

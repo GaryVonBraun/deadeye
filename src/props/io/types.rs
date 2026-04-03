@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::collision::components::CollisionShape;
+use crate::collision::components::Collision;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PlacedProp {
@@ -11,13 +11,13 @@ pub struct PlacedProp {
     pub entity: Option<Entity>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PropDefinition {
     pub name: String,
     pub sprite: String,
     pub size: Vec2,
     pub tile_aligned: bool,
-    pub collision_shape: CollisionShape,
+    pub collision: Collision,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
