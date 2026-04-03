@@ -42,9 +42,9 @@ pub fn load_map_props(
                 let Some(prop_definition) = prop_definitions
                     .props
                     .iter()
-                    .find(|definition| definition.name == prop.definition_name)
+                    .find(|definition| definition.name == prop.id)
                 else {
-                    warn!("Failed to find definition for placed prop called {}, missing texture placed at - x: {} y: {} ", prop.definition_name, prop.position.x, prop.position.y);
+                    warn!("Failed to find definition for placed prop called {}, missing texture placed at - x: {} y: {} ", prop.id, prop.position.x, prop.position.y);
 
                     let entity = commands
                         .spawn((
@@ -120,7 +120,7 @@ pub fn spawn_prop(
             .id();
 
         active_map_props.props.push(PlacedProp {
-            definition_name: message.name.clone(),
+            id: message.name.clone(),
             position: message.position,
             entity: Some(entity),
         });

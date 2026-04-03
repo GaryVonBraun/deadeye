@@ -7,11 +7,7 @@ use crate::{
         tools::tile_world_position,
     },
     map::resources::ActiveMap,
-    props::{
-        io::types::PlacedProp,
-        messages::{RemovePropMessage, SpawnPropMessage},
-        resources::ActiveMapProps,
-    },
+    props::messages::{RemovePropMessage, SpawnPropMessage},
 };
 
 pub fn prop_tool_system(
@@ -20,7 +16,6 @@ pub fn prop_tool_system(
     editor_settings: Res<EditorSettings>,
     preview: &PlacementPreview,
     active_map: ResMut<ActiveMap>,
-    mut active_map_props: ResMut<ActiveMapProps>,
     mut place_prop_writer: MessageWriter<SpawnPropMessage>,
     mut remove_prop_writer: MessageWriter<RemovePropMessage>,
 ) {
@@ -28,7 +23,7 @@ pub fn prop_tool_system(
         ToolAction::Place(name) => {
             let placement_position: Vec2;
 
-            if editor_settings.snap_to_grid {
+            if editor_settings.snap_to_grid || editor_settings.tile_aligned {
                 placement_position =
                     prop_tile_aligned(world_pos, active_map.tileset.tile_size, preview.size);
             } else {

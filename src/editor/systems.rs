@@ -34,7 +34,10 @@ pub fn load_editor(
 
         commands.insert_resource(ActiveMission { mission });
         commands.insert_resource(EditorTool::None);
-        commands.insert_resource(EditorSettings { snap_to_grid: true });
+        commands.insert_resource(EditorSettings {
+            snap_to_grid: true,
+            tile_aligned: false,
+        });
 
         commands.spawn((
             PlacementPreview {

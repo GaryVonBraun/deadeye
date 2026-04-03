@@ -13,10 +13,8 @@ use crate::{
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
     props::{
-        components::Prop,
         io::operations::read_prop_definitions,
         messages::{RemovePropMessage, SpawnPropMessage},
-        resources::ActiveMapProps,
     },
 };
 
@@ -37,7 +35,6 @@ pub fn editor_click_system(
     place_prop_writer: MessageWriter<SpawnPropMessage>,
     remove_prop_writer: MessageWriter<RemovePropMessage>,
     prop_query: Query<&PlacementPreview>,
-    active_map_props: ResMut<ActiveMapProps>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else {
         return;
@@ -107,7 +104,6 @@ pub fn editor_click_system(
                 editor_settings,
                 preview,
                 active_map,
-                active_map_props,
                 place_prop_writer,
                 remove_prop_writer,
             );
@@ -125,7 +121,7 @@ pub fn update_preview_image(
     mut query: Query<(&mut Visibility, &mut Sprite, &mut PlacementPreview)>,
     editor_tool: Res<EditorTool>,
     asset_server: Res<AssetServer>,
-    images: Res<Assets<Image>>,
+    mut editor_settings: ResMut<EditorSettings>,
 ) {
     let Ok((mut visibility, mut sprite, mut preview)) = query.single_mut() else {
         warn!("Trying to update placement image but None found");
@@ -160,6 +156,8 @@ pub fn update_preview_image(
 
                 // this is so we know how to offset the preview
                 preview.size = prop_definition.size;
+
+                editor_settings.tile_aligned = prop_definition.tile_aligned;
             }
             ToolAction::Remove => *visibility = Visibility::Hidden,
         },
@@ -190,7 +188,7 @@ pub fn update_preview_position(
         return;
     };
 
-    if editor_settings.snap_to_grid {
+    if editor_settings.snap_to_grid || editor_settings.tile_aligned {
         transform.translation =
             prop_tile_aligned(world_pos, active_map.tileset.tile_size, preview.size).extend(0.);
     } else {

@@ -18,4 +18,5 @@ pub enum ToolAction {
 #[derive(Debug, Resource)]
 pub struct EditorSettings {
     pub snap_to_grid: bool,
+    pub tile_aligned: bool,
 }
