@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
     actor::{components::*, system::ActorDefinition},
+    collision::components::Collision,
     combat::health::components::Health,
     core::components::GameEntity,
-    simulation::collision::components::Collision,
 };
 
 #[derive(Bundle)]

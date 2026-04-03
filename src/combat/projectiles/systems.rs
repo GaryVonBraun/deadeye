@@ -1,11 +1,11 @@
-use bevy::{ecs::component::Components, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
+    collision::components::Collision,
     combat::{
         health::{components::Health, messages::DamageMessage},
         projectiles::component::Projectile,
     },
-    simulation::collision::components::Collision,
 };
 
 pub fn move_projectiles(

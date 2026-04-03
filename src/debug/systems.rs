@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::{
     actor::components::Actor,
     ai::{components::AiController, vision::components::Vision},
+    collision::{self, components::Collision},
     combat::components::MeleeIntent,
     debug::components::DebugMovementIntent,
-    simulation::collision::{self, components::Collision},
 };
 
 //TEMPORARY - This is a quick implementation to see if the locomotion system works

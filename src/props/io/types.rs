@@ -15,6 +15,12 @@ pub struct PropDefinition {
     pub sprite: String,
     pub size: Vec2,
     pub tile_aligned: bool,
+    pub collision_shape: CollisionShape,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum CollisionShape {
+    Circle { radius: f32 },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

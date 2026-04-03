@@ -1,14 +1,14 @@
 use bevy::{prelude::*, window::WindowResolution};
-use bevy_egui::EguiPrimaryContextPass;
-use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 use crate::{
-    actor::ActorPlugin, ai::AiPlugin, combat::CombatPlugin, core::CorePlugin, debug::DebugPlugin,
-    editor::EditorPlugin, map::MapPlugin, mission::MissionPlugin, player::PlayerPlugin,
-    props::PropsPlugin, simulation::SimulationPlugin, ui::UiPlugin,
+    actor::ActorPlugin, ai::AiPlugin, collision::CollisionPlugin, combat::CombatPlugin,
+    core::CorePlugin, debug::DebugPlugin, editor::EditorPlugin, map::MapPlugin,
+    mission::MissionPlugin, player::PlayerPlugin, props::PropsPlugin, ui::UiPlugin,
 };
 mod actor;
 mod ai;
+mod collision;
 mod combat;
 mod core;
 mod debug;
@@ -17,7 +17,6 @@ mod map;
 mod mission;
 mod player;
 mod props;
-mod simulation;
 mod ui;
 
 fn main() {
@@ -40,7 +39,7 @@ fn main() {
         // .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(CorePlugin)
         .add_plugins((
-            SimulationPlugin,
+            CollisionPlugin,
             ActorPlugin,
             PlayerPlugin,
             CombatPlugin,

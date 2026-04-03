@@ -2,11 +2,11 @@ use bevy::prelude::*;
 
 use crate::{
     actor::components::Actor,
+    collision::components::Collision,
     combat::{
         components::{MeleeIntent, MeleeState},
         health::messages::DamageMessage,
     },
-    simulation::collision::components::Collision,
 };
 
 pub fn tick_melee_intents(

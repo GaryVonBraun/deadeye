@@ -13,11 +13,11 @@ use crate::{
         },
         vision::components::Vision,
     },
+    collision::components::Collision,
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
         messages::ShootMessage,
     },
-    simulation::collision::components::Collision,
 };
 
 pub fn vision_targeting_system(
