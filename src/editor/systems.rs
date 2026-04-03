@@ -14,7 +14,7 @@ use crate::{
     mission::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
-    props::messages::LoadPropsMessage,
+    props::{components::Prop, messages::LoadPropsMessage, resources::ActiveMapProps},
 };
 
 pub fn load_editor(
@@ -55,10 +55,16 @@ pub fn load_editor(
 pub fn exit_editor(
     mut commands: Commands,
     map_query: Query<Entity, With<MissionMapChunk>>,
+    prop_query: Query<Entity, With<Prop>>,
     placement_preview_query: Query<Entity, With<PlacementPreview>>,
 ) {
-    // despawning map
+    // despawning map chunks
     for entity in map_query.iter() {
+        commands.entity(entity).despawn();
+    }
+
+    // despawning props
+    for entity in prop_query.iter() {
         commands.entity(entity).despawn();
     }
 
@@ -69,6 +75,7 @@ pub fn exit_editor(
 
     //removing editor resources
     commands.remove_resource::<ActiveMission>();
+    commands.remove_resource::<ActiveMapProps>();
     commands.remove_resource::<EditorTool>();
     commands.remove_resource::<EditorSettings>();
 }
