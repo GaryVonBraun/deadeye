@@ -20,7 +20,6 @@ impl Plugin for MissionPlugin {
             Update,
             load_mission.run_if(on_message::<LoadMissionMessage>),
         );
-
         // crud systems
         app.add_systems(
             Update,

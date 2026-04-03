@@ -152,3 +152,9 @@ pub fn remove_prop(
         }
     }
 }
+
+pub fn unload_props(prop_query: Query<Entity, With<Prop>>, mut commands: Commands) {
+    for entity in prop_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}

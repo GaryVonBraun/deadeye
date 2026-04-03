@@ -14,7 +14,11 @@ use crate::{
     mission::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
-    props::{components::Prop, messages::LoadPropsMessage, resources::ActiveMapProps},
+    props::{
+        components::Prop,
+        messages::{LoadPropsMessage, UnloadPropsMessage},
+        resources::ActiveMapProps,
+    },
 };
 
 pub fn load_editor(
@@ -55,18 +59,17 @@ pub fn load_editor(
 pub fn exit_editor(
     mut commands: Commands,
     map_query: Query<Entity, With<MissionMapChunk>>,
-    prop_query: Query<Entity, With<Prop>>,
     placement_preview_query: Query<Entity, With<PlacementPreview>>,
+    mut unload_props_writer: MessageWriter<UnloadPropsMessage>,
 ) {
     // despawning map chunks
+    //TEMPORARY - will be a message in the future as well
     for entity in map_query.iter() {
         commands.entity(entity).despawn();
     }
 
     // despawning props
-    for entity in prop_query.iter() {
-        commands.entity(entity).despawn();
-    }
+    unload_props_writer.write(UnloadPropsMessage);
 
     // despawning preview
     if let Ok(entity) = placement_preview_query.single() {

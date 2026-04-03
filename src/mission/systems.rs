@@ -20,6 +20,7 @@ use crate::{
         messages::*,
         resources::{ActiveMission, Mission},
     },
+    props::messages::LoadPropsMessage,
     ui::missions_menu::messages::RefreshMissionListMessage,
 };
 
@@ -27,6 +28,7 @@ pub fn load_mission(
     mut load_mission_reader: MessageReader<LoadMissionMessage>,
     mut next_state: ResMut<NextState<AppState>>,
     mut load_map_writer: MessageWriter<LoadMapMessage>,
+    mut load_props_writer: MessageWriter<LoadPropsMessage>,
     mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
 ) {
     for message in load_mission_reader.read() {
@@ -42,6 +44,8 @@ pub fn load_mission(
 
         //set active map
         load_map_writer.write(LoadMapMessage { id: mission.map_id });
+
+        load_props_writer.write(LoadPropsMessage { id: mission.map_id });
 
         spawn_actor_writer.write(SpawnActorMessage {
             id: "player".to_string(),

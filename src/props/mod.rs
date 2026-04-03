@@ -15,6 +15,7 @@ impl Plugin for PropsPlugin {
         app.add_message::<SpawnPropMessage>();
         app.add_message::<RemovePropMessage>();
         app.add_message::<LoadPropsMessage>();
+        app.add_message::<UnloadPropsMessage>();
 
         app.add_systems(
             Update,
