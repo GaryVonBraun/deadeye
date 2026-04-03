@@ -11,6 +11,7 @@ pub struct PlacedProp {
 pub struct PropDefinition {
     pub name: String,
     pub sprite: String,
+    pub size: Vec2,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -13,6 +13,7 @@ pub struct PropsPlugin;
 impl Plugin for PropsPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<SpawnPropMessage>();
+        app.add_message::<RemovePropMessage>();
         app.add_message::<LoadPropsMessage>();
 
         app.add_systems(
@@ -20,5 +21,6 @@ impl Plugin for PropsPlugin {
             load_map_props.run_if(on_message::<LoadPropsMessage>),
         );
         app.add_systems(Update, spawn_prop.run_if(on_message::<SpawnPropMessage>));
+        app.add_systems(Update, remove_prop.run_if(on_message::<RemovePropMessage>));
     }
 }

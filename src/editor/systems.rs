@@ -37,7 +37,9 @@ pub fn load_editor(
         commands.insert_resource(EditorSettings { snap_to_grid: true });
 
         commands.spawn((
-            PlacementPreview,
+            PlacementPreview {
+                size: Vec2::default(),
+            },
             Sprite::default(),
             Transform::default(),
             Visibility::Hidden,

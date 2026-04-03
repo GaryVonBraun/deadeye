@@ -131,6 +131,11 @@ pub fn editor_left_panel(
         }
         ui.label("mission props");
 
+        let remove_prop_button = ui.button("Remove Props");
+        if remove_prop_button.clicked() {
+            *editor_tools = EditorTool::PropTool(ToolAction::Remove)
+        }
+
         let Ok(definitions) = read_prop_definitions() else {
             return;
         };

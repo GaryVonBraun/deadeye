@@ -12,7 +12,11 @@ use crate::{
     },
     map::resources::ActiveMap,
     mission::resources::ActiveMission,
-    props::{io::operations::read_prop_definitions, messages::SpawnPropMessage},
+    props::{
+        components::Prop,
+        io::operations::read_prop_definitions,
+        messages::{RemovePropMessage, SpawnPropMessage},
+    },
 };
 
 mod prop_tool;
@@ -30,7 +34,8 @@ pub fn editor_click_system(
 
     // props
     place_prop_writer: MessageWriter<SpawnPropMessage>,
-    prop_query: Query<&Sprite, With<PlacementPreview>>,
+    remove_prop_writer: MessageWriter<RemovePropMessage>,
+    prop_query: Query<&PlacementPreview>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else {
         return;
@@ -90,17 +95,18 @@ pub fn editor_click_system(
                 return;
             }
 
-            let Ok(prop_sprite) = prop_query.single() else {
+            let Ok(preview) = prop_query.single() else {
                 return;
             };
 
             prop_tool_system(
                 action,
                 world_pos,
-                place_prop_writer,
                 editor_settings,
-                prop_sprite,
+                preview,
                 active_map,
+                place_prop_writer,
+                remove_prop_writer,
             );
         }
         EditorTool::None => {}
@@ -113,12 +119,12 @@ fn tile_world_position(position: f32, tile_size: f32) -> f32 {
 }
 
 pub fn update_preview_image(
-    mut query: Query<(&mut Visibility, &mut Sprite), With<PlacementPreview>>,
+    mut query: Query<(&mut Visibility, &mut Sprite, &mut PlacementPreview)>,
     editor_tool: Res<EditorTool>,
     asset_server: Res<AssetServer>,
     images: Res<Assets<Image>>,
 ) {
-    let Ok((mut visibility, mut sprite)) = query.single_mut() else {
+    let Ok((mut visibility, mut sprite, mut preview)) = query.single_mut() else {
         warn!("Trying to update placement image but None found");
         return;
     };
@@ -146,16 +152,13 @@ pub fn update_preview_image(
                     return;
                 };
 
-                let image_handle =
-                    asset_server.load(format!("props/{}.png", prop_definition.sprite));
-
-                if let Some(image) = images.get(image_handle.id()) {
-                    sprite.custom_size = Some(image.size_f32());
-                };
-
-                sprite.image = image_handle;
+                sprite.image = asset_server.load(format!("props/{}.png", prop_definition.sprite));
                 sprite.color = Color::srgba(1.0, 1.0, 1.0, 0.5);
+
+                // this is so we know how to offset the preview
+                preview.size = prop_definition.size;
             }
+            ToolAction::Remove => *visibility = Visibility::Hidden,
         },
         EditorTool::PlayerSpawn => *visibility = Visibility::Hidden,
     }
@@ -164,17 +167,12 @@ pub fn update_preview_image(
 pub fn update_preview_position(
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    mut query: Query<(&Sprite, &mut Transform), With<PlacementPreview>>,
+    mut query: Query<(&PlacementPreview, &mut Transform)>,
     active_map: ResMut<ActiveMap>,
     editor_settings: Res<EditorSettings>,
 ) {
-    let Ok((sprite, mut transform)) = query.single_mut() else {
+    let Ok((preview, mut transform)) = query.single_mut() else {
         warn!("Trying to draw placement position but None found");
-        return;
-    };
-
-    //NOTE - if the sprite has no custom size we don't update the position
-    let Some(sprite_size) = sprite.custom_size else {
         return;
     };
 
@@ -191,7 +189,7 @@ pub fn update_preview_position(
 
     if editor_settings.snap_to_grid {
         transform.translation =
-            prop_tile_aligned(world_pos, active_map.tileset.tile_size, sprite_size).extend(0.);
+            prop_tile_aligned(world_pos, active_map.tileset.tile_size, preview.size).extend(0.);
     } else {
         transform.translation = world_pos.extend(0.);
     }

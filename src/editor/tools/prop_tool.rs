@@ -2,31 +2,33 @@ use bevy::prelude::*;
 
 use crate::{
     editor::{
+        component::PlacementPreview,
         resources::{EditorSettings, ToolAction},
         tools::tile_world_position,
     },
     map::resources::ActiveMap,
-    props::{io::types::PlacedProp, messages::SpawnPropMessage},
+    props::{
+        io::types::PlacedProp,
+        messages::{RemovePropMessage, SpawnPropMessage},
+    },
 };
 
 pub fn prop_tool_system(
     action: &ToolAction,
     world_pos: Vec2,
-    mut place_prop_writer: MessageWriter<SpawnPropMessage>,
     editor_settings: Res<EditorSettings>,
-    prop_sprite: &Sprite,
+    preview: &PlacementPreview,
     mut active_map: ResMut<ActiveMap>,
+    mut place_prop_writer: MessageWriter<SpawnPropMessage>,
+    mut remove_prop_writer: MessageWriter<RemovePropMessage>,
 ) {
     match action {
         ToolAction::Place(name) => {
             let placement_position: Vec2;
 
             if editor_settings.snap_to_grid {
-                let Some(size) = prop_sprite.custom_size else {
-                    return;
-                };
                 placement_position =
-                    prop_tile_aligned(world_pos, active_map.tileset.tile_size, size);
+                    prop_tile_aligned(world_pos, active_map.tileset.tile_size, preview.size);
             } else {
                 placement_position = world_pos;
             }
@@ -38,6 +40,11 @@ pub fn prop_tool_system(
             active_map.map.placed_props.push(PlacedProp {
                 definition_name: name.to_string(),
                 position: placement_position,
+            });
+        }
+        ToolAction::Remove => {
+            remove_prop_writer.write(RemovePropMessage {
+                position: world_pos,
             });
         }
     }

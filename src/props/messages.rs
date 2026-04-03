@@ -11,3 +11,8 @@ pub struct SpawnPropMessage {
     pub name: String,
     pub position: Vec2,
 }
+
+#[derive(Debug, Message)]
+pub struct RemovePropMessage {
+    pub position: Vec2,
+}

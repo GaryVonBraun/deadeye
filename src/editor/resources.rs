@@ -12,6 +12,7 @@ pub enum EditorTool {
 #[derive(Debug, Clone)]
 pub enum ToolAction {
     Place(String),
+    Remove,
 }
 
 #[derive(Debug, Resource)]

@@ -5,7 +5,7 @@ use crate::{
     props::{
         components::Prop,
         io::operations::read_prop_definitions,
-        messages::{LoadPropsMessage, SpawnPropMessage},
+        messages::{LoadPropsMessage, RemovePropMessage, SpawnPropMessage},
     },
 };
 
@@ -47,7 +47,9 @@ pub fn load_map_props(
             };
 
             commands.spawn((
-                Prop,
+                Prop {
+                    size: prop_definition.size,
+                },
                 Sprite::from_image(
                     asset_server.load(format!("props/{}.png", prop_definition.sprite)),
                 ),
@@ -79,9 +81,33 @@ pub fn spawn_prop(
         };
 
         commands.spawn((
-            Prop,
+            Prop {
+                size: prop_definition.size,
+            },
             Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))),
             Transform::from_xyz(message.position.x, message.position.y, 0.),
         ));
+    }
+}
+
+pub fn remove_prop(
+    query: Query<(Entity, &Transform, &Prop)>,
+    mut remove_prop_reader: MessageReader<RemovePropMessage>,
+    mut commands: Commands,
+) {
+    for message in remove_prop_reader.read() {
+        for (entity, transform, prop) in query.iter() {
+            let pos = transform.translation.truncate();
+            let half = prop.size / 2.0;
+
+            let hit = pos.x >= message.position.x - half.x
+                && pos.x <= message.position.x + half.x
+                && pos.y >= message.position.y - half.y
+                && pos.y <= message.position.y + half.y;
+
+            if hit {
+                commands.entity(entity).despawn();
+            }
+        }
     }
 }
