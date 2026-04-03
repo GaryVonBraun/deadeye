@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::props::io::types::PropDefinition;
+use crate::props::io::types::PlacedProp;
 #[derive(Debug, Resource)]
 pub struct ActiveMapProps {
-    props: Vec<PropDefinition>,
+    pub props: Vec<PlacedProp>,
 }

@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct PlacedProp {
     pub definition_name: String,
     pub position: Vec2,
+    #[serde(skip)]
+    pub entity: Option<Entity>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

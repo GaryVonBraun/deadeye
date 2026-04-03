@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 
-use crate::map::{
-    io::{operations::*, paths::*},
-    messages::{DeleteMapMessage, LoadMapMessage},
-    resources::ActiveMap,
+use crate::{
+    map::{
+        io::{operations::*, paths::*},
+        messages::{DeleteMapMessage, LoadMapMessage},
+        resources::ActiveMap,
+    },
+    props::resources::ActiveMapProps,
 };
 
 pub fn delete_map_message(mut message_reader: MessageReader<DeleteMapMessage>) {
@@ -31,7 +34,11 @@ pub fn load_map_data(mut message_reader: MessageReader<LoadMapMessage>, mut comm
     }
 }
 
-pub fn save_map(active_map: Res<ActiveMap>) {
+pub fn save_map(active_map_props: Res<ActiveMapProps>, mut active_map: ResMut<ActiveMap>) {
     info!("saving map with id: {}", active_map.map.id);
+
+    //NOTE - this is a little stinky because we have essentially duplicate data, will probably not fix soon
+    active_map.map.placed_props = active_map_props.props.clone();
+
     update_map_data(&active_map.map);
 }

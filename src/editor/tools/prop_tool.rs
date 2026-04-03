@@ -10,6 +10,7 @@ use crate::{
     props::{
         io::types::PlacedProp,
         messages::{RemovePropMessage, SpawnPropMessage},
+        resources::ActiveMapProps,
     },
 };
 
@@ -18,7 +19,8 @@ pub fn prop_tool_system(
     world_pos: Vec2,
     editor_settings: Res<EditorSettings>,
     preview: &PlacementPreview,
-    mut active_map: ResMut<ActiveMap>,
+    active_map: ResMut<ActiveMap>,
+    mut active_map_props: ResMut<ActiveMapProps>,
     mut place_prop_writer: MessageWriter<SpawnPropMessage>,
     mut remove_prop_writer: MessageWriter<RemovePropMessage>,
 ) {
@@ -35,10 +37,6 @@ pub fn prop_tool_system(
 
             place_prop_writer.write(SpawnPropMessage {
                 name: name.to_string(),
-                position: placement_position,
-            });
-            active_map.map.placed_props.push(PlacedProp {
-                definition_name: name.to_string(),
                 position: placement_position,
             });
         }

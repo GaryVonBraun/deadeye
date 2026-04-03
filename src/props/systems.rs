@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    map::io::operations::read_map_data,
+    map::{io::operations::read_map_data, resources::ActiveMap},
     props::{
         components::Prop,
-        io::operations::read_prop_definitions,
+        io::{operations::read_prop_definitions, types::PlacedProp},
         messages::{LoadPropsMessage, RemovePropMessage, SpawnPropMessage},
+        resources::ActiveMapProps,
     },
 };
 
@@ -34,28 +35,53 @@ pub fn load_map_props(
             return;
         };
 
-        for placed_prop in map_data.placed_props {
-            // we find the definition for the placed prop
-            let Some(prop_definition) = prop_definitions
-                .props
-                .iter()
-                .find(|definition| definition.name == placed_prop.definition_name)
-            else {
-                error!("Failed to find definition for placed prop");
-                //TODO - perhaps in the future we can spawn the prop but show a missing texture
-                return;
-            };
+        let props: Vec<PlacedProp> = map_data
+            .placed_props
+            .iter()
+            .map(|prop| {
+                let Some(prop_definition) = prop_definitions
+                    .props
+                    .iter()
+                    .find(|definition| definition.name == prop.definition_name)
+                else {
+                    warn!("Failed to find definition for placed prop called {}, missing texture placed at - x: {} y: {} ", prop.definition_name, prop.position.x, prop.position.y);
 
-            commands.spawn((
-                Prop {
-                    size: prop_definition.size,
-                },
-                Sprite::from_image(
-                    asset_server.load(format!("props/{}.png", prop_definition.sprite)),
-                ),
-                Transform::from_xyz(placed_prop.position.x, placed_prop.position.y, 0.),
-            ));
-        }
+                    let entity = commands
+                        .spawn((
+                            Prop {
+                                size: Vec2::splat(64.),
+                            },
+                            Sprite::from_image(asset_server.load("props/missing_prop_64.png")),
+                            Transform::from_xyz(prop.position.x, prop.position.y, 0.),
+                        ))
+                        .id();
+
+                    return PlacedProp {
+                        entity: Some(entity),
+                        ..prop.clone()
+                    };
+                };
+
+                let entity = commands
+                    .spawn((
+                        Prop {
+                            size: prop_definition.size,
+                        },
+                        Sprite::from_image(
+                            asset_server.load(format!("props/{}.png", prop_definition.sprite)),
+                        ),
+                        Transform::from_xyz(prop.position.x, prop.position.y, 0.),
+                    ))
+                    .id();
+
+                PlacedProp {
+                    entity: Some(entity),
+                    ..prop.clone()
+                }
+            })
+            .collect();
+
+        commands.insert_resource(ActiveMapProps { props });
     }
 }
 
@@ -63,6 +89,7 @@ pub fn spawn_prop(
     mut spawn_prop_reader: MessageReader<SpawnPropMessage>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut active_map_props: ResMut<ActiveMapProps>,
 ) {
     let Ok(prop_definitions) = read_prop_definitions() else {
         error!("Failed to find prop definitions needed to spawn props");
@@ -80,13 +107,23 @@ pub fn spawn_prop(
             return;
         };
 
-        commands.spawn((
-            Prop {
-                size: prop_definition.size,
-            },
-            Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))),
-            Transform::from_xyz(message.position.x, message.position.y, 0.),
-        ));
+        let entity = commands
+            .spawn((
+                Prop {
+                    size: prop_definition.size,
+                },
+                Sprite::from_image(
+                    asset_server.load(format!("props/{}.png", prop_definition.sprite)),
+                ),
+                Transform::from_xyz(message.position.x, message.position.y, 0.),
+            ))
+            .id();
+
+        active_map_props.props.push(PlacedProp {
+            definition_name: message.name.clone(),
+            position: message.position,
+            entity: Some(entity),
+        });
     }
 }
 
@@ -94,6 +131,7 @@ pub fn remove_prop(
     query: Query<(Entity, &Transform, &Prop)>,
     mut remove_prop_reader: MessageReader<RemovePropMessage>,
     mut commands: Commands,
+    mut active_map_props: ResMut<ActiveMapProps>,
 ) {
     for message in remove_prop_reader.read() {
         for (entity, transform, prop) in query.iter() {
@@ -107,6 +145,9 @@ pub fn remove_prop(
 
             if hit {
                 commands.entity(entity).despawn();
+                active_map_props
+                    .props
+                    .retain(|prop| prop.entity != Some(entity));
             }
         }
     }

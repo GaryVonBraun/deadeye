@@ -5,7 +5,7 @@ use crate::props::{messages::*, systems::*};
 pub mod components;
 pub mod io;
 pub mod messages;
-mod resources;
+pub mod resources;
 mod systems;
 
 pub struct PropsPlugin;

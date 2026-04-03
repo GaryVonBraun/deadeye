@@ -16,6 +16,7 @@ use crate::{
         components::Prop,
         io::operations::read_prop_definitions,
         messages::{RemovePropMessage, SpawnPropMessage},
+        resources::ActiveMapProps,
     },
 };
 
@@ -36,6 +37,7 @@ pub fn editor_click_system(
     place_prop_writer: MessageWriter<SpawnPropMessage>,
     remove_prop_writer: MessageWriter<RemovePropMessage>,
     prop_query: Query<&PlacementPreview>,
+    active_map_props: ResMut<ActiveMapProps>,
 ) {
     let Ok(ctx) = contexts.ctx_mut() else {
         return;
@@ -105,6 +107,7 @@ pub fn editor_click_system(
                 editor_settings,
                 preview,
                 active_map,
+                active_map_props,
                 place_prop_writer,
                 remove_prop_writer,
             );
