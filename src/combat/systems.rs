@@ -2,7 +2,10 @@ use bevy::prelude::*;
 
 use crate::{
     actor::components::Actor,
-    collision::components::Collision,
+    collision::{
+        components::Collision,
+        systems::{check_collision, expand_collision},
+    },
     combat::{
         components::{MeleeIntent, MeleeState},
         health::messages::DamageMessage,
@@ -26,16 +29,19 @@ pub fn tick_melee_intents(
                         continue;
                     };
 
-                    let Ok((actor_transform, actor_collision)) = actors.get(target) else {
+                    let Ok((target_transform, target_collision)) = actors.get(target) else {
                         warn!("Failed to find target entity");
                         continue;
                     };
 
-                    if Vec2::distance(
+                    let expand_collision = expand_collision(collision, melee_intent.range);
+
+                    if check_collision(
                         transform.translation.truncate(),
-                        actor_transform.translation.truncate(),
-                    ) <= melee_intent.range + collision.radius + actor_collision.radius
-                    {
+                        &expand_collision,
+                        target_transform.translation.truncate(),
+                        target_collision,
+                    ) {
                         damage_writer.write(DamageMessage {
                             target,
                             amount: melee_intent.damage,
@@ -43,6 +49,7 @@ pub fn tick_melee_intents(
                         info!("successful attack");
                         continue;
                     }
+
                     info!("missed attack, out of range");
                     continue;
                 }

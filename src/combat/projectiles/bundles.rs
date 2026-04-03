@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{combat::projectiles::component::Projectile, core::components::GameEntity};
+use crate::{
+    collision::components::Collision, combat::projectiles::component::Projectile,
+    core::components::GameEntity,
+};
 
 #[derive(Bundle)]
 pub struct ProjectileBundle {
@@ -8,4 +11,5 @@ pub struct ProjectileBundle {
     pub sprite: Sprite,
     pub transform: Transform,
     pub game_entity: GameEntity,
+    pub collision: Collision,
 }

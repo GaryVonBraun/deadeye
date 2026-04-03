@@ -2,6 +2,7 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 
 use crate::{
     actor::components::Actor,
+    collision::components::{Collision, CollisionShape},
     combat::{
         components::ShootingIntent,
         messages::ShootMessage,
@@ -40,6 +41,10 @@ pub fn shoot_weapon(
                             lifetime: 3.,
                             damage: weapon.damage,
                             owner: message.owner,
+                        },
+                        collision: Collision {
+                            shape: CollisionShape::Circle { radius: 2. },
+                            offset: Vec2::default(),
                         },
                         sprite: Sprite::from_image(asset_server.load("debug_bullet.png")),
                         transform: Transform {

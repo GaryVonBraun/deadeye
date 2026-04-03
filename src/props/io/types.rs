@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::collision::components::CollisionShape;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PlacedProp {
     pub id: String,
@@ -16,11 +18,6 @@ pub struct PropDefinition {
     pub size: Vec2,
     pub tile_aligned: bool,
     pub collision_shape: CollisionShape,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum CollisionShape {
-    Circle { radius: f32 },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

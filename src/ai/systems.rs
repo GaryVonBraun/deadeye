@@ -13,7 +13,10 @@ use crate::{
         },
         vision::components::Vision,
     },
-    collision::components::Collision,
+    collision::{
+        components::{Collision, CollisionShape},
+        systems::{check_collision, expand_collision},
+    },
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
         messages::ShootMessage,
@@ -59,27 +62,30 @@ pub fn ai_movement_system(
                         ai_transform.translation.truncate(),
                     );
 
-                    let keep_distance_at = target_collision.radius + collision.radius;
-
                     //TEMPORARY - this is not good code and should be fixed
                     //FIXME - this is a mess
 
-                    if distance > keep_distance_at {
-                        // go towards target
-                        let direction = (target_transform.translation.truncate()
-                            - ai_transform.translation.truncate())
-                        .normalize();
-                        movement_intent.move_direction = direction;
-                    } else if distance == keep_distance_at {
-                        // don't move
-                        movement_intent.move_direction = Vec2::default();
-                    } else {
-                        // go in opposite direction
-                        let direction = (ai_transform.translation.truncate()
-                            - target_transform.translation.truncate())
-                        .normalize();
-                        movement_intent.move_direction = direction;
-                    }
+                    // if distance > keep_distance_at {
+                    //     // go towards target
+                    //     let direction = (target_transform.translation.truncate()
+                    //         - ai_transform.translation.truncate())
+                    //     .normalize();
+                    //     movement_intent.move_direction = direction;
+                    // } else if distance == keep_distance_at {
+                    //     // don't move
+                    //     movement_intent.move_direction = Vec2::default();
+                    // } else {
+                    //     // go in opposite direction
+
+                    //     let direction = (ai_transform.translation.truncate()
+                    //         - target_transform.translation.truncate())
+                    //     .normalize();
+                    // }
+
+                    let direction = (target_transform.translation.truncate()
+                        - ai_transform.translation.truncate())
+                    .normalize();
+                    movement_intent.move_direction = direction;
                 }
             }
             _ => movement_intent.move_direction = Vec2::ZERO,
@@ -169,11 +175,15 @@ pub fn ai_melee_system(
                     return;
                 };
 
-                if Vec2::distance(
+                // adding range to collision
+                let expanded_collision = expand_collision(actor_collision, melee_intent.range);
+
+                if check_collision(
                     ai_transform.translation.truncate(),
+                    &expanded_collision,
                     actor_transform.translation.truncate(),
-                ) <= melee_intent.range + ai_collision.radius + actor_collision.radius
-                {
+                    actor_collision,
+                ) {
                     melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay);
                     melee_intent.target = Some(entity);
                 }

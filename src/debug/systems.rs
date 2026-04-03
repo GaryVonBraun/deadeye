@@ -50,11 +50,16 @@ pub fn debug_melee_range_gizmo(
     mut gizmos: Gizmos,
 ) {
     for (transform, melee_intent, collision) in query.iter() {
-        gizmos.circle_2d(
-            transform.translation.truncate(),
-            melee_intent.range + collision.radius,
-            Color::srgba(1.0, 0., 0.0, 0.5),
-        );
+        match collision.shape {
+            collision::components::CollisionShape::Circle { radius } => {
+                gizmos.circle_2d(
+                    transform.translation.truncate(),
+                    melee_intent.range + radius,
+                    Color::srgba(1.0, 0., 0.0, 0.5),
+                );
+            }
+            collision::components::CollisionShape::Rect { width, height } => todo!(),
+        }
     }
 }
 

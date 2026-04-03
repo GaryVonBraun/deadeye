@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    collision::components::Collision,
+    collision::{components::Collision, systems::check_collision},
     combat::{
         health::{components::Health, messages::DamageMessage},
         projectiles::component::Projectile,
@@ -27,27 +27,29 @@ pub fn move_projectiles(
 
 pub fn projectile_collision(
     mut commands: Commands,
-    projectile_query: Query<(Entity, &Projectile, &Transform)>,
+    projectile_query: Query<(Entity, &Projectile, &Transform, &Collision)>,
     health_query: Query<(Entity, &Collision, &Transform), With<Health>>,
     mut message: MessageWriter<DamageMessage>,
 ) {
-    for (entity, projectile, transform) in projectile_query.iter() {
-        for (health_entity, collision, health_transform) in health_query.iter() {
+    for (entity, projectile, transform, collision) in projectile_query.iter() {
+        for (health_entity, target_collision, health_transform) in health_query.iter() {
             if projectile.owner == health_entity {
                 continue;
             }
-            if Vec2::distance(
+
+            if check_collision(
                 transform.translation.truncate(),
+                collision,
                 health_transform.translation.truncate(),
-            ) < collision.radius
-            {
+                target_collision,
+            ) {
                 commands.entity(entity).despawn();
                 info!("{:?} hit something", entity);
                 message.write(DamageMessage {
                     target: health_entity,
                     amount: projectile.damage,
                 });
-            }
+            };
         }
     }
 }
