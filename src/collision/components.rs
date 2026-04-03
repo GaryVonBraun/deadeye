@@ -39,3 +39,17 @@ impl Collision {
         collision
     }
 }
+
+impl CollisionShape2d for Collision {
+    fn shape(&self) -> &CollisionShape {
+        &self.shape
+    }
+    fn offset(&self) -> Vec2 {
+        self.offset
+    }
+}
+
+pub trait CollisionShape2d {
+    fn shape(&self) -> &CollisionShape;
+    fn offset(&self) -> Vec2;
+}

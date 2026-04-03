@@ -73,6 +73,7 @@ pub fn load_map_props(
                              transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
                              collision: prop_definition.collision.clone(),  
                              game_entity: GameEntity } )
+                             
                         .id();
 
                 PlacedProp {

@@ -11,7 +11,7 @@ impl Plugin for ProjectilePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (move_projectiles, projectile_collision)
+            (move_projectiles, projectile_hit, projectile_collision)
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
         );

@@ -3,9 +3,13 @@ use bevy::prelude::*;
 use crate::{
     collision::{components::Collision, systems::check_collision},
     combat::{
-        health::{components::Health, messages::DamageMessage},
+        health::{
+            components::{Health, HurtBox},
+            messages::DamageMessage,
+        },
         projectiles::component::Projectile,
     },
+    props::components::Prop,
 };
 
 pub fn move_projectiles(
@@ -25,10 +29,10 @@ pub fn move_projectiles(
     }
 }
 
-pub fn projectile_collision(
+pub fn projectile_hit(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Projectile, &Transform, &Collision)>,
-    health_query: Query<(Entity, &Collision, &Transform), With<Health>>,
+    health_query: Query<(Entity, &HurtBox, &Transform), With<Health>>,
     mut message: MessageWriter<DamageMessage>,
 ) {
     for (entity, projectile, transform, collision) in projectile_query.iter() {
@@ -49,6 +53,28 @@ pub fn projectile_collision(
                     target: target_entity,
                     amount: projectile.damage,
                 });
+                break;
+            };
+        }
+    }
+}
+
+pub fn projectile_collision(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Transform, &Collision), With<Projectile>>,
+    health_query: Query<(&Collision, &Transform), With<Prop>>,
+) {
+    for (entity, transform, collision) in projectile_query.iter() {
+        for (target_collision, target_transform) in health_query.iter() {
+            if check_collision(
+                transform.translation.truncate(),
+                collision,
+                target_transform.translation.truncate(),
+                target_collision,
+            ) {
+                commands.entity(entity).despawn();
+                info!("{:?} hit something", entity);
+                break;
             };
         }
     }
