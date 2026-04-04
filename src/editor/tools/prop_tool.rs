@@ -4,9 +4,8 @@ use crate::{
     editor::{
         component::PlacementPreview,
         resources::{EditorSettings, ToolAction},
-        tools::tile_world_position,
     },
-    map::resources::ActiveMap,
+    map::{resources::ActiveMap, utility::tile_world_position},
     props::messages::{RemovePropMessage, SpawnPropMessage},
 };
 
@@ -44,10 +43,7 @@ pub fn prop_tool_system(
 }
 
 pub fn prop_tile_aligned(world_pos: Vec2, tile_size: f32, size: Vec2) -> Vec2 {
-    let mut tile_world_position = Vec2 {
-        x: tile_world_position(world_pos.x, tile_size),
-        y: tile_world_position(world_pos.y, tile_size),
-    };
+    let mut tile_world_position = tile_world_position(world_pos, tile_size);
 
     tile_world_position.x = (tile_world_position.x + size.x / 2.) - tile_size;
     tile_world_position.y = (tile_world_position.y + size.y / 2.) - tile_size;

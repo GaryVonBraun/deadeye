@@ -77,8 +77,6 @@ pub fn spawn_actor_handler(
             return;
         };
 
-        info!("found actor {:?}", &actor);
-
         // info!("{:?}", message);
 
         match actor.archetype {

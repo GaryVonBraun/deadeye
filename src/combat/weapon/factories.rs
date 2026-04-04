@@ -14,8 +14,8 @@ pub fn spawn_debug_weapon(
             weapon: Weapon {
                 fire_delay: 0.05,
                 cooldown: 0.,
-                speed: 500.,
-                damage: 10.,
+                speed: 2000.,
+                damage: 50.,
             },
             transform: Transform::from_translation(translation),
         })

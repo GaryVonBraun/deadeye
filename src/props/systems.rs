@@ -64,8 +64,6 @@ pub fn load_map_props(
                     };
                 };
 
-                info!("collision: {:?}", prop_definition.collision);
-
                 let entity = commands
                         .spawn(PropBundle{
                              prop: Prop::with_size(prop_definition.size), 

@@ -10,7 +10,7 @@ use crate::{
             tile_painter::tile_paint_system,
         },
     },
-    map::resources::ActiveMap,
+    map::{resources::ActiveMap, utility::tile_world_position},
     mission::resources::ActiveMission,
     props::{
         io::operations::read_prop_definitions,
@@ -66,10 +66,7 @@ pub fn editor_click_system(
         y: ((active_map.map.bounds.north as f32 * tile_size - world_pos.y) / tile_size).floor(),
     };
 
-    let tile_world_position = Vec2 {
-        x: tile_world_position(world_pos.x, active_map.tileset.tile_size),
-        y: tile_world_position(world_pos.y, active_map.tileset.tile_size),
-    };
+    let tile_world_position = tile_world_position(world_pos, active_map.tileset.tile_size);
 
     // bounds check
     if tile_position.x < 0.
@@ -110,11 +107,6 @@ pub fn editor_click_system(
         }
         EditorTool::None => {}
     };
-}
-
-fn tile_world_position(position: f32, tile_size: f32) -> f32 {
-    let floored = (position / tile_size).floor();
-    floored * tile_size + tile_size
 }
 
 pub fn update_preview_image(

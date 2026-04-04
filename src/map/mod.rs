@@ -8,6 +8,7 @@ pub mod messages;
 mod rendering;
 pub mod resources;
 mod systems;
+pub mod utility;
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
