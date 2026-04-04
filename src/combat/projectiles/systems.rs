@@ -4,7 +4,7 @@ use crate::{
     collision::{components::Collision, systems::check_collision},
     combat::{
         health::{
-            components::{Health, HurtBox},
+            components::{Health, Hitbox, HurtBox},
             messages::DamageMessage,
         },
         projectiles::component::Projectile,
@@ -31,11 +31,11 @@ pub fn move_projectiles(
 
 pub fn projectile_hit(
     mut commands: Commands,
-    projectile_query: Query<(Entity, &Projectile, &Transform, &Collision)>,
+    projectile_query: Query<(Entity, &Projectile, &Transform, &Hitbox)>,
     health_query: Query<(Entity, &HurtBox, &Transform), With<Health>>,
     mut message: MessageWriter<DamageMessage>,
 ) {
-    for (entity, projectile, transform, collision) in projectile_query.iter() {
+    for (entity, projectile, transform, hitbox) in projectile_query.iter() {
         for (target_entity, target_collision, target_transform) in health_query.iter() {
             if projectile.owner == target_entity {
                 continue;
@@ -43,7 +43,7 @@ pub fn projectile_hit(
 
             if check_collision(
                 transform.translation.truncate(),
-                collision,
+                hitbox,
                 target_transform.translation.truncate(),
                 target_collision,
             ) {
@@ -61,14 +61,14 @@ pub fn projectile_hit(
 
 pub fn projectile_collision(
     mut commands: Commands,
-    projectile_query: Query<(Entity, &Transform, &Collision), With<Projectile>>,
+    projectile_query: Query<(Entity, &Transform, &Hitbox), With<Projectile>>,
     health_query: Query<(&Collision, &Transform), With<Prop>>,
 ) {
-    for (entity, transform, collision) in projectile_query.iter() {
+    for (entity, transform, hitbox) in projectile_query.iter() {
         for (target_collision, target_transform) in health_query.iter() {
             if check_collision(
                 transform.translation.truncate(),
-                collision,
+                hitbox,
                 target_transform.translation.truncate(),
                 target_collision,
             ) {

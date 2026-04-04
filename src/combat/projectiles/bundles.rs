@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    collision::components::Collision, combat::projectiles::component::Projectile,
+    combat::{health::components::Hitbox, projectiles::component::Projectile},
     core::components::GameEntity,
 };
 
@@ -11,5 +11,5 @@ pub struct ProjectileBundle {
     pub sprite: Sprite,
     pub transform: Transform,
     pub game_entity: GameEntity,
-    pub collision: Collision,
+    pub hitbox: Hitbox,
 }

@@ -2,9 +2,10 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 
 use crate::{
     actor::components::Actor,
-    collision::components::{Collision, CollisionShape},
+    collision::components::CollisionShape,
     combat::{
         components::ShootingIntent,
+        health::components::Hitbox,
         messages::ShootMessage,
         projectiles::{bundles::ProjectileBundle, component::Projectile},
         weapon::components::Weapon,
@@ -42,7 +43,7 @@ pub fn shoot_weapon(
                             damage: weapon.damage,
                             owner: message.owner,
                         },
-                        collision: Collision {
+                        hitbox: Hitbox {
                             shape: CollisionShape::Circle { radius: 2. },
                             offset: Vec2::default(),
                         },

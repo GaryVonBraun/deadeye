@@ -33,4 +33,19 @@ impl CollisionShape2d for HurtBox {
 }
 
 #[derive(Component)]
+pub struct Hitbox {
+    pub shape: CollisionShape,
+    pub offset: Vec2,
+}
+
+impl CollisionShape2d for Hitbox {
+    fn shape(&self) -> &CollisionShape {
+        &self.shape
+    }
+    fn offset(&self) -> Vec2 {
+        self.offset
+    }
+}
+
+#[derive(Component)]
 pub struct Dead;
