@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::collision::components::{Collision, CollisionShape, CollisionShape2d};
+use crate::{
+    actor::components::Actor,
+    collision::components::{Collision, CollisionShape, CollisionShape2d},
+};
 
 pub fn check_collision<A: CollisionShape2d, B: CollisionShape2d>(
     pos_a: Vec2,
@@ -91,4 +94,102 @@ pub fn expand_collision(collision: &Collision, expand_by: f32) -> Collision {
             offset: collision.offset,
         },
     }
+}
+
+pub fn actor_obstruction_collision(
+    mut actor_query: Query<(&mut Transform, &Collision), With<Actor>>,
+    obstruction_query: Query<(&Transform, &Collision), Without<Actor>>,
+) {
+    for (mut actor_transform, actor_collision) in actor_query.iter_mut() {
+        for (obstruction_transform, obstruction_collision) in obstruction_query.iter() {
+            let actor_pos = actor_transform.translation.truncate();
+            let obstruction_pos = obstruction_transform.translation.truncate();
+
+            if let Some(push) = calculate_push_vector(
+                actor_pos,
+                actor_collision,
+                obstruction_pos,
+                obstruction_collision,
+            ) {
+                actor_transform.translation += push.extend(0.)
+            }
+        }
+    }
+}
+
+fn calculate_push_vector(
+    pos_a: Vec2,
+    collision_a: &Collision,
+    pos_b: Vec2,
+    collision_b: &Collision,
+) -> Option<Vec2> {
+    let offset_pos_a = pos_a + collision_a.offset;
+    let offset_pos_b = pos_b + collision_b.offset;
+
+    match collision_a.shape {
+        CollisionShape::Circle { radius: radius_a } => match collision_b.shape {
+            CollisionShape::Circle { radius: radius_b } => {
+                circles_push_vector(offset_pos_a, radius_a, offset_pos_b, radius_b)
+            }
+            CollisionShape::Rect { width, height } => {
+                circle_rect_push_vector(offset_pos_a, radius_a, offset_pos_b, width, height)
+            }
+        },
+        CollisionShape::Rect {
+            width: width_a,
+            height: height_a,
+        } => match collision_b.shape {
+            CollisionShape::Circle { radius } => {
+                circle_rect_push_vector(offset_pos_b, radius, offset_pos_a, width_a, height_a)
+            }
+            CollisionShape::Rect {
+                width: _width_b,
+                height: _height_b,
+            } => {
+                //NOTE - this might be added or not, it will depend if actors will ever have a rect collision shape
+                error!("Haven't implemented rect actor collision yet");
+                todo!()
+            }
+        },
+    }
+}
+
+fn circles_push_vector(pos_a: Vec2, radius_a: f32, pos_b: Vec2, radius_b: f32) -> Option<Vec2> {
+    let delta = pos_a - pos_b;
+    let distance = delta.length();
+
+    let penetration = radius_a + radius_b - distance;
+
+    if distance == 0. {
+        return Some(Vec2::X * penetration);
+    }
+    if penetration < 0. {
+        return None;
+    }
+    return Some(delta.normalize() * penetration);
+}
+
+fn circle_rect_push_vector(
+    pos_a: Vec2,
+    radius_a: f32,
+    pos_b: Vec2,
+    width: f32,
+    height: f32,
+) -> Option<Vec2> {
+    let closest_pos = Vec2 {
+        x: f32::clamp(pos_a.x, pos_b.x - width / 2., pos_b.x + width / 2.),
+        y: f32::clamp(pos_a.y, pos_b.y - height / 2., pos_b.y + height / 2.),
+    };
+
+    let delta = pos_a - closest_pos;
+    let distance = delta.length();
+    let penetration = radius_a - distance;
+
+    if distance == 0. {
+        return Some(Vec2::X * penetration);
+    }
+    if penetration < 0. {
+        return None;
+    }
+    return Some(delta.normalize() * penetration);
 }
