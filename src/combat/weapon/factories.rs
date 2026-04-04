@@ -12,7 +12,7 @@ pub fn spawn_debug_weapon(
         .spawn(WeaponBundle {
             sprite: Sprite::from_image(asset_server.load("debug_weapon.png")),
             weapon: Weapon {
-                fire_delay: 0.2,
+                fire_delay: 0.05,
                 cooldown: 0.,
                 speed: 500.,
                 damage: 10.,

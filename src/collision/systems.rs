@@ -118,6 +118,28 @@ pub fn actor_obstruction_collision(
     }
 }
 
+pub fn actor_vs_actor_collision(mut actor_query: Query<(&mut Transform, &Collision), With<Actor>>) {
+    let mut actors: Vec<(Mut<Transform>, &Collision)> = actor_query.iter_mut().collect();
+
+    for i in 0..actors.len() {
+        for j in (i + 1)..actors.len() {
+            let (left, right) = actors.split_at_mut(j);
+            let (transform_a, collision_a) = &mut left[i];
+            let (transform_b, collision_b) = &mut right[0];
+
+            if let Some(push) = calculate_push_vector(
+                transform_a.translation.truncate(),
+                collision_a,
+                transform_b.translation.truncate(),
+                collision_b,
+            ) {
+                transform_a.translation += push.extend(0.) / 2.;
+                transform_b.translation -= push.extend(0.) / 2.;
+            }
+        }
+    }
+}
+
 fn calculate_push_vector(
     pos_a: Vec2,
     collision_a: &Collision,

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    collision::{sets::PhysicsSet, systems::actor_obstruction_collision},
+    collision::{sets::PhysicsSet, systems::*},
     core::states::SimulationState,
 };
 
@@ -18,7 +18,7 @@ impl Plugin for CollisionPlugin {
         );
         app.add_systems(
             Update,
-            actor_obstruction_collision
+            (actor_obstruction_collision, actor_vs_actor_collision)
                 .in_set(PhysicsSet::CollisionResolution)
                 .run_if(in_state(SimulationState::Running)),
         );

@@ -53,25 +53,19 @@ pub fn load_mission(
         });
 
         //TEMPORARY - for now we spawn a zombie and npc like this just to be able to test it
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 200., y: 200. },
-        });
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 300., y: 200. },
-        });
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 400., y: 200. },
-        });
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "zombie".to_string(),
-            position: Vec2 { x: 500., y: 200. },
-        });
+        for i in 1..20 {
+            spawn_actor_writer.write(SpawnActorMessage {
+                id: "zombie".to_string(),
+                position: Vec2 {
+                    x: 200. + 50. * i as f32,
+                    y: 200.,
+                },
+            });
+        }
+
         spawn_actor_writer.write(SpawnActorMessage {
             id: "npc".to_string(),
-            position: Vec2 { x: 210., y: 210. },
+            position: Vec2 { x: -100., y: -110. },
         });
     }
 }
