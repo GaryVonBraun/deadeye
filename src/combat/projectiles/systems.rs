@@ -4,7 +4,7 @@ use crate::{
     collision::{components::Collision, systems::check_collision},
     combat::{
         health::{
-            components::{Health, Hitbox, HurtBox},
+            components::{Health, Hitbox, Hurtbox},
             messages::DamageMessage,
         },
         projectiles::component::Projectile,
@@ -32,7 +32,7 @@ pub fn move_projectiles(
 pub fn projectile_hit(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Projectile, &Transform, &Hitbox)>,
-    health_query: Query<(Entity, &HurtBox, &Transform), With<Health>>,
+    health_query: Query<(Entity, &Hurtbox, &Transform), With<Health>>,
     mut message: MessageWriter<DamageMessage>,
 ) {
     for (entity, projectile, transform, hitbox) in projectile_query.iter() {

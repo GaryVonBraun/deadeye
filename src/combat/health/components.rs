@@ -18,12 +18,12 @@ impl Default for Health {
 }
 
 #[derive(Component)]
-pub struct HurtBox {
+pub struct Hurtbox {
     pub shape: CollisionShape,
     pub offset: Vec2,
 }
 
-impl CollisionShape2d for HurtBox {
+impl CollisionShape2d for Hurtbox {
     fn shape(&self) -> &CollisionShape {
         &self.shape
     }

@@ -3,8 +3,14 @@ use bevy::prelude::*;
 use crate::{
     actor::components::Actor,
     ai::{components::AiController, vision::components::Vision},
-    collision::{self, components::Collision},
-    combat::components::MeleeIntent,
+    collision::{
+        self,
+        components::{Collision, CollisionShape, CollisionShape2d},
+    },
+    combat::{
+        components::MeleeIntent,
+        health::components::{Hitbox, Hurtbox},
+    },
     debug::components::DebugMovementIntent,
 };
 
@@ -45,52 +51,51 @@ pub fn debug_vision_gizmo(query: Query<(&Transform, &Vision)>, mut gizmos: Gizmo
     }
 }
 
-pub fn debug_melee_range_gizmo(
-    query: Query<(&Transform, &MeleeIntent, &Collision)>,
-    mut gizmos: Gizmos,
-) {
-    for (transform, melee_intent, collision) in query.iter() {
-        let color = Color::srgba(1.0, 0., 0.0, 0.5);
-        match collision.shape {
-            collision::components::CollisionShape::Circle { radius } => {
-                gizmos.circle_2d(
-                    transform.translation.truncate(),
-                    melee_intent.range + radius,
-                    color,
-                );
-            }
-            collision::components::CollisionShape::Rect { width, height } => {
-                gizmos.rect_2d(
-                    transform.translation.truncate(),
-                    Vec2 {
-                        x: width + melee_intent.range,
-                        y: height + melee_intent.range,
-                    },
-                    color,
-                );
-            }
-        }
+pub fn debug_hitbox_gizmo(query: Query<(&Transform, &Hitbox)>, mut gizmos: Gizmos) {
+    for (transform, hitbox) in query.iter() {
+        let color = Color::srgba(1.0, 0., 0.0, 1.);
+
+        collision_shape_gizmo(hitbox, transform, color, &mut gizmos);
+    }
+}
+
+pub fn debug_hurtbox_gizmo(query: Query<(&Transform, &Hurtbox)>, mut gizmos: Gizmos) {
+    for (transform, hurtbox) in query.iter() {
+        let color = Color::srgba(1.0, 0.5, 0.0, 1.);
+
+        collision_shape_gizmo(hurtbox, transform, color, &mut gizmos);
     }
 }
 
 pub fn debug_collision_gizmo(query: Query<(&Transform, &Collision)>, mut gizmos: Gizmos) {
     for (transform, collision) in query.iter() {
-        let color = Color::srgba(0.5, 1., 0.0, 1.);
+        let color = Color::srgba(0., 1., 1., 1.);
 
-        match collision.shape {
-            collision::components::CollisionShape::Circle { radius } => {
-                gizmos.circle_2d(transform.translation.truncate(), radius, color);
-            }
-            collision::components::CollisionShape::Rect { width, height } => {
-                gizmos.rect_2d(
-                    transform.translation.truncate(),
-                    Vec2 {
-                        x: width,
-                        y: height,
-                    },
-                    color,
-                );
-            }
+        collision_shape_gizmo(collision, transform, color, &mut gizmos);
+    }
+}
+
+fn collision_shape_gizmo<A: CollisionShape2d>(
+    collision: &A,
+    transform: &Transform,
+    color: Color,
+    gizmos: &mut Gizmos,
+) {
+    let offset_position = transform.translation.truncate() + collision.offset();
+
+    match collision.shape() {
+        collision::components::CollisionShape::Circle { radius } => {
+            gizmos.circle_2d(offset_position, *radius, color);
+        }
+        collision::components::CollisionShape::Rect { width, height } => {
+            gizmos.rect_2d(
+                offset_position,
+                Vec2 {
+                    x: *width,
+                    y: *height,
+                },
+                color,
+            );
         }
     }
 }

@@ -13,12 +13,10 @@ use crate::{
         },
         vision::components::Vision,
     },
-    collision::{
-        components::{Collision, CollisionShape},
-        systems::{check_collision, expand_collision},
-    },
+    collision::{components::Collision, systems::check_collision},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
+        health::components::{Hitbox, Hurtbox},
         messages::ShootMessage,
     },
 };
@@ -160,29 +158,26 @@ pub fn seek_nearest_target(
 }
 
 pub fn ai_melee_system(
-    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform, &Collision), With<Actor>>,
-    actor_query: Query<(&Transform, &Collision), With<Actor>>,
+    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform, &Hitbox), With<Actor>>,
+    actor_query: Query<(&Transform, &Hurtbox), With<Actor>>,
 ) {
-    for (ai_controller, mut melee_intent, ai_transform, ai_collision) in ai_query.iter_mut() {
-        match ai_controller.black_board.action_intent {
+    for (controller, mut melee_intent, transform, hitbox) in ai_query.iter_mut() {
+        match controller.black_board.action_intent {
             AiActionIntent::Melee(entity) => {
                 if melee_intent.melee_state != MeleeState::Ready {
                     continue;
                 }
 
-                let Ok((actor_transform, actor_collision)) = actor_query.get(entity) else {
+                let Ok((target_transform, target_hurtbox)) = actor_query.get(entity) else {
                     error!("Failed to find target entity");
                     return;
                 };
 
-                // adding range to collision
-                let expanded_collision = expand_collision(actor_collision, melee_intent.range);
-
                 if check_collision(
-                    ai_transform.translation.truncate(),
-                    &expanded_collision,
-                    actor_transform.translation.truncate(),
-                    actor_collision,
+                    transform.translation.truncate(),
+                    hitbox,
+                    target_transform.translation.truncate(),
+                    target_hurtbox,
                 ) {
                     melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay);
                     melee_intent.target = Some(entity);

@@ -78,7 +78,8 @@ fn rects_overlap(
     overlap_x && overlap_y
 }
 
-pub fn expand_collision(collision: &Collision, expand_by: f32) -> Collision {
+//NOTE - could be useful in the future if collision need to be expanded at runtime
+pub fn _expand_collision(collision: &Collision, expand_by: f32) -> Collision {
     match collision.shape {
         CollisionShape::Circle { radius } => Collision {
             shape: CollisionShape::Circle {

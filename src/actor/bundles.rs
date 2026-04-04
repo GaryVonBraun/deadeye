@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     actor::{components::*, system::ActorDefinition},
     collision::components::{Collision, CollisionShape},
-    combat::health::components::{Health, HurtBox},
+    combat::health::components::{Health, Hitbox, Hurtbox},
     core::components::GameEntity,
 };
 
@@ -12,7 +12,8 @@ pub struct CoreActorBundle {
     pub transform: Transform,
     pub actor: Actor,
     pub health: Health,
-    pub hurt_box: HurtBox,
+    pub hurtbox: Hurtbox,
+    pub hitbox: Hitbox,
     pub collision: Collision,
     pub game_entity: GameEntity,
     pub team: Team,
@@ -24,11 +25,18 @@ impl CoreActorBundle {
             actor: Actor,
             transform: Transform::from_translation(translation),
             health: Health::default(),
-            hurt_box: HurtBox {
+            hurtbox: Hurtbox {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
                 shape: CollisionShape::Rect {
                     width: 32.,
                     height: 32.,
+                },
+                offset: Vec2::default(),
+            },
+            hitbox: Hitbox {
+                //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
+                shape: CollisionShape::Circle {
+                    radius: 16. + actor.melee_range,
                 },
                 offset: Vec2::default(),
             },

@@ -16,7 +16,8 @@ impl Plugin for DebugPlugin {
                 debug_vision_gizmo,
                 debug_visible_entities_gizmo,
                 debug_target_entity_gizmo,
-                debug_melee_range_gizmo,
+                debug_hitbox_gizmo,
+                debug_hurtbox_gizmo,
                 debug_collision_gizmo,
             ),
         );

@@ -2,23 +2,23 @@ use bevy::prelude::*;
 
 use crate::{
     actor::components::Actor,
-    collision::{
-        components::Collision,
-        systems::{check_collision, expand_collision},
-    },
+    collision::systems::check_collision,
     combat::{
         components::{MeleeIntent, MeleeState},
-        health::messages::DamageMessage,
+        health::{
+            components::{Hitbox, Hurtbox},
+            messages::DamageMessage,
+        },
     },
 };
 
 pub fn tick_melee_intents(
-    mut intent_query: Query<(&mut MeleeIntent, &Transform, &Collision), With<Actor>>,
-    actors: Query<(&Transform, &Collision), With<Actor>>,
+    mut intent_query: Query<(&mut MeleeIntent, &Transform, &Hitbox), With<Actor>>,
+    actors: Query<(&Transform, &Hurtbox), With<Actor>>,
     time: Res<Time>,
     mut damage_writer: MessageWriter<DamageMessage>,
 ) {
-    for (mut melee_intent, transform, collision) in intent_query.iter_mut() {
+    for (mut melee_intent, transform, hitbox) in intent_query.iter_mut() {
         match melee_intent.melee_state {
             MeleeState::Ready => continue,
             MeleeState::AttackDelay(delay) => {
@@ -29,18 +29,16 @@ pub fn tick_melee_intents(
                         continue;
                     };
 
-                    let Ok((target_transform, target_collision)) = actors.get(target) else {
+                    let Ok((target_transform, target_hurtbox)) = actors.get(target) else {
                         warn!("Failed to find target entity");
                         continue;
                     };
 
-                    let expand_collision = expand_collision(collision, melee_intent.range);
-
                     if check_collision(
                         transform.translation.truncate(),
-                        &expand_collision,
+                        hitbox,
                         target_transform.translation.truncate(),
-                        target_collision,
+                        target_hurtbox,
                     ) {
                         damage_writer.write(DamageMessage {
                             target,
