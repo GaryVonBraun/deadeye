@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
+};
 
 use crate::{
     combat::{components::ShootingIntent, messages::ShootMessage},
@@ -8,6 +11,8 @@ use crate::{
 pub fn player_movement_controller(
     mut query: Query<&mut PlayerMovementIntent>,
     keys: Res<ButtonInput<KeyCode>>,
+    mut camera_query: Query<&mut Projection, With<Camera>>,
+    mut evr_scroll: MessageReader<MouseWheel>,
 ) {
     let Ok(mut player_entity) = query.single_mut() else {
         return;
@@ -29,6 +34,27 @@ pub fn player_movement_controller(
     }
 
     player_entity.direction = direction;
+
+    //FIXME - just a quick implementation so i can test better
+
+    let Ok(mut projection) = camera_query.single_mut() else {
+        error!("no camera found");
+        return;
+    };
+
+    for ev in evr_scroll.read() {
+        match ev.unit {
+            MouseScrollUnit::Line => {
+                if let Projection::Orthographic(ref mut ortho) = *projection {
+                    ortho.scale -= ev.y * 0.1;
+                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
+                }
+            }
+            MouseScrollUnit::Pixel => {
+                // do nothing
+            }
+        }
+    }
 }
 
 pub fn player_aim_system(

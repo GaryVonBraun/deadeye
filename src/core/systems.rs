@@ -5,7 +5,11 @@ use crate::{
     },
     player::components::Player,
 };
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
+use bevy_egui::{EguiContexts, egui};
 
 pub fn load_app(mut state: ResMut<NextState<AppState>>) {
     const INITIAL_STATE: AppState = AppState::MissionMenu;
@@ -68,4 +72,21 @@ pub fn despawn_game_entities(query: Query<Entity, With<GameEntity>>, mut command
         info!("despawning: {:?}", entity);
         commands.entity(entity).despawn();
     }
+}
+
+pub fn fps_ui(mut contexts: EguiContexts, diagnostics: Res<DiagnosticsStore>) -> Result {
+    let fps = diagnostics
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
+        .and_then(|d| d.smoothed());
+
+    egui::Window::new("FPS")
+        .resizable(false)
+        .show(contexts.ctx_mut()?, |ui| {
+            match fps {
+                Some(fps) => ui.label(format!("FPS: {fps:.1}")),
+                None => ui.label("FPS: --"),
+            };
+        });
+
+    Ok(())
 }

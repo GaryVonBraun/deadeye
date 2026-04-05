@@ -82,16 +82,9 @@ pub fn build_nav_grid(
         }
 
         info!("Inserted nav grid");
-        info!("{:?}", nav_grid);
 
         commands.insert_resource(nav_grid);
     }
-}
-
-pub fn world_to_tile(position: Vec2, tile_size: f32) -> (i32, i32) {
-    let tile_x = (position.x / tile_size).floor() as i32;
-    let tile_y = (position.y / tile_size).floor() as i32;
-    (tile_x, tile_y)
 }
 
 pub fn world_to_grid(position: Vec2, tile_size: f32, bounds: &MapBounds) -> (i32, i32) {
@@ -105,7 +98,7 @@ pub fn nav_grid_gizmo(nav_grid: Res<NavGrid>, active_map: Res<ActiveMap>, mut gi
     let tile_size = &active_map.tileset.tile_size;
 
     let x_offset = bounds.west as f32 * tile_size;
-    let y_offset = (bounds.south - 1) as f32 * tile_size;
+    let y_offset = bounds.north as f32 * tile_size;
 
     for y in 0..nav_grid.cells.len() {
         for x in 0..nav_grid.cells[0].len() {

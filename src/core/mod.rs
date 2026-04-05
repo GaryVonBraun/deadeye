@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_egui::EguiPrimaryContextPass;
 
 use crate::core::{camera::setup_camera, states::*, systems::*};
 
@@ -27,5 +28,6 @@ impl Plugin for CorePlugin {
         );
         app.add_systems(OnEnter(AppState::InGame), run_simulation);
         app.add_systems(OnExit(AppState::InGame), despawn_game_entities);
+        app.add_systems(EguiPrimaryContextPass, fps_ui);
     }
 }

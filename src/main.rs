@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 use crate::{
@@ -37,7 +37,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins(EguiPlugin::default())
+        .add_plugins((EguiPlugin::default(), FrameTimeDiagnosticsPlugin::default()))
         // .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(CorePlugin)
         .add_plugins((
