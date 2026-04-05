@@ -8,6 +8,7 @@ use crate::{
             types::MapBounds,
         },
         resources::ActiveMap,
+        utility::world_to_grid,
     },
     navigation::{messages::BuildNavGridMessage, resources::NavGrid},
     props::io::operations::read_prop_definitions,
@@ -85,12 +86,6 @@ pub fn build_nav_grid(
 
         commands.insert_resource(nav_grid);
     }
-}
-
-pub fn world_to_grid(position: Vec2, tile_size: f32, bounds: &MapBounds) -> (i32, i32) {
-    let tile_x = (position.x / tile_size).floor() as i32 + bounds.west as i32;
-    let tile_y = (-position.y / tile_size).floor() as i32 + bounds.north as i32;
-    (tile_x, tile_y)
 }
 
 pub fn nav_grid_gizmo(nav_grid: Res<NavGrid>, active_map: Res<ActiveMap>, mut gizmos: Gizmos) {

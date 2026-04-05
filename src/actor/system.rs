@@ -20,6 +20,7 @@ use crate::{
         weapon::factories::spawn_debug_weapon,
     },
     core::io::read_ron_file,
+    navigation::flow_field::components::FlowFieldTarget,
     player::components::{Player, PlayerMovementIntent},
 };
 
@@ -102,6 +103,7 @@ pub fn spawn_actor_handler(
                             appearance: Appearance,
                         },
                         Locomotion::with_speed(actor.speed),
+                        FlowFieldTarget::default(),
                         PlayerMovementIntent::default(),
                         ShootingIntent::default(),
                         Player,
