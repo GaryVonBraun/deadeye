@@ -135,8 +135,13 @@ pub fn flow_field_navigation(
                         continue;
                     };
 
-                    // correct only lateral drift (perpendicular to movement direction)
-                    // so entities stay away from tile edges without fighting their forward progress
+                    // centering: keep entity on the path centerline for cardinal movement.
+                    // scaled to zero for diagonal directions — cross-track correction skews
+                    // diagonal angles into cardinals, so we disable it there.
+                    // flow field only produces 8 directions, so this is effectively binary.
+                    let diagonal_amount = direction.x.abs() * direction.y.abs() * 2.0;
+                    let cardinal_scale = 1.0 - diagonal_amount;
+
                     let tile_center = grid_to_world(
                         current_tile.0,
                         current_tile.1,
@@ -145,7 +150,8 @@ pub fn flow_field_navigation(
                     );
                     let to_center = tile_center - ai_transform.translation.truncate();
                     let cross_track = to_center - to_center.dot(direction) * direction;
-                    let centering = cross_track / (active_map.tileset.tile_size / 2.0);
+                    let centering =
+                        cross_track / (active_map.tileset.tile_size / 2.0) * cardinal_scale * 0.5;
 
                     movement_intent.move_direction = direction + centering;
                 }
@@ -155,8 +161,8 @@ pub fn flow_field_navigation(
     }
 }
 
-const SEPARATION_RADIUS: f32 = 64.0;
-const SEPARATION_WEIGHT: f32 = 10.0;
+const SEPARATION_RADIUS: f32 = 32.0;
+const SEPARATION_WEIGHT: f32 = 500.0;
 
 pub fn separation_steering(
     mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
@@ -181,11 +187,10 @@ pub fn separation_steering(
 
             let away = (transform.translation - neighbor_transform.translation).truncate();
 
-            // quadratic falloff: weak at the edge, much stronger up close
+            // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
+            // approaches zero smoothly at the radius boundary so there is no snap/jitter
             let t = 1.0 - (distance / SEPARATION_RADIUS);
-            let strength = t * t;
-
-            separation_force += away.normalize_or_zero() * strength;
+            separation_force += away.normalize_or_zero() * t * t * t;
         }
 
         movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;

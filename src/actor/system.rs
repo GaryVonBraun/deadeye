@@ -112,7 +112,7 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Human => {
-                let entity = commands
+                let entity: Entity = commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
