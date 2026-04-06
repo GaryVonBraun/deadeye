@@ -20,7 +20,7 @@ use crate::{
         weapon::factories::spawn_debug_weapon,
     },
     core::io::read_ron_file,
-    navigation::flow_field::components::FlowFieldTarget,
+    navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
     player::components::{Player, PlayerMovementIntent},
 };
 
@@ -141,6 +141,7 @@ pub fn spawn_actor_handler(
                             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                             appearance: Appearance,
                         },
+                        FlowFieldNavigator,
                         MeleeIntent {
                             target: None,
                             melee_state: MeleeState::Ready,

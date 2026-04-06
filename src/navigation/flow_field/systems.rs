@@ -169,11 +169,11 @@ pub fn build_flow_field(
 }
 
 pub fn flow_field_gizmos(
-    target_query: Query<(&FlowFieldTarget, &Transform)>,
+    target_query: Query<&FlowFieldTarget>,
     active_map: Res<ActiveMap>,
     mut gizmos: Gizmos,
 ) {
-    for (flow_field, transform) in target_query.iter() {
+    for flow_field in target_query.iter() {
         // flowfield is empty if there is not been a calculated tile before
         if flow_field.last_calculated_tile == None {
             continue;

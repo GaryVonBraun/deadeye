@@ -19,6 +19,8 @@ use crate::{
         health::components::{Hitbox, Hurtbox},
         messages::ShootMessage,
     },
+    map::{resources::ActiveMap, utility::world_to_grid},
+    navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
 };
 
 pub fn vision_targeting_system(
@@ -83,6 +85,48 @@ pub fn ai_movement_system(
                     let direction = (target_transform.translation.truncate()
                         - ai_transform.translation.truncate())
                     .normalize();
+                    movement_intent.move_direction = direction;
+                }
+            }
+            _ => movement_intent.move_direction = Vec2::ZERO,
+        }
+    }
+}
+
+pub fn flow_field_navigation(
+    mut ai_query: Query<
+        (&AiController, &Transform, &mut AiMovementIntent),
+        With<FlowFieldNavigator>,
+    >,
+    target_query: Query<&FlowFieldTarget>,
+    active_map: Res<ActiveMap>,
+) {
+    for (controller, ai_transform, mut movement_intent) in ai_query.iter_mut() {
+        match controller.black_board.locomotion_intent {
+            AiLocomotionIntent::Chase(target) => {
+                if let Ok(target_flow_field) = target_query.get(target) {
+                    let current_tile = world_to_grid(
+                        ai_transform.translation.truncate(),
+                        active_map.tileset.tile_size,
+                        &active_map.map.bounds,
+                    );
+
+                    if target_flow_field.last_calculated_tile == None {
+                        continue;
+                    }
+
+                    if current_tile.0 as usize >= active_map.map.tiles[0].len()
+                        || current_tile.1 as usize >= active_map.map.tiles.len()
+                    {
+                        continue;
+                    }
+
+                    let Some(direction) = target_flow_field.directions[current_tile.1 as usize]
+                        [current_tile.0 as usize]
+                    else {
+                        error!("Could not find direction");
+                        continue;
+                    };
                     movement_intent.move_direction = direction;
                 }
             }

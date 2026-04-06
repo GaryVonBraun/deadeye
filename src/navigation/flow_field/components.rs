@@ -15,3 +15,6 @@ impl FlowFieldTarget {
         }
     }
 }
+
+#[derive(Component, Debug)]
+pub struct FlowFieldNavigator;

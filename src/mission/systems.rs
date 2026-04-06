@@ -62,8 +62,8 @@ pub fn load_mission(
                 spawn_actor_writer.write(SpawnActorMessage {
                     id: "zombie".to_string(),
                     position: Vec2 {
-                        x: 200. + 50. * i as f32,
-                        y: 200. + 50. * j as f32,
+                        x: 800. + 50. * i as f32,
+                        y: -1200. + 50. * j as f32,
                     },
                 });
             }
