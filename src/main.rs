@@ -2,9 +2,18 @@ use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowRes
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 use crate::{
-    actor::ActorPlugin, ai::AiPlugin, collision::CollisionPlugin, combat::CombatPlugin,
-    core::CorePlugin, debug::DebugPlugin, editor::EditorPlugin, map::MapPlugin,
-    mission::MissionPlugin, navigation::NavigationPlugin, player::PlayerPlugin, props::PropsPlugin,
+    actor::ActorPlugin,
+    ai::{AiPlugin, AiSet},
+    collision::{CollisionPlugin, sets::PhysicsSet},
+    combat::CombatPlugin,
+    core::CorePlugin,
+    debug::DebugPlugin,
+    editor::EditorPlugin,
+    map::MapPlugin,
+    mission::MissionPlugin,
+    navigation::NavigationPlugin,
+    player::PlayerPlugin,
+    props::PropsPlugin,
     ui::UiPlugin,
 };
 mod actor;
@@ -40,6 +49,7 @@ fn main() {
         .add_plugins((EguiPlugin::default(), FrameTimeDiagnosticsPlugin::default()))
         // .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(CorePlugin)
+        .configure_sets(Update, AiSet::Targeting.before(PhysicsSet::Movement))
         .add_plugins((
             CollisionPlugin,
             ActorPlugin,

@@ -57,8 +57,8 @@ pub fn load_mission(
         });
 
         //TEMPORARY - for now we spawn a zombie and npc like this just to be able to test it
-        for i in 1..5 {
-            for j in 1..5 {
+        for i in 0..10 {
+            for j in 0..10 {
                 spawn_actor_writer.write(SpawnActorMessage {
                     id: "zombie".to_string(),
                     position: Vec2 {

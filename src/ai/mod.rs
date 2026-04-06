@@ -25,7 +25,7 @@ impl Plugin for AiPlugin {
             (
                 vision_targeting_system,
                 // ai_movement_system,
-                flow_field_navigation,
+                (flow_field_navigation, separation_steering).chain(),
                 ai_shooting_system,
                 ai_melee_system,
                 seek_nearest_target,

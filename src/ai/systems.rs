@@ -19,7 +19,10 @@ use crate::{
         health::components::{Hitbox, Hurtbox},
         messages::ShootMessage,
     },
-    map::{resources::ActiveMap, utility::world_to_grid},
+    map::{
+        resources::ActiveMap,
+        utility::{grid_to_world, world_to_grid},
+    },
     navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
 };
 
@@ -117,8 +120,8 @@ pub fn flow_field_navigation(
                     }
 
                     // this ensures that the entity is on the grid, it would crash if it was not
-                    if current_tile.0 as usize > active_map.map.tiles[0].len()
-                        || current_tile.1 as usize > active_map.map.tiles.len()
+                    if current_tile.0 as usize >= active_map.map.tiles[0].len()
+                        || current_tile.1 as usize >= active_map.map.tiles.len()
                     {
                         continue;
                     }
@@ -131,11 +134,61 @@ pub fn flow_field_navigation(
                         error!("Could not find direction");
                         continue;
                     };
-                    movement_intent.move_direction = direction;
+
+                    // correct only lateral drift (perpendicular to movement direction)
+                    // so entities stay away from tile edges without fighting their forward progress
+                    let tile_center = grid_to_world(
+                        current_tile.0,
+                        current_tile.1,
+                        active_map.tileset.tile_size,
+                        &active_map.map.bounds,
+                    );
+                    let to_center = tile_center - ai_transform.translation.truncate();
+                    let cross_track = to_center - to_center.dot(direction) * direction;
+                    let centering = cross_track / (active_map.tileset.tile_size / 2.0);
+
+                    movement_intent.move_direction = direction + centering;
                 }
             }
             _ => movement_intent.move_direction = Vec2::ZERO,
         }
+    }
+}
+
+const SEPARATION_RADIUS: f32 = 64.0;
+const SEPARATION_WEIGHT: f32 = 10.0;
+
+pub fn separation_steering(
+    mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
+    neighbor_query: Query<(Entity, &Transform), With<FlowFieldNavigator>>,
+) {
+    for (entity, transform, mut movement_intent) in intent_query.iter_mut() {
+        let mut separation_force = Vec2::ZERO;
+        for (neighbor_entity, neighbor_transform) in neighbor_query.iter() {
+            // cannot separate from self
+            if entity == neighbor_entity {
+                continue;
+            }
+            let distance = Vec2::distance(
+                transform.translation.truncate(),
+                neighbor_transform.translation.truncate(),
+            );
+
+            // if too far away we don't apply any force
+            if distance > SEPARATION_RADIUS {
+                continue;
+            }
+
+            let away = (transform.translation - neighbor_transform.translation).truncate();
+
+            // quadratic falloff: weak at the edge, much stronger up close
+            let t = 1.0 - (distance / SEPARATION_RADIUS);
+            let strength = t * t;
+
+            separation_force += away.normalize_or_zero() * strength;
+        }
+
+        movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
     }
 }
 

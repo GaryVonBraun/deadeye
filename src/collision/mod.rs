@@ -18,7 +18,10 @@ impl Plugin for CollisionPlugin {
         );
         app.add_systems(
             Update,
-            (actor_obstruction_collision, actor_vs_actor_collision)
+            (
+                actor_obstruction_collision,
+                // actor_vs_actor_collision
+            )
                 .in_set(PhysicsSet::CollisionResolution)
                 .run_if(in_state(SimulationState::Running)),
         );
