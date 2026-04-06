@@ -33,6 +33,13 @@ pub fn build_flow_field(
         }
         flow_field.last_calculated_tile = Some(current_tile);
 
+        // checking if target is within bounds
+        if current_tile.1 as usize > active_map.map.tiles.len()
+            || current_tile.0 as usize > active_map.map.tiles[0].len()
+        {
+            continue;
+        }
+
         // initialize cost grid
         let mut cost_grid: Vec<Vec<Option<u32>>> =
             vec![vec![None; nav_grid.width as usize]; nav_grid.height as usize];

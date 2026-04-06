@@ -69,10 +69,10 @@ pub fn load_mission(
             }
         }
 
-        // spawn_actor_writer.write(SpawnActorMessage {
-        //     id: "npc".to_string(),
-        //     position: Vec2 { x: -100., y: -110. },
-        // });
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "npc".to_string(),
+            position: Vec2 { x: -100., y: -110. },
+        });
     }
 }
 

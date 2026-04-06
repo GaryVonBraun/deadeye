@@ -111,16 +111,20 @@ pub fn flow_field_navigation(
                         &active_map.map.bounds,
                     );
 
+                    // this ensures the flow field is calculated first
                     if target_flow_field.last_calculated_tile == None {
                         continue;
                     }
 
-                    if current_tile.0 as usize >= active_map.map.tiles[0].len()
-                        || current_tile.1 as usize >= active_map.map.tiles.len()
+                    // this ensures that the entity is on the grid, it would crash if it was not
+                    if current_tile.0 as usize > active_map.map.tiles[0].len()
+                        || current_tile.1 as usize > active_map.map.tiles.len()
                     {
                         continue;
                     }
 
+                    // get the direction of current tile position
+                    //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
                     let Some(direction) = target_flow_field.directions[current_tile.1 as usize]
                         [current_tile.0 as usize]
                     else {

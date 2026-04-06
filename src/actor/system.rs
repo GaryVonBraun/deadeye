@@ -120,6 +120,7 @@ pub fn spawn_actor_handler(
                         ),
                         SentientAiBundle::with_vision_range(actor.vision_range),
                         Locomotion::with_speed(actor.speed),
+                        FlowFieldTarget::default(),
                         AppearanceBundle {
                             sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
                             appearance: Appearance,
