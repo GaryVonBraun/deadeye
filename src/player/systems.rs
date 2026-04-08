@@ -47,7 +47,7 @@ pub fn player_movement_controller(
             MouseScrollUnit::Line => {
                 if let Projection::Orthographic(ref mut ortho) = *projection {
                     ortho.scale -= ev.y * 0.1;
-                    ortho.scale = ortho.scale.clamp(0.1, 10.0);
+                    ortho.scale = ortho.scale.clamp(0.1, 50.0);
                 }
             }
             MouseScrollUnit::Pixel => {

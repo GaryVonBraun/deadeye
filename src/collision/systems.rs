@@ -3,6 +3,8 @@ use bevy::prelude::*;
 use crate::{
     actor::components::Actor,
     collision::components::{Collision, CollisionShape, CollisionShape2d},
+    core::systems::world_to_hash,
+    props::resources::PropSpatialHash,
 };
 
 pub fn check_collision<A: CollisionShape2d, B: CollisionShape2d>(
@@ -100,19 +102,35 @@ pub fn _expand_collision(collision: &Collision, expand_by: f32) -> Collision {
 pub fn actor_obstruction_collision(
     mut actor_query: Query<(&mut Transform, &Collision), With<Actor>>,
     obstruction_query: Query<(&Transform, &Collision), Without<Actor>>,
+    prop_spatial_hash: Res<PropSpatialHash>,
 ) {
     for (mut actor_transform, actor_collision) in actor_query.iter_mut() {
-        for (obstruction_transform, obstruction_collision) in obstruction_query.iter() {
-            let actor_pos = actor_transform.translation.truncate();
-            let obstruction_pos = obstruction_transform.translation.truncate();
+        let hash_pos = world_to_hash(
+            actor_transform.translation.truncate(),
+            prop_spatial_hash.cell_size,
+        );
 
-            if let Some(push) = calculate_push_vector(
-                actor_pos,
-                actor_collision,
-                obstruction_pos,
-                obstruction_collision,
-            ) {
-                actor_transform.translation += push.extend(0.)
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                let Some(neighbors) = prop_spatial_hash
+                    .grid
+                    .get(&(hash_pos.0 + dx, hash_pos.1 + dy))
+                else {
+                    continue;
+                };
+
+                for (neighbor_pos, neighbor_collision) in neighbors.iter() {
+                    let actor_pos = actor_transform.translation.truncate();
+
+                    if let Some(push) = calculate_push_vector(
+                        actor_pos,
+                        actor_collision,
+                        *neighbor_pos,
+                        neighbor_collision,
+                    ) {
+                        actor_transform.translation += push.extend(0.)
+                    }
+                }
             }
         }
     }

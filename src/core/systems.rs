@@ -90,3 +90,9 @@ pub fn fps_ui(mut contexts: EguiContexts, diagnostics: Res<DiagnosticsStore>) ->
 
     Ok(())
 }
+
+pub fn world_to_hash(world_pos: Vec2, cell_size: f32) -> (i32, i32) {
+    let cell_x = (world_pos.x / cell_size).floor() as i32;
+    let cell_y = (world_pos.y / cell_size).floor() as i32;
+    return (cell_x, cell_y);
+}

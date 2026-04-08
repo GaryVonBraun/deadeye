@@ -7,7 +7,7 @@ mod camera;
 pub mod components;
 pub mod io;
 pub mod states;
-mod systems;
+pub mod systems;
 
 pub struct CorePlugin;
 

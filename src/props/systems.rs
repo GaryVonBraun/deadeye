@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::{
     collision::components::Collision,
@@ -9,7 +9,7 @@ use crate::{
         components::Prop,
         io::{operations::read_prop_definitions, types::PlacedProp},
         messages::{LoadPropsMessage, RemovePropMessage, SpawnPropMessage},
-        resources::ActiveMapProps,
+        resources::{ActiveMapProps, PropSpatialHash},
     },
 };
 
@@ -38,6 +38,8 @@ pub fn load_map_props(
             return;
         };
 
+        let mut grid: HashMap<(i32, i32), Vec<(Vec2, Collision)>> = HashMap::new();
+
         let props: Vec<PlacedProp> = map_data
             .placed_props
             .iter()
@@ -58,29 +60,50 @@ pub fn load_map_props(
                              game_entity: GameEntity } )
                         .id();
 
+                    
                     return PlacedProp {
                         entity: Some(entity),
                         ..prop.clone()
                     };
                 };
-
+                
                 let entity = commands
-                        .spawn(PropBundle{
-                             prop: Prop::with_size(prop_definition.size), 
-                             sprite: Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))), 
-                             transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
-                             collision: prop_definition.collision.clone(),  
-                             game_entity: GameEntity } )
-                             
-                        .id();
+                .spawn(PropBundle{
+                    prop: Prop::with_size(prop_definition.size), 
+                    sprite: Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))), 
+                    transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
+                    collision: prop_definition.collision.clone(),  
+                    game_entity: GameEntity } )
+                    .id();
 
+
+                    //FIXME - would be good to put in a separate function
+                // adding prop to hashmap
+                let size: (f32, f32) =  match prop_definition.collision.shape {
+                crate::collision::components::CollisionShape::Circle { radius } => (radius, radius),
+                crate::collision::components::CollisionShape::Rect { width, height } => (width/ 2., height / 2.),
+                };
+                
+                let cell_size = 64.;
+                
+                let min_cell_x = ((prop.position.x - size.0) / cell_size).floor() as i32;
+                let max_cell_x = ((prop.position.x + size.0) / cell_size).floor() as i32;
+                let min_cell_y = ((prop.position.y - size.1) / cell_size).floor() as i32;
+                let max_cell_y = ((prop.position.y + size.1) / cell_size).floor() as i32;
+                
+                for cx in min_cell_x..=max_cell_x {
+                for cy in min_cell_y..=max_cell_y {
+                grid.entry((cx, cy)).or_default().push((prop.position, prop_definition.collision.clone()));
+                }
+                }
+                
                 PlacedProp {
                     entity: Some(entity),
                     ..prop.clone()
                 }
             })
             .collect();
-
+        commands.insert_resource(PropSpatialHash { grid, cell_size: 64. });
         commands.insert_resource(ActiveMapProps { props });
     }
 }

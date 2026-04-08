@@ -19,6 +19,7 @@ use crate::{
         health::components::{Hitbox, Hurtbox},
         messages::ShootMessage,
     },
+    core::systems::world_to_hash,
     map::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
@@ -163,11 +164,12 @@ pub fn flow_field_navigation(
 
 const SEPARATION_RADIUS: f32 = 32.0;
 const SEPARATION_WEIGHT: f32 = 500.0;
-const GRID_CELL_SIZE: f32 = 128.;
+const GRID_CELL_SIZE: f32 = 32.;
 
 pub fn separation_steering(
     mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
     neighbor_query: Query<(Entity, &Transform), With<FlowFieldNavigator>>,
+    mut frame_counter: Local<u32>,
 ) {
     let mut grid: HashMap<(i32, i32), Vec<(Entity, Vec2)>> = HashMap::new();
 
@@ -178,7 +180,11 @@ pub fn separation_steering(
             .push((entity, transform.translation.truncate()));
     }
 
-    for (entity, transform, mut movement_intent) in intent_query.iter_mut() {
+    *frame_counter = frame_counter.wrapping_add(1);
+    for (index, (entity, transform, mut movement_intent)) in intent_query.iter_mut().enumerate() {
+        // if index % 2 != (*frame_counter % 2) as usize {
+        //     continue;
+        // }
         let hash_pos = world_to_hash(transform.translation.truncate(), GRID_CELL_SIZE);
         let mut separation_force = Vec2::ZERO;
 
@@ -212,12 +218,6 @@ pub fn separation_steering(
 
         movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
     }
-}
-
-fn world_to_hash(world_pos: Vec2, cell_size: f32) -> (i32, i32) {
-    let cell_x = (world_pos.x / cell_size).floor() as i32;
-    let cell_y = (world_pos.y / cell_size).floor() as i32;
-    return (cell_x, cell_y);
 }
 
 pub fn ai_shooting_system(
