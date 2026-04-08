@@ -23,7 +23,7 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             (
-                vision_targeting_system,
+                // vision_targeting_system,
                 // ai_movement_system,
                 (flow_field_navigation, separation_steering).chain(),
                 ai_shooting_system,

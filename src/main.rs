@@ -49,6 +49,7 @@ fn main() {
         .add_plugins((EguiPlugin::default(), FrameTimeDiagnosticsPlugin::default()))
         // .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(CorePlugin)
+        .add_plugins(bevy::diagnostic::LogDiagnosticsPlugin::default())
         .configure_sets(Update, AiSet::Targeting.before(PhysicsSet::Movement))
         .add_plugins((
             CollisionPlugin,

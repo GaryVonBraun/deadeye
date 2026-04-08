@@ -139,7 +139,7 @@ pub fn spawn_actor_handler(
                         Locomotion::with_speed(actor.speed),
                         SeekNearestTarget,
                         AppearanceBundle {
-                            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
+                            sprite: Sprite::from_image(asset_server.load(actor.sprite.clone())),
                             appearance: Appearance,
                         },
                         FlowFieldNavigator,

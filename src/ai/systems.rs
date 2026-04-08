@@ -1,6 +1,6 @@
 use core::f32;
 
-use bevy::prelude::*;
+use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::{
     actor::{
@@ -163,38 +163,61 @@ pub fn flow_field_navigation(
 
 const SEPARATION_RADIUS: f32 = 32.0;
 const SEPARATION_WEIGHT: f32 = 500.0;
+const GRID_CELL_SIZE: f32 = 128.;
 
 pub fn separation_steering(
     mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
     neighbor_query: Query<(Entity, &Transform), With<FlowFieldNavigator>>,
 ) {
+    let mut grid: HashMap<(i32, i32), Vec<(Entity, Vec2)>> = HashMap::new();
+
+    for (entity, transform) in neighbor_query.iter() {
+        let cell = world_to_hash(transform.translation.truncate(), GRID_CELL_SIZE);
+        grid.entry(cell)
+            .or_default()
+            .push((entity, transform.translation.truncate()));
+    }
+
     for (entity, transform, mut movement_intent) in intent_query.iter_mut() {
+        let hash_pos = world_to_hash(transform.translation.truncate(), GRID_CELL_SIZE);
         let mut separation_force = Vec2::ZERO;
-        for (neighbor_entity, neighbor_transform) in neighbor_query.iter() {
-            // cannot separate from self
-            if entity == neighbor_entity {
-                continue;
+
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                let Some(neighbors) = grid.get(&(hash_pos.0 + dx, hash_pos.1 + dy)) else {
+                    continue;
+                };
+
+                for (neighbor_entity, neighbor_pos) in neighbors.iter() {
+                    // cannot separate from self
+                    if &entity == neighbor_entity {
+                        continue;
+                    }
+                    let distance = Vec2::distance(transform.translation.truncate(), *neighbor_pos);
+
+                    // if too far away we don't apply any force
+                    if distance > SEPARATION_RADIUS {
+                        continue;
+                    }
+
+                    let away = transform.translation.truncate() - *neighbor_pos;
+
+                    // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
+                    // approaches zero smoothly at the radius boundary so there is no snap/jitter
+                    let t = 1.0 - (distance / SEPARATION_RADIUS);
+                    separation_force += away.normalize_or_zero() * t * t * t;
+                }
             }
-            let distance = Vec2::distance(
-                transform.translation.truncate(),
-                neighbor_transform.translation.truncate(),
-            );
-
-            // if too far away we don't apply any force
-            if distance > SEPARATION_RADIUS {
-                continue;
-            }
-
-            let away = (transform.translation - neighbor_transform.translation).truncate();
-
-            // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
-            // approaches zero smoothly at the radius boundary so there is no snap/jitter
-            let t = 1.0 - (distance / SEPARATION_RADIUS);
-            separation_force += away.normalize_or_zero() * t * t * t;
         }
 
         movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
     }
+}
+
+fn world_to_hash(world_pos: Vec2, cell_size: f32) -> (i32, i32) {
+    let cell_x = (world_pos.x / cell_size).floor() as i32;
+    let cell_y = (world_pos.y / cell_size).floor() as i32;
+    return (cell_x, cell_y);
 }
 
 pub fn ai_shooting_system(
@@ -228,9 +251,17 @@ pub fn ai_shooting_system(
 
 pub fn seek_nearest_target(
     mut query_seeking_actor: Query<(&mut AiController, &Transform, &Team), With<SeekNearestTarget>>,
-    query_actors: Query<(Entity, &Transform, &Team), With<Actor>>,
+    query_actors: Query<(Entity, &Transform, &Team), (With<Actor>, Without<SeekNearestTarget>)>,
+    mut frame_counter: Local<u32>,
 ) {
-    for (mut seeker_controller, seeker_transform, seeker_team) in query_seeking_actor.iter_mut() {
+    *frame_counter = frame_counter.wrapping_add(1);
+    for (index, (mut seeker_controller, seeker_transform, seeker_team)) in
+        query_seeking_actor.iter_mut().enumerate()
+    {
+        if index % 10 != (*frame_counter % 10) as usize {
+            continue;
+        }
+
         let mut nearest_entity: Option<Entity> = None;
         let mut nearest_distance: f32 = f32::MAX;
 

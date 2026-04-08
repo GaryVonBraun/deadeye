@@ -12,9 +12,9 @@ impl Plugin for MapRenderingPlugin {
             Update,
             rerender_map.run_if(resource_exists_and_changed::<ActiveMap>),
         );
-        app.add_systems(
-            Update,
-            chunk_rendering_gizmos.run_if(resource_exists::<ActiveMap>),
-        );
+        // app.add_systems(
+        //     Update,
+        //     chunk_rendering_gizmos.run_if(resource_exists::<ActiveMap>),
+        // );
     }
 }
