@@ -23,6 +23,7 @@ pub fn editor_tile_picker_panel(
     active_map: Res<ActiveMap>,
     mut update_bounds: MessageWriter<UpdateMapBoundsMessage>,
     mut editor_tools: ResMut<EditorTool>,
+    mut editor_settings: ResMut<EditorSettings>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
 
@@ -31,19 +32,32 @@ pub fn editor_tile_picker_panel(
     egui::SidePanel::right("tile_picker").show(ctx, |ui| {
         ui.label("MapDetails");
 
+        ui.horizontal(|ui| {
+            ui.label("Size control amount");
+            ui.add(egui::DragValue::new(&mut editor_settings.size_control_amount).speed(1.))
+        });
+
         //FIXME - There has to be a way to fix this:
         let mut write_message: Option<UpdateMapBoundsMessage> = None;
 
-        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::East, ui) {
+        if let Some(message) =
+            size_control_buttons(MapBoundDirectionEnum::East, ui, &editor_settings)
+        {
             write_message = Some(message);
         };
-        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::West, ui) {
+        if let Some(message) =
+            size_control_buttons(MapBoundDirectionEnum::West, ui, &editor_settings)
+        {
             write_message = Some(message);
         };
-        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::North, ui) {
+        if let Some(message) =
+            size_control_buttons(MapBoundDirectionEnum::North, ui, &editor_settings)
+        {
             write_message = Some(message);
         };
-        if let Some(message) = size_control_buttons(MapBoundDirectionEnum::South, ui) {
+        if let Some(message) =
+            size_control_buttons(MapBoundDirectionEnum::South, ui, &editor_settings)
+        {
             write_message = Some(message);
         };
 
@@ -68,18 +82,20 @@ pub fn editor_tile_picker_panel(
 fn size_control_buttons(
     direction: MapBoundDirectionEnum,
     ui: &mut Ui,
+    editor_settings: &EditorSettings,
 ) -> Option<UpdateMapBoundsMessage> {
     ui.label(format!("{:?}", direction));
+    if ui.button("-").clicked() {
+        info!("ok");
+        return Some(UpdateMapBoundsMessage {
+            direction: direction.clone(),
+            action: MapBoundOperationEnum::Shrink(editor_settings.size_control_amount),
+        });
+    }
     if ui.button("+").clicked() {
         return Some(UpdateMapBoundsMessage {
             direction: direction.clone(),
-            action: MapBoundOperationEnum::Expand(1),
-        });
-    }
-    if ui.button("-").clicked() {
-        return Some(UpdateMapBoundsMessage {
-            direction: direction.clone(),
-            action: MapBoundOperationEnum::Shrink(1),
+            action: MapBoundOperationEnum::Expand(editor_settings.size_control_amount),
         });
     }
     None

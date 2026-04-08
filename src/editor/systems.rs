@@ -41,6 +41,7 @@ pub fn load_editor(
         commands.insert_resource(EditorSettings {
             snap_to_grid: true,
             tile_aligned: false,
+            size_control_amount: 1,
         });
 
         commands.spawn((
@@ -91,53 +92,70 @@ pub fn update_map_bounds(
 ) {
     for message in map_bounds_reader.read() {
         let map_info = active_map.map.clone();
+
         match message.action {
-            MapBoundOperationEnum::Shrink(amount) => match message.direction {
-                MapBoundDirectionEnum::North => {
-                    active_map.map.tiles.remove(0);
-                    active_map.map.bounds.north -= amount
+            MapBoundOperationEnum::Shrink(amount) => {
+                for _ in 0..amount {
+                    match message.direction {
+                        MapBoundDirectionEnum::North => {
+                            active_map.map.tiles.remove(0);
+                            active_map.map.bounds.north -= 1
+                        }
+                        MapBoundDirectionEnum::East => {
+                            active_map.map.tiles = row_operations(
+                                RowOperation::EastShrink,
+                                active_map.map.tiles.clone(),
+                            );
+                            active_map.map.bounds.east -= 1
+                        }
+                        MapBoundDirectionEnum::South => {
+                            active_map.map.tiles.pop();
+                            active_map.map.bounds.south -= 1
+                        }
+                        MapBoundDirectionEnum::West => {
+                            active_map.map.tiles = row_operations(
+                                RowOperation::WestShrink,
+                                active_map.map.tiles.clone(),
+                            );
+                            active_map.map.bounds.west -= 1
+                        }
+                    }
                 }
-                MapBoundDirectionEnum::East => {
-                    active_map.map.tiles =
-                        row_operations(RowOperation::EastShrink, active_map.map.tiles.clone());
-                    active_map.map.bounds.east -= amount
+            }
+            MapBoundOperationEnum::Expand(amount) => {
+                for _ in 0..amount {
+                    match message.direction {
+                        MapBoundDirectionEnum::North => {
+                            active_map
+                                .map
+                                .tiles
+                                .insert(0, vec![TILE_INDEX; map_info.tiles[0].len()]);
+                            active_map.map.bounds.north += 1
+                        }
+                        MapBoundDirectionEnum::East => {
+                            active_map.map.tiles = row_operations(
+                                RowOperation::EastExpand,
+                                active_map.map.tiles.clone(),
+                            );
+                            active_map.map.bounds.east += 1
+                        }
+                        MapBoundDirectionEnum::South => {
+                            active_map
+                                .map
+                                .tiles
+                                .push(vec![TILE_INDEX; map_info.tiles[0].len()]);
+                            active_map.map.bounds.south += 1
+                        }
+                        MapBoundDirectionEnum::West => {
+                            active_map.map.tiles = row_operations(
+                                RowOperation::WestExpand,
+                                active_map.map.tiles.clone(),
+                            );
+                            active_map.map.bounds.west += 1
+                        }
+                    }
                 }
-                MapBoundDirectionEnum::South => {
-                    active_map.map.tiles.pop();
-                    active_map.map.bounds.south -= amount
-                }
-                MapBoundDirectionEnum::West => {
-                    active_map.map.tiles =
-                        row_operations(RowOperation::WestShrink, active_map.map.tiles.clone());
-                    active_map.map.bounds.west -= amount
-                }
-            },
-            MapBoundOperationEnum::Expand(amount) => match message.direction {
-                MapBoundDirectionEnum::North => {
-                    active_map
-                        .map
-                        .tiles
-                        .insert(0, vec![TILE_INDEX; map_info.tiles[0].len()]);
-                    active_map.map.bounds.north += amount
-                }
-                MapBoundDirectionEnum::East => {
-                    active_map.map.tiles =
-                        row_operations(RowOperation::EastExpand, active_map.map.tiles.clone());
-                    active_map.map.bounds.east += amount
-                }
-                MapBoundDirectionEnum::South => {
-                    active_map
-                        .map
-                        .tiles
-                        .push(vec![TILE_INDEX; map_info.tiles[0].len()]);
-                    active_map.map.bounds.south += amount
-                }
-                MapBoundDirectionEnum::West => {
-                    active_map.map.tiles =
-                        row_operations(RowOperation::WestExpand, active_map.map.tiles.clone());
-                    active_map.map.bounds.west += amount
-                }
-            },
+            }
         }
     }
 }

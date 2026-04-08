@@ -19,4 +19,5 @@ pub enum ToolAction {
 pub struct EditorSettings {
     pub snap_to_grid: bool,
     pub tile_aligned: bool,
+    pub size_control_amount: u32,
 }
