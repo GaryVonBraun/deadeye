@@ -1,6 +1,7 @@
 use core::f32;
+use std::sync::Arc;
 
-use bevy::{platform::collections::HashMap, prelude::*};
+use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
     actor::{
@@ -19,7 +20,6 @@ use crate::{
         health::components::{Hitbox, Hurtbox},
         messages::ShootMessage,
     },
-    core::systems::world_to_hash,
     map::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
@@ -102,122 +102,196 @@ pub fn flow_field_navigation(
         (&AiController, &Transform, &mut AiMovementIntent),
         With<FlowFieldNavigator>,
     >,
-    target_query: Query<&FlowFieldTarget>,
+    target_query: Query<(Entity, &FlowFieldTarget)>,
     active_map: Res<ActiveMap>,
 ) {
-    for (controller, ai_transform, mut movement_intent) in ai_query.iter_mut() {
-        match controller.black_board.locomotion_intent {
-            AiLocomotionIntent::Chase(target) => {
-                if let Ok(target_flow_field) = target_query.get(target) {
-                    let current_tile = world_to_grid(
-                        ai_transform.translation.truncate(),
-                        active_map.tileset.tile_size,
-                        &active_map.map.bounds,
-                    );
+    // Pre-compute tile bounds once so each parallel task doesn't recompute them.
+    let tile_cols = active_map.map.tiles.first().map_or(0, |row| row.len());
+    let tile_rows = active_map.map.tiles.len();
 
-                    // this ensures the flow field is calculated first
-                    if target_flow_field.last_calculated_tile == None {
-                        continue;
-                    }
+    // Collect flow field targets — typically just 1 (the player).
+    // Vec<(Entity, &FlowFieldTarget)> is Send because FlowFieldTarget: Sync.
+    let targets: Vec<(Entity, &FlowFieldTarget)> = target_query.iter().collect();
 
-                    // this ensures that the entity is on the grid, it would crash if it was not
-                    if current_tile.0 as usize >= active_map.map.tiles[0].len()
-                        || current_tile.1 as usize >= active_map.map.tiles.len()
-                    {
-                        continue;
-                    }
+    ai_query
+        .par_iter_mut()
+        .batching_strategy(BatchingStrategy::fixed(64))
+        .for_each(|(controller, ai_transform, mut movement_intent)| {
+            let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent else {
+                movement_intent.move_direction = Vec2::ZERO;
+                return;
+            };
 
-                    // get the direction of current tile position
-                    //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
-                    let Some(direction) = target_flow_field.directions[current_tile.1 as usize]
-                        [current_tile.0 as usize]
-                    else {
-                        error!("Could not find direction");
-                        continue;
-                    };
+            // Linear scan — fine since there are very few targets (usually just 1)
+            let target_flow_field = match targets.iter().find(|(e, _)| *e == target) {
+                Some((_, ff)) => *ff,
+                None => return,
+            };
 
-                    // centering: keep entity on the path centerline for cardinal movement.
-                    // scaled to zero for diagonal directions — cross-track correction skews
-                    // diagonal angles into cardinals, so we disable it there.
-                    // flow field only produces 8 directions, so this is effectively binary.
-                    let diagonal_amount = direction.x.abs() * direction.y.abs() * 2.0;
-                    let cardinal_scale = 1.0 - diagonal_amount;
-
-                    let tile_center = grid_to_world(
-                        current_tile.0,
-                        current_tile.1,
-                        active_map.tileset.tile_size,
-                        &active_map.map.bounds,
-                    );
-                    let to_center = tile_center - ai_transform.translation.truncate();
-                    let cross_track = to_center - to_center.dot(direction) * direction;
-                    let centering =
-                        cross_track / (active_map.tileset.tile_size / 2.0) * cardinal_scale * 0.5;
-
-                    movement_intent.move_direction = direction + centering;
-                }
+            // this ensures the flow field is calculated first
+            if target_flow_field.last_calculated_tile.is_none() {
+                return;
             }
-            _ => movement_intent.move_direction = Vec2::ZERO,
-        }
-    }
+
+            let current_tile = world_to_grid(
+                ai_transform.translation.truncate(),
+                active_map.tileset.tile_size,
+                &active_map.map.bounds,
+            );
+
+            // this ensures that the entity is on the grid, it would crash if it was not
+            if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
+                return;
+            }
+
+            // get the direction of current tile position
+            //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
+            let Some(direction) =
+                target_flow_field.directions[current_tile.1 as usize][current_tile.0 as usize]
+            else {
+                error!("Could not find direction");
+                return;
+            };
+
+            // centering: keep entity on the path centerline for cardinal movement.
+            // scaled to zero for diagonal directions — cross-track correction skews
+            // diagonal angles into cardinals, so we disable it there.
+            // flow field only produces 8 directions, so this is effectively binary.
+            let diagonal_amount = direction.x.abs() * direction.y.abs() * 2.0;
+            let cardinal_scale = 1.0 - diagonal_amount;
+
+            let tile_center = grid_to_world(
+                current_tile.0,
+                current_tile.1,
+                active_map.tileset.tile_size,
+                &active_map.map.bounds,
+            );
+            let to_center = tile_center - ai_transform.translation.truncate();
+            let cross_track = to_center - to_center.dot(direction) * direction;
+            let centering =
+                cross_track / (active_map.tileset.tile_size / 2.0) * cardinal_scale * 0.5;
+
+            movement_intent.move_direction = direction + centering;
+        });
 }
 
 const SEPARATION_RADIUS: f32 = 32.0;
+const SEPARATION_RADIUS_SQ: f32 = SEPARATION_RADIUS * SEPARATION_RADIUS;
 const SEPARATION_WEIGHT: f32 = 500.0;
 const GRID_CELL_SIZE: f32 = 32.;
 
 pub fn separation_steering(
     mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
     neighbor_query: Query<(Entity, &Transform), With<FlowFieldNavigator>>,
-    mut frame_counter: Local<u32>,
+    active_map: Res<ActiveMap>,
 ) {
-    let mut grid: HashMap<(i32, i32), Vec<(Entity, Vec2)>> = HashMap::new();
+    let west_offset = active_map.map.bounds.west as f32 * active_map.tileset.tile_size;
+    let north_offset = active_map.map.bounds.north as f32 * active_map.tileset.tile_size;
 
-    for (entity, transform) in neighbor_query.iter() {
-        let cell = world_to_hash(transform.translation.truncate(), GRID_CELL_SIZE);
-        grid.entry(cell)
-            .or_default()
-            .push((entity, transform.translation.truncate()));
+    let grid_width = ((active_map.map.bounds.east + active_map.map.bounds.west) as f32
+        * active_map.tileset.tile_size
+        / GRID_CELL_SIZE)
+        .ceil() as usize
+        + 2;
+    let grid_height = ((active_map.map.bounds.north + active_map.map.bounds.south) as f32
+        * active_map.tileset.tile_size
+        / GRID_CELL_SIZE)
+        .ceil() as usize
+        + 2;
+    let num_cells = grid_width * grid_height;
+
+    // Collect entity + position pairs once. Consistent y-negation converts world-space
+    // (y-up) to grid-space (y-down) the same way in both the build and lookup passes.
+    let pairs: Vec<(Entity, Vec2)> = neighbor_query
+        .iter()
+        .map(|(e, t)| (e, t.translation.truncate()))
+        .collect();
+
+    let world_to_cell = |pos: Vec2| -> (i32, i32) {
+        let cx = ((pos.x + west_offset) / GRID_CELL_SIZE).floor() as i32;
+        let cy = ((-pos.y + north_offset) / GRID_CELL_SIZE).floor() as i32;
+        (cx, cy)
+    };
+
+    // --- counting sort spatial hash ---
+    // Pass 1: count entities per cell.
+    let mut counts = vec![0u32; num_cells];
+    for &(_, pos) in &pairs {
+        let (cx, cy) = world_to_cell(pos);
+        if cx >= 0 && cy >= 0 && (cx as usize) < grid_width && (cy as usize) < grid_height {
+            counts[cy as usize * grid_width + cx as usize] += 1;
+        }
     }
 
-    *frame_counter = frame_counter.wrapping_add(1);
-    for (index, (entity, transform, mut movement_intent)) in intent_query.iter_mut().enumerate() {
-        // if index % 2 != (*frame_counter % 2) as usize {
-        //     continue;
-        // }
-        let hash_pos = world_to_hash(transform.translation.truncate(), GRID_CELL_SIZE);
-        let mut separation_force = Vec2::ZERO;
+    // Pass 2: exclusive prefix sum → start offset for each cell.
+    let mut offsets = vec![0u32; num_cells + 1];
+    for i in 0..num_cells {
+        offsets[i + 1] = offsets[i] + counts[i];
+    }
 
-        for dx in -1..=1 {
-            for dy in -1..=1 {
-                let Some(neighbors) = grid.get(&(hash_pos.0 + dx, hash_pos.1 + dy)) else {
-                    continue;
-                };
+    // Pass 3: fill flat index array.
+    let total = offsets[num_cells] as usize;
+    let mut flat = vec![0u32; total];
+    let mut cursors = offsets[..num_cells].to_vec();
+    for (i, &(_, pos)) in pairs.iter().enumerate() {
+        let (cx, cy) = world_to_cell(pos);
+        if cx >= 0 && cy >= 0 && (cx as usize) < grid_width && (cy as usize) < grid_height {
+            let cell = cy as usize * grid_width + cx as usize;
+            flat[cursors[cell] as usize] = i as u32;
+            cursors[cell] += 1;
+        }
+    }
 
-                for (neighbor_entity, neighbor_pos) in neighbors.iter() {
-                    // cannot separate from self
-                    if &entity == neighbor_entity {
+    let grid_data = Arc::new((flat, offsets, pairs));
+
+    intent_query
+        .par_iter_mut()
+        .for_each(|(entity, transform, mut movement_intent)| {
+            let (flat, offsets, pairs) = &*grid_data;
+            let pos = transform.translation.truncate();
+            let (cx, cy) = (
+                ((pos.x + west_offset) / GRID_CELL_SIZE).floor() as i32,
+                ((-pos.y + north_offset) / GRID_CELL_SIZE).floor() as i32,
+            );
+
+            let mut separation_force = Vec2::ZERO;
+
+            for dx in -1i32..=1 {
+                for dy in -1i32..=1 {
+                    let nx = cx + dx;
+                    let ny = cy + dy;
+                    if nx < 0
+                        || ny < 0
+                        || (nx as usize) >= grid_width
+                        || (ny as usize) >= grid_height
+                    {
                         continue;
                     }
-                    let distance = Vec2::distance(transform.translation.truncate(), *neighbor_pos);
+                    let cell = ny as usize * grid_width + nx as usize;
+                    let start = offsets[cell] as usize;
+                    let end = offsets[cell + 1] as usize;
 
-                    // if too far away we don't apply any force
-                    if distance > SEPARATION_RADIUS {
-                        continue;
+                    for &idx in &flat[start..end] {
+                        let (neighbor_entity, neighbor_pos) = pairs[idx as usize];
+                        if neighbor_entity == entity {
+                            continue;
+                        }
+                        let diff = pos - neighbor_pos;
+                        let dist_sq = diff.length_squared();
+                        // cheap sq check avoids sqrt for most neighbors
+                        if dist_sq >= SEPARATION_RADIUS_SQ || dist_sq == 0.0 {
+                            continue;
+                        }
+                        let distance = dist_sq.sqrt();
+                        // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
+                        let t = 1.0 - (distance / SEPARATION_RADIUS);
+                        separation_force += (diff / distance) * (t * t * t);
                     }
-
-                    let away = transform.translation.truncate() - *neighbor_pos;
-
-                    // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
-                    // approaches zero smoothly at the radius boundary so there is no snap/jitter
-                    let t = 1.0 - (distance / SEPARATION_RADIUS);
-                    separation_force += away.normalize_or_zero() * t * t * t;
                 }
             }
-        }
 
-        movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
-    }
+            movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
+        });
 }
 
 pub fn ai_shooting_system(

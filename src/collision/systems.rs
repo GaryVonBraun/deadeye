@@ -1,9 +1,8 @@
-use bevy::prelude::*;
+use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
     actor::components::Actor,
     collision::components::{Collision, CollisionShape, CollisionShape2d},
-    core::systems::world_to_hash,
     props::resources::PropSpatialHash,
 };
 
@@ -101,39 +100,34 @@ pub fn _expand_collision(collision: &Collision, expand_by: f32) -> Collision {
 
 pub fn actor_obstruction_collision(
     mut actor_query: Query<(&mut Transform, &Collision), With<Actor>>,
-    obstruction_query: Query<(&Transform, &Collision), Without<Actor>>,
     prop_spatial_hash: Res<PropSpatialHash>,
 ) {
-    for (mut actor_transform, actor_collision) in actor_query.iter_mut() {
-        let hash_pos = world_to_hash(
-            actor_transform.translation.truncate(),
-            prop_spatial_hash.cell_size,
-        );
+    let cell_size = prop_spatial_hash.cell_size;
+    actor_query
+        .par_iter_mut()
+        .batching_strategy(BatchingStrategy::fixed(64))
+        .for_each(|(mut actor_transform, actor_collision)| {
+            let pos = actor_transform.translation.truncate();
+            let cx = (pos.x / cell_size).floor() as i32;
+            let cy = (pos.y / cell_size).floor() as i32;
 
-        for dx in -1..=1 {
-            for dy in -1..=1 {
-                let Some(neighbors) = prop_spatial_hash
-                    .grid
-                    .get(&(hash_pos.0 + dx, hash_pos.1 + dy))
-                else {
-                    continue;
-                };
-
-                for (neighbor_pos, neighbor_collision) in neighbors.iter() {
-                    let actor_pos = actor_transform.translation.truncate();
-
-                    if let Some(push) = calculate_push_vector(
-                        actor_pos,
-                        actor_collision,
-                        *neighbor_pos,
-                        neighbor_collision,
-                    ) {
-                        actor_transform.translation += push.extend(0.)
+            for dx in -1i32..=1 {
+                for dy in -1i32..=1 {
+                    for (neighbor_pos, neighbor_collision) in
+                        prop_spatial_hash.neighbors(cx + dx, cy + dy)
+                    {
+                        if let Some(push) = calculate_push_vector(
+                            pos,
+                            actor_collision,
+                            *neighbor_pos,
+                            neighbor_collision,
+                        ) {
+                            actor_transform.translation += push.extend(0.);
+                        }
                     }
                 }
             }
-        }
-    }
+        });
 }
 
 pub fn actor_vs_actor_collision(mut actor_query: Query<(&mut Transform, &Collision), With<Actor>>) {

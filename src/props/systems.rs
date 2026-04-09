@@ -1,4 +1,4 @@
-use bevy::{platform::collections::HashMap, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     collision::components::Collision,
@@ -38,7 +38,7 @@ pub fn load_map_props(
             return;
         };
 
-        let mut grid: HashMap<(i32, i32), Vec<(Vec2, Collision)>> = HashMap::new();
+        let mut raw_entries: Vec<(i32, i32, Vec2, Collision)> = Vec::new();
 
         let props: Vec<PlacedProp> = map_data
             .placed_props
@@ -92,9 +92,9 @@ pub fn load_map_props(
                 let max_cell_y = ((prop.position.y + size.1) / cell_size).floor() as i32;
                 
                 for cx in min_cell_x..=max_cell_x {
-                for cy in min_cell_y..=max_cell_y {
-                grid.entry((cx, cy)).or_default().push((prop.position, prop_definition.collision.clone()));
-                }
+                    for cy in min_cell_y..=max_cell_y {
+                        raw_entries.push((cx, cy, prop.position, prop_definition.collision.clone()));
+                    }
                 }
                 
                 PlacedProp {
@@ -103,7 +103,7 @@ pub fn load_map_props(
                 }
             })
             .collect();
-        commands.insert_resource(PropSpatialHash { grid, cell_size: 64. });
+        commands.insert_resource(PropSpatialHash::from_entries(raw_entries, 64.));
         commands.insert_resource(ActiveMapProps { props });
     }
 }
