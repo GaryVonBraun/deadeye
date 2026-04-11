@@ -105,7 +105,7 @@ pub fn actor_obstruction_collision(
     let cell_size = prop_spatial_hash.cell_size;
     actor_query
         .par_iter_mut()
-        .batching_strategy(BatchingStrategy::fixed(64))
+        .batching_strategy(BatchingStrategy::fixed(50000))
         .for_each(|(mut actor_transform, actor_collision)| {
             let pos = actor_transform.translation.truncate();
             let cx = (pos.x / cell_size).floor() as i32;

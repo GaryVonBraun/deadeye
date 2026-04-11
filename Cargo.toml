@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 bevy = { version = "0.18", default-features = false, features = [
     "2d",
-    "trace_tracy",
+    # "trace_tracy",
 ] }
 bevy-inspector-egui = "0.36.0"
 rand = "0.10.0"
@@ -17,7 +17,7 @@ bevy_egui = "0.39"
 
 [features]
 dev = ["bevy/dynamic_linking"]
-trace = ["bevy/trace_tracy"]
+# trace = ["bevy/trace_tracy"]
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

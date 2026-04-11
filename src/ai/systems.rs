@@ -246,6 +246,7 @@ pub fn separation_steering(
 
     intent_query
         .par_iter_mut()
+        .batching_strategy(BatchingStrategy::fixed(50000))
         .for_each(|(entity, transform, mut movement_intent)| {
             let (flat, offsets, pairs) = &*grid_data;
             let pos = transform.translation.truncate();
