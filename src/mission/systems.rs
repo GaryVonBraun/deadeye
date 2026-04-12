@@ -98,7 +98,7 @@ pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessag
         name: format!("test mission {:?}", rng.random_range(1..1000)).to_string(),
         map_id: map.id,
         player_spawn: Vec2::splat(0.),
-        spawn_inset: 5,
+        spawn_inset: 1,
     };
 
     // write the new mission to drive
