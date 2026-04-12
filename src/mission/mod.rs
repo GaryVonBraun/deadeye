@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::mission::{messages::*, systems::*};
+use crate::{
+    map::resources::ActiveMap,
+    mission::{messages::*, resources::ActiveMission, systems::*},
+};
 
 pub mod io;
 pub mod messages;
@@ -36,6 +39,10 @@ impl Plugin for MissionPlugin {
         app.add_systems(
             Update,
             edit_mission.run_if(on_message::<EditMissionMessage>),
+        );
+        app.add_systems(
+            Update,
+            (wave_spawner_gizmo, wave_spawner).run_if(resource_exists::<ActiveMap>),
         );
     }
 }

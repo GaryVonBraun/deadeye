@@ -12,6 +12,7 @@ use crate::{
             types::{MapBounds, MissionMap},
         },
         messages::LoadMapMessage,
+        resources::ActiveMap,
     },
     mission::{
         io::operations::{
@@ -32,6 +33,7 @@ pub fn load_mission(
     mut load_props_writer: MessageWriter<LoadPropsMessage>,
     mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
     mut build_nav_grid_writer: MessageWriter<BuildNavGridMessage>,
+    mut commands: Commands,
 ) {
     for message in load_mission_reader.read() {
         let Ok(mission) = read_mission_data(&message.id) else {
@@ -55,19 +57,20 @@ pub fn load_mission(
             id: "player".to_string(),
             position: mission.player_spawn,
         });
+        commands.insert_resource(ActiveMission { mission: mission });
 
         //TEMPORARY - for now we spawn a zombie and npc like this just to be able to test it
-        for i in 0..50 {
-            for j in 0..50 {
-                spawn_actor_writer.write(SpawnActorMessage {
-                    id: "zombie".to_string(),
-                    position: Vec2 {
-                        x: 800. + 35. * i as f32,
-                        y: -500. + 35. * j as f32,
-                    },
-                });
-            }
-        }
+        // for i in 0..50 {
+        //     for j in 0..50 {
+        //         spawn_actor_writer.write(SpawnActorMessage {
+        //             id: "zombie".to_string(),
+        //             position: Vec2 {
+        //                 x: 800. + 35. * i as f32,
+        //                 y: -500. + 35. * j as f32,
+        //             },
+        //         });
+        //     }
+        // }
 
         spawn_actor_writer.write(SpawnActorMessage {
             id: "npc".to_string(),
@@ -95,6 +98,7 @@ pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessag
         name: format!("test mission {:?}", rng.random_range(1..1000)).to_string(),
         map_id: map.id,
         player_spawn: Vec2::splat(0.),
+        spawn_inset: 5,
     };
 
     // write the new mission to drive
@@ -136,5 +140,121 @@ pub fn edit_mission(
 ) {
     for mission in edit_mission_reader.read() {
         load_editor_writer.write(LoadEditorMessage { id: mission.id });
+    }
+}
+
+pub fn wave_spawner_gizmo(
+    active_map: Res<ActiveMap>,
+    active_mission: Res<ActiveMission>,
+    mut gizmos: Gizmos,
+) {
+    let bounds: &MapBounds = &active_map.map.bounds;
+
+    let strips = calculate_spawn_strips(
+        bounds,
+        active_map.tileset.tile_size,
+        active_mission.mission.spawn_inset,
+    );
+
+    for spawner_strip in strips {
+        gizmos.rect_2d(
+            spawner_strip.center,
+            spawner_strip.size,
+            Color::linear_rgb(0.5, 0., 0.),
+        );
+    }
+}
+
+pub struct SpawnStrip {
+    pub center: Vec2,
+    pub size: Vec2,
+}
+
+fn calculate_spawn_strips(bounds: &MapBounds, tile_size: f32, inset_tiles: u32) -> Vec<SpawnStrip> {
+    let inset = inset_tiles as f32 * tile_size;
+    let map_w = (bounds.east + bounds.west) as f32 * tile_size;
+    let map_h = (bounds.north + bounds.south) as f32 * tile_size;
+    let mut strips: Vec<SpawnStrip> = vec![];
+    let center_x = (bounds.east as f32 - bounds.west as f32) * tile_size / 2.;
+    let center_y = (bounds.north as f32 - bounds.south as f32) * tile_size / 2.;
+
+    // north
+    strips.push(SpawnStrip {
+        center: Vec2 {
+            x: center_x,
+            y: (bounds.north as f32 * tile_size) - inset / 2.,
+        },
+        size: Vec2 { x: map_w, y: inset },
+    });
+
+    // south
+    strips.push(SpawnStrip {
+        center: Vec2 {
+            x: center_x,
+            y: -(bounds.south as f32 * tile_size) + inset / 2.,
+        },
+        size: Vec2 { x: map_w, y: inset },
+    });
+
+    // east
+    strips.push(SpawnStrip {
+        center: Vec2 {
+            x: (bounds.east as f32 * tile_size) - inset / 2.,
+            y: center_y,
+        },
+        size: Vec2 {
+            x: inset,
+            y: map_h - inset * 2.,
+        },
+    });
+
+    // west
+    strips.push(SpawnStrip {
+        center: Vec2 {
+            x: -(bounds.west as f32 * tile_size) + inset / 2.,
+            y: center_y,
+        },
+        size: Vec2 {
+            x: inset,
+            y: map_h - inset * 2.,
+        },
+    });
+
+    strips
+}
+
+pub fn wave_spawner(
+    mut timer: Local<f32>,
+    time: Res<Time>,
+    active_map: Res<ActiveMap>,
+    active_mission: Res<ActiveMission>,
+    mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
+) {
+    *timer += time.delta_secs();
+
+    let spawn_interval = 1.0 / 2.0;
+
+    if *timer >= spawn_interval {
+        *timer = 0.;
+        let mut rng = rand::rng();
+        let bounds: &MapBounds = &active_map.map.bounds;
+
+        let strips = calculate_spawn_strips(
+            bounds,
+            active_map.tileset.tile_size,
+            active_mission.mission.spawn_inset,
+        );
+
+        let strip = &strips[rng.random_range(0..strips.len())];
+
+        let pos = Vec2::new(
+            strip.center.x + rng.random_range(-strip.size.x / 2. ..strip.size.x / 2.),
+            strip.center.y + rng.random_range(-strip.size.y / 2. ..strip.size.y / 2.),
+        );
+
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "zombie".to_string(),
+            position: pos,
+        });
     }
 }
