@@ -93,7 +93,7 @@ pub fn render_map(
                     GameEntity,
                     Mesh2d(mesh_handle),
                     MeshMaterial2d(material_handle),
-                    Transform::from_xyz(chunk_world_position.x, chunk_world_position.y, 0.0),
+                    Transform::from_xyz(chunk_world_position.x, chunk_world_position.y, -100.0),
                 )
             });
         }

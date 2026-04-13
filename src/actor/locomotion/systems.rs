@@ -14,6 +14,7 @@ pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time:
         let displacement = direction * locomotion.speed * time.delta_secs();
 
         transform.translation += displacement.extend(0.0);
+        transform.translation.z = -transform.translation.y / 1000.0;
     }
 }
 
