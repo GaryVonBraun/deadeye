@@ -137,7 +137,7 @@ pub fn player_animation_state(
         let target_clip_name = if intent.direction == Vec2::default() {
             "idle"
         } else {
-            "walk"
+            "run"
         };
 
         if animator.current_clip == target_clip_name {

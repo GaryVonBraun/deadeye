@@ -11,7 +11,8 @@ pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time:
         let direction = locomotion.move_direction.normalize_or_zero();
 
         // Displacement is the new position base on the direction x speed and the delta time
-        let displacement = direction * locomotion.speed * time.delta_secs();
+        let displacement =
+            direction * locomotion.speed * locomotion.speed_scale * time.delta_secs();
 
         transform.translation += displacement.extend(0.0);
         transform.translation.z = -transform.translation.y / 1000.0;

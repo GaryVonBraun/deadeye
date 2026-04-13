@@ -38,7 +38,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: String::from("Deadeye"),
+                        title: String::from("Zormb game"),
                         position: WindowPosition::Centered(MonitorSelection::Primary),
                         resolution: WindowResolution::new(2000, 1000),
                         resizable: true,

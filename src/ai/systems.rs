@@ -264,7 +264,8 @@ pub fn separation_steering(
                 ((-pos.y + north_offset) / GRID_CELL_SIZE).floor() as i32,
             );
 
-            let mut separation_force = Vec2::ZERO;
+            let desired = movement_intent.move_direction;
+            let mut movement_scale = 1.0f32;
 
             for dx in -1i32..=1 {
                 for dy in -1i32..=1 {
@@ -286,6 +287,7 @@ pub fn separation_steering(
                         if neighbor_entity == entity {
                             continue;
                         }
+
                         let diff = pos - neighbor_pos;
                         let dist_sq = diff.length_squared();
                         // cheap sq check avoids sqrt for most neighbors
@@ -294,13 +296,17 @@ pub fn separation_steering(
                         }
                         let distance = dist_sq.sqrt();
                         // cubic falloff: nearly nothing at the edge, overwhelmingly strong up close
-                        let t = 1.0 - (distance / SEPARATION_RADIUS);
-                        separation_force += (diff / distance) * (t * t * t);
+                        let neighbor_dir = -diff / distance; // direction toward neighbor
+                        let dot = desired.dot(neighbor_dir);
+                        if dot > 0.0 {
+                            let blocking = dot * (1.0 - distance / SEPARATION_RADIUS);
+                            movement_scale -= blocking;
+                        }
                     }
                 }
             }
 
-            movement_intent.move_direction += separation_force * SEPARATION_WEIGHT;
+            movement_intent.move_direction = desired * movement_scale.clamp(0.0, 1.0);
         });
 }
 
@@ -408,4 +414,3 @@ pub fn ai_melee_system(
         }
     }
 }
-
