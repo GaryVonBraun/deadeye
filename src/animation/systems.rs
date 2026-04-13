@@ -3,8 +3,11 @@ use std::path::PathBuf;
 use bevy::prelude::*;
 
 use crate::{
+    actor::components::Zombie,
+    ai::components::AiMovementIntent,
     animation::{components::SpriteAnimator, resources::AnimationDefinitions},
     core::io::read_ron_file,
+    player::components::{Player, PlayerMovementIntent},
 };
 
 pub fn swap_clip_texture(
@@ -77,10 +80,6 @@ pub fn sprite_animator(
             continue;
         }
 
-        info!(
-            "playing clip: {} frame: {}",
-            animator.current_clip, animator.current_frame
-        );
         animator.current_frame += 1;
 
         let Some(anim_def) = animation_definitions.defs.get(&animator.def_id) else {
@@ -117,4 +116,74 @@ pub fn set_clip(animator: &mut SpriteAnimator, clip_name: &str, fps: f32) {
     animator.current_frame = 0;
     animator.frame_timer = Timer::from_seconds(1.0 / fps, TimerMode::Once);
     animator.clip_dirty = true;
+}
+
+pub fn player_animation_state(
+    mut player_query: Query<(&PlayerMovementIntent, &mut SpriteAnimator), With<Player>>,
+    animation_defs: Res<AnimationDefinitions>,
+) {
+    for (intent, mut animator) in player_query.iter_mut() {
+        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+            error!("animation def not found");
+            continue;
+        };
+
+        if intent.direction.x < 0.0 {
+            animator.flip_x = true;
+        } else if intent.direction.x > 0.0 {
+            animator.flip_x = false;
+        }
+
+        let target_clip_name = if intent.direction == Vec2::default() {
+            "idle"
+        } else {
+            "walk"
+        };
+
+        if animator.current_clip == target_clip_name {
+            continue;
+        }
+
+        let Some(target_clip) = anim_def.clips.get(target_clip_name) else {
+            error!("clip {} not found", target_clip_name);
+            continue;
+        };
+
+        set_clip(&mut animator, target_clip_name, target_clip.fps);
+    }
+}
+
+pub fn zombie_animation_state(
+    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator), With<Zombie>>,
+    animation_defs: Res<AnimationDefinitions>,
+) {
+    for (intent, mut animator) in zombie_query.iter_mut() {
+        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+            error!("animation def not found");
+            continue;
+        };
+
+        if intent.move_direction.x < 0.0 {
+            animator.flip_x = true;
+        } else if intent.move_direction.x > 0.0 {
+            animator.flip_x = false;
+        }
+
+        let target_clip_name = if intent.move_direction == Vec2::default() {
+            "idle"
+        } else {
+            "walk"
+        };
+
+        if animator.current_clip == target_clip_name {
+            continue;
+        }
+
+        let Some(target_clip) = anim_def.clips.get(target_clip_name) else {
+            error!("clip {} not found", target_clip_name);
+            continue;
+        };
+
+        set_clip(&mut animator, target_clip_name, target_clip.fps);
+    }
 }

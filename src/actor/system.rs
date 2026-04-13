@@ -95,15 +95,50 @@ pub fn spawn_actor_handler(
                     },
                 );
 
+                let Some(anim_def) = animation_definitions.defs.get("soldier_default") else {
+                    error!("animation def not found");
+                    continue;
+                };
+
+                let default_clip_name = &anim_def.default;
+                let Some(clip) = anim_def.clips.get(default_clip_name) else {
+                    error!("default clip not found");
+                    continue;
+                };
+
+                let layout = TextureAtlasLayout::from_grid(
+                    UVec2::new(clip.frame_size.0, clip.frame_size.1),
+                    clip.columns as u32,
+                    clip.rows as u32,
+                    None,
+                    None,
+                );
+                let layout_handle = texture_atlas_layouts.add(layout);
+
                 let entity = commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
                             actor,
                         ),
-                        AppearanceBundle {
-                            sprite: Sprite::from_image(asset_server.load(actor.sprite.clone())),
-                            appearance: Appearance,
+                        Sprite {
+                            image: asset_server.load(&clip.texture),
+                            texture_atlas: Some(TextureAtlas {
+                                layout: layout_handle,
+                                index: 0,
+                            }),
+                            ..default()
+                        },
+                        SpriteAnimator {
+                            current_clip: default_clip_name.clone(),
+                            frame_timer: Timer::from_seconds(
+                                1.0 / clip.fps as f32,
+                                TimerMode::Repeating,
+                            ),
+                            current_frame: 0,
+                            def_id: "soldier_default".to_string(),
+                            clip_dirty: false,
+                            flip_x: false,
                         },
                         Locomotion::with_speed(actor.speed),
                         FlowFieldTarget::default(),

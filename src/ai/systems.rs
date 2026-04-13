@@ -409,39 +409,3 @@ pub fn ai_melee_system(
     }
 }
 
-pub fn zombie_animation_state(
-    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator), With<Zombie>>,
-    animation_defs: Res<AnimationDefinitions>,
-) {
-    for (intent, mut animator) in zombie_query.iter_mut() {
-        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
-            error!("animation def not found");
-            continue;
-        };
-
-        if intent.move_direction.x < 0.0 {
-            animator.flip_x = true;
-        } else if intent.move_direction.x > 0.0 {
-            animator.flip_x = false;
-        }
-
-        let target_clip_name = if intent.move_direction == Vec2::default() {
-            "idle"
-        } else {
-            "walk"
-        };
-
-        if animator.current_clip == target_clip_name {
-            continue;
-        }
-
-        info!("switching to clip: {}", target_clip_name);
-
-        let Some(target_clip) = anim_def.clips.get(target_clip_name) else {
-            error!("clip {} not found", target_clip_name);
-            continue;
-        };
-
-        set_clip(&mut animator, target_clip_name, target_clip.fps);
-    }
-}
