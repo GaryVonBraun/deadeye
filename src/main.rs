@@ -4,6 +4,7 @@ use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use crate::{
     actor::ActorPlugin,
     ai::{AiPlugin, AiSet},
+    animation::SpriteAnimationPlugin,
     collision::{CollisionPlugin, sets::PhysicsSet},
     combat::CombatPlugin,
     core::CorePlugin,
@@ -18,6 +19,7 @@ use crate::{
 };
 mod actor;
 mod ai;
+mod animation;
 mod collision;
 mod combat;
 mod core;
@@ -62,6 +64,7 @@ fn main() {
             EditorPlugin,
             PropsPlugin,
             NavigationPlugin,
+            SpriteAnimationPlugin,
         ))
         .add_plugins(DebugPlugin)
         .add_plugins(UiPlugin)

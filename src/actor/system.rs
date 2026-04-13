@@ -15,6 +15,7 @@ use crate::{
         bundles::{BaseAiBundle, SentientAiBundle},
         components::{AiController, SeekNearestTarget},
     },
+    animation::{components::SpriteAnimator, resources::AnimationDefinitions},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
         weapon::factories::spawn_debug_weapon,
@@ -58,6 +59,8 @@ pub fn spawn_actor_handler(
     mut spawn_actor_reader: MessageReader<SpawnActorMessage>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    animation_definitions: Res<AnimationDefinitions>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let Ok(definitions) =
         read_ron_file::<ActorDefinitions>(PathBuf::from("content/actors/definitions.ron"))
@@ -129,6 +132,26 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Zombie => {
+                let Some(anim_def) = animation_definitions.defs.get("zombie_default") else {
+                    error!("animation def not found");
+                    continue;
+                };
+
+                let default_clip_name = &anim_def.default;
+                let Some(clip) = anim_def.clips.get(default_clip_name) else {
+                    error!("default clip not found");
+                    continue;
+                };
+
+                let layout = TextureAtlasLayout::from_grid(
+                    UVec2::new(clip.frame_size.0, clip.frame_size.1),
+                    clip.columns as u32,
+                    clip.rows as u32,
+                    None,
+                    None,
+                );
+                let layout_handle = texture_atlas_layouts.add(layout);
+
                 let entity = commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
@@ -138,11 +161,24 @@ pub fn spawn_actor_handler(
                         BaseAiBundle::with_controller(AiController::zombie()),
                         Locomotion::with_speed(actor.speed),
                         SeekNearestTarget,
-                        AppearanceBundle {
-                            sprite: Sprite::from_image(asset_server.load(actor.sprite.clone())),
-                            appearance: Appearance,
-                        },
                         FlowFieldNavigator,
+                        Sprite {
+                            image: asset_server.load(&clip.texture),
+                            texture_atlas: Some(TextureAtlas {
+                                layout: layout_handle,
+                                index: 0,
+                            }),
+                            ..default()
+                        },
+                        SpriteAnimator {
+                            current_clip: default_clip_name.clone(),
+                            frame_timer: Timer::from_seconds(
+                                1.0 / clip.fps as f32,
+                                TimerMode::Repeating,
+                            ),
+                            current_frame: 0,
+                            def_id: "zombie_default".to_string(),
+                        },
                         MeleeIntent {
                             target: None,
                             melee_state: MeleeState::Ready,
