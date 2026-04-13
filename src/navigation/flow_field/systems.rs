@@ -3,6 +3,7 @@ use std::{collections::VecDeque, u32};
 use bevy::prelude::*;
 
 use crate::{
+    collision::components::Collision,
     map::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
@@ -11,13 +12,13 @@ use crate::{
 };
 
 pub fn build_flow_field(
-    mut target_query: Query<(&mut FlowFieldTarget, &Transform)>,
+    mut target_query: Query<(&mut FlowFieldTarget, &Transform, &Collision)>,
     nav_grid: Res<NavGrid>,
     active_map: Res<ActiveMap>,
 ) {
-    for (mut flow_field, transform) in target_query.iter_mut() {
+    for (mut flow_field, transform, collision) in target_query.iter_mut() {
         let current_tile = world_to_grid(
-            transform.translation.truncate(),
+            transform.translation.truncate() + collision.offset,
             active_map.tileset.tile_size,
             &active_map.map.bounds,
         );
