@@ -7,7 +7,7 @@ use crate::{
     actor::{
         appearance::bundles::{Appearance, AppearanceBundle},
         bundles::CoreActorBundle,
-        components::Team,
+        components::{Team, Zombie},
         locomotion::components::Locomotion,
         messages::SpawnActorMessage,
     },
@@ -162,6 +162,7 @@ pub fn spawn_actor_handler(
                         Locomotion::with_speed(actor.speed),
                         SeekNearestTarget,
                         FlowFieldNavigator,
+                        Zombie,
                         Sprite {
                             image: asset_server.load(&clip.texture),
                             texture_atlas: Some(TextureAtlas {
@@ -178,6 +179,8 @@ pub fn spawn_actor_handler(
                             ),
                             current_frame: 0,
                             def_id: "zombie_default".to_string(),
+                            clip_dirty: false,
+                            flip_x: false,
                         },
                         MeleeIntent {
                             target: None,

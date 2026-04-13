@@ -25,13 +25,22 @@ impl Plugin for AiPlugin {
             (
                 // vision_targeting_system,
                 // ai_movement_system,
-                (flow_field_navigation, separation_steering).chain(),
+                (
+                    flow_field_navigation,
+                    separation_steering,
+                    zombie_animation_state,
+                )
+                    .chain(),
                 ai_shooting_system,
                 ai_melee_system,
                 seek_nearest_target,
             )
                 .in_set(AiSet::Targeting)
                 .run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            Update,
+            zombie_animation_state.run_if(in_state(AppState::InGame)),
         );
     }
 }

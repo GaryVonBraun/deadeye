@@ -19,7 +19,7 @@ pub struct AnimationClip {
     pub frame_size: (u32, u32),
     pub columns: u32,
     pub rows: u32,
-    pub fps: u16,
+    pub fps: f32,
     pub looping: bool,
     pub freeze: bool,
 }

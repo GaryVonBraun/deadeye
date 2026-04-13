@@ -12,3 +12,6 @@ pub enum TeamId {
     Player,
     Zombie,
 }
+
+#[derive(Component, Debug)]
+pub struct Zombie;

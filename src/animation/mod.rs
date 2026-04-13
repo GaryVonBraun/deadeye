@@ -7,7 +7,7 @@ use crate::{
 
 pub mod components;
 pub mod resources;
-mod systems;
+pub mod systems;
 
 pub struct SpriteAnimationPlugin;
 

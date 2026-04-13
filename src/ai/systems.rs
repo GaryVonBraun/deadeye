@@ -5,7 +5,7 @@ use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
     actor::{
-        components::{Actor, Team},
+        components::{Actor, Team, Zombie},
         teams::{TeamStanding, get_standing},
     },
     ai::{
@@ -14,6 +14,7 @@ use crate::{
         },
         vision::components::Vision,
     },
+    animation::{components::SpriteAnimator, resources::AnimationDefinitions, systems::set_clip},
     collision::{components::Collision, systems::check_collision},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
@@ -99,7 +100,7 @@ pub fn ai_movement_system(
 
 pub fn flow_field_navigation(
     mut ai_query: Query<
-        (&AiController, &Transform, &mut AiMovementIntent),
+        (&AiController, &Transform, &mut AiMovementIntent, &Collision),
         With<FlowFieldNavigator>,
     >,
     target_query: Query<(Entity, &FlowFieldTarget)>,
@@ -116,63 +117,68 @@ pub fn flow_field_navigation(
     ai_query
         .par_iter_mut()
         .batching_strategy(BatchingStrategy::fixed(64))
-        .for_each(|(controller, ai_transform, mut movement_intent)| {
-            let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent else {
-                movement_intent.move_direction = Vec2::ZERO;
-                return;
-            };
+        .for_each(
+            |(controller, ai_transform, mut movement_intent, collision)| {
+                let offset_position = ai_transform.translation.truncate() + collision.offset;
 
-            // Linear scan — fine since there are very few targets (usually just 1)
-            let target_flow_field = match targets.iter().find(|(e, _)| *e == target) {
-                Some((_, ff)) => *ff,
-                None => return,
-            };
+                let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent
+                else {
+                    movement_intent.move_direction = Vec2::ZERO;
+                    return;
+                };
 
-            // this ensures the flow field is calculated first
-            if target_flow_field.last_calculated_tile.is_none() {
-                return;
-            }
+                // Linear scan — fine since there are very few targets (usually just 1)
+                let target_flow_field = match targets.iter().find(|(e, _)| *e == target) {
+                    Some((_, ff)) => *ff,
+                    None => return,
+                };
 
-            let current_tile = world_to_grid(
-                ai_transform.translation.truncate(),
-                active_map.tileset.tile_size,
-                &active_map.map.bounds,
-            );
+                // this ensures the flow field is calculated first
+                if target_flow_field.last_calculated_tile.is_none() {
+                    return;
+                }
 
-            // this ensures that the entity is on the grid, it would crash if it was not
-            if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
-                return;
-            }
+                let current_tile = world_to_grid(
+                    offset_position,
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                );
 
-            // get the direction of current tile position
-            //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
-            let Some(direction) =
-                target_flow_field.directions[current_tile.1 as usize][current_tile.0 as usize]
-            else {
-                error!("Could not find direction");
-                return;
-            };
+                // this ensures that the entity is on the grid, it would crash if it was not
+                if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
+                    return;
+                }
 
-            // centering: keep entity on the path centerline for cardinal movement.
-            // scaled to zero for diagonal directions — cross-track correction skews
-            // diagonal angles into cardinals, so we disable it there.
-            // flow field only produces 8 directions, so this is effectively binary.
-            let diagonal_amount = direction.x.abs() * direction.y.abs() * 2.0;
-            let cardinal_scale = 1.0 - diagonal_amount;
+                // get the direction of current tile position
+                //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
+                let Some(direction) =
+                    target_flow_field.directions[current_tile.1 as usize][current_tile.0 as usize]
+                else {
+                    error!("Could not find direction");
+                    return;
+                };
 
-            let tile_center = grid_to_world(
-                current_tile.0,
-                current_tile.1,
-                active_map.tileset.tile_size,
-                &active_map.map.bounds,
-            );
-            let to_center = tile_center - ai_transform.translation.truncate();
-            let cross_track = to_center - to_center.dot(direction) * direction;
-            let centering =
-                cross_track / (active_map.tileset.tile_size / 2.0) * cardinal_scale * 0.5;
+                // centering: keep entity on the path centerline for cardinal movement.
+                // scaled to zero for diagonal directions — cross-track correction skews
+                // diagonal angles into cardinals, so we disable it there.
+                // flow field only produces 8 directions, so this is effectively binary.
+                let diagonal_amount = direction.x.abs() * direction.y.abs() * 2.0;
+                let cardinal_scale = 1.0 - diagonal_amount;
 
-            movement_intent.move_direction = direction + centering;
-        });
+                let tile_center = grid_to_world(
+                    current_tile.0,
+                    current_tile.1,
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                );
+                let to_center = tile_center - offset_position;
+                let cross_track = to_center - to_center.dot(direction) * direction;
+                let centering =
+                    cross_track / (active_map.tileset.tile_size / 2.0) * cardinal_scale * 0.5;
+
+                movement_intent.move_direction = direction + centering;
+            },
+        );
 }
 
 const SEPARATION_RADIUS: f32 = 32.0;
@@ -181,8 +187,11 @@ const SEPARATION_WEIGHT: f32 = 500.0;
 const GRID_CELL_SIZE: f32 = 32.;
 
 pub fn separation_steering(
-    mut intent_query: Query<(Entity, &Transform, &mut AiMovementIntent), With<FlowFieldNavigator>>,
-    neighbor_query: Query<(Entity, &Transform), With<FlowFieldNavigator>>,
+    mut intent_query: Query<
+        (Entity, &Transform, &mut AiMovementIntent, &Collision),
+        With<FlowFieldNavigator>,
+    >,
+    neighbor_query: Query<(Entity, &Transform, &Collision), With<FlowFieldNavigator>>,
     active_map: Res<ActiveMap>,
 ) {
     let west_offset = active_map.map.bounds.west as f32 * active_map.tileset.tile_size;
@@ -204,7 +213,7 @@ pub fn separation_steering(
     // (y-up) to grid-space (y-down) the same way in both the build and lookup passes.
     let pairs: Vec<(Entity, Vec2)> = neighbor_query
         .iter()
-        .map(|(e, t)| (e, t.translation.truncate()))
+        .map(|(e, t, c)| (e, t.translation.truncate() + c.offset))
         .collect();
 
     let world_to_cell = |pos: Vec2| -> (i32, i32) {
@@ -247,9 +256,9 @@ pub fn separation_steering(
     intent_query
         .par_iter_mut()
         .batching_strategy(BatchingStrategy::fixed(50000))
-        .for_each(|(entity, transform, mut movement_intent)| {
+        .for_each(|(entity, transform, mut movement_intent, collision)| {
             let (flat, offsets, pairs) = &*grid_data;
-            let pos = transform.translation.truncate();
+            let pos = transform.translation.truncate() + collision.offset;
             let (cx, cy) = (
                 ((pos.x + west_offset) / GRID_CELL_SIZE).floor() as i32,
                 ((-pos.y + north_offset) / GRID_CELL_SIZE).floor() as i32,
@@ -397,5 +406,42 @@ pub fn ai_melee_system(
             }
             _ => {}
         }
+    }
+}
+
+pub fn zombie_animation_state(
+    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator), With<Zombie>>,
+    animation_defs: Res<AnimationDefinitions>,
+) {
+    for (intent, mut animator) in zombie_query.iter_mut() {
+        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+            error!("animation def not found");
+            continue;
+        };
+
+        if intent.move_direction.x < 0.0 {
+            animator.flip_x = true;
+        } else if intent.move_direction.x > 0.0 {
+            animator.flip_x = false;
+        }
+
+        let target_clip_name = if intent.move_direction == Vec2::default() {
+            "idle"
+        } else {
+            "walk"
+        };
+
+        if animator.current_clip == target_clip_name {
+            continue;
+        }
+
+        info!("switching to clip: {}", target_clip_name);
+
+        let Some(target_clip) = anim_def.clips.get(target_clip_name) else {
+            error!("clip {} not found", target_clip_name);
+            continue;
+        };
+
+        set_clip(&mut animator, target_clip_name, target_clip.fps);
     }
 }

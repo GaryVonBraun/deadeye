@@ -232,7 +232,7 @@ pub fn wave_spawner(
 ) {
     *timer += time.delta_secs();
 
-    let spawn_interval = 1.0 / 20.0;
+    let spawn_interval = 1.0 / 10.0;
 
     if *timer >= spawn_interval {
         *timer = 0.;

@@ -29,9 +29,9 @@ impl CoreActorBundle {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
                 shape: CollisionShape::Rect {
                     width: 32.,
-                    height: 32.,
+                    height: 64.,
                 },
-                offset: Vec2::default(),
+                offset: Vec2 { x: 0., y: -32. },
             },
             hitbox: Hitbox {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
@@ -40,7 +40,10 @@ impl CoreActorBundle {
                 },
                 offset: Vec2::default(),
             },
-            collision: Collision::from_radius(actor.collision_radius.clone()),
+            collision: Collision::from_offset_radius(
+                Vec2 { x: 0., y: -64. },
+                actor.collision_radius.clone(),
+            ),
             game_entity: GameEntity,
             team: actor.team.clone(),
         }

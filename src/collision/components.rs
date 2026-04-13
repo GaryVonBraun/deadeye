@@ -29,6 +29,12 @@ impl Collision {
             offset: Vec2::default(),
         }
     }
+    pub fn from_offset_radius(offset: Vec2, radius: f32) -> Self {
+        Collision {
+            shape: CollisionShape::Circle { radius },
+            offset,
+        }
+    }
     pub fn from_rect(width: f32, height: f32) -> Self {
         Collision {
             shape: CollisionShape::Rect { width, height },

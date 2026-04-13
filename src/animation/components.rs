@@ -6,4 +6,6 @@ pub struct SpriteAnimator {
     pub frame_timer: Timer,
     pub current_frame: usize,
     pub def_id: String,
+    pub clip_dirty: bool,
+    pub flip_x: bool,
 }
