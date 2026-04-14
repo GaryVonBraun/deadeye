@@ -9,3 +9,6 @@ pub struct SpriteAnimator {
     pub clip_dirty: bool,
     pub flip_x: bool,
 }
+
+#[derive(Component, Debug)]
+pub struct AnimationFinished;

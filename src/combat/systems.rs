@@ -6,15 +6,15 @@ use crate::{
     combat::{
         components::{MeleeIntent, MeleeState},
         health::{
-            components::{Hitbox, Hurtbox},
+            components::{Dead, Hitbox, Hurtbox},
             messages::DamageMessage,
         },
     },
 };
 
 pub fn tick_melee_intents(
-    mut intent_query: Query<(&mut MeleeIntent, &Transform, &Hitbox), With<Actor>>,
-    actors: Query<(&Transform, &Hurtbox), With<Actor>>,
+    mut intent_query: Query<(&mut MeleeIntent, &Transform, &Hitbox), (With<Actor>, Without<Dead>)>,
+    actors: Query<(&Transform, &Hurtbox), (With<Actor>, Without<Dead>)>,
     time: Res<Time>,
     mut damage_writer: MessageWriter<DamageMessage>,
 ) {

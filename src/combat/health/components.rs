@@ -47,5 +47,5 @@ impl CollisionShape2d for Hitbox {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, PartialEq)]
 pub struct Dead;

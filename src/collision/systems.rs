@@ -5,6 +5,7 @@ use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 use crate::{
     actor::{components::Actor, locomotion::components::Locomotion},
     collision::components::{Collision, CollisionShape, CollisionShape2d},
+    combat::health::components::Dead,
     map::resources::ActiveMap,
     props::resources::PropSpatialHash,
 };
@@ -136,7 +137,10 @@ pub fn actor_obstruction_collision(
 const GRID_CELL_SIZE: f32 = 32.;
 const ACTOR_SEPARATION_DISTANCE: f32 = 32.0;
 pub fn actor_vs_actor_collision(
-    mut moving_query: Query<(Entity, &mut Transform, &Locomotion, &Collision), With<Actor>>,
+    mut moving_query: Query<
+        (Entity, &mut Transform, &Locomotion, &Collision),
+        (With<Actor>, Without<Dead>),
+    >,
     active_map: Res<ActiveMap>,
 ) {
     let west_offset = active_map.map.bounds.west as f32 * active_map.tileset.tile_size;

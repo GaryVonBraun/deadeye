@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
-use crate::combat::health::{
-    components::{Dead, Health},
-    messages::DamageMessage,
+use crate::{
+    animation::components::AnimationFinished,
+    combat::health::{
+        components::{Dead, Health},
+        messages::DamageMessage,
+    },
 };
 
 pub fn apply_damage(
@@ -25,9 +28,16 @@ pub fn apply_damage(
 pub fn death_system(mut commands: Commands, query: Query<(Entity, &Health), Without<Dead>>) {
     for (entity, health) in query.iter() {
         if health.current <= 0.0 {
-            //TEMPORARY - For now we just despawn the entity if it dies
-            // commands.entity(entity).insert(Dead);
-            commands.entity(entity).despawn();
+            commands.entity(entity).insert(Dead);
         }
+    }
+}
+
+pub fn death_animation_cleanup(
+    dead_query: Query<Entity, (With<AnimationFinished>, With<Dead>)>,
+    mut commands: Commands,
+) {
+    for entity in dead_query.iter() {
+        commands.entity(entity).despawn();
     }
 }

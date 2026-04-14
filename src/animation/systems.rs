@@ -5,8 +5,14 @@ use bevy::prelude::*;
 use crate::{
     actor::components::Zombie,
     ai::components::AiMovementIntent,
-    animation::{components::SpriteAnimator, resources::AnimationDefinitions},
-    combat::components::{MeleeIntent, MeleeState},
+    animation::{
+        components::{AnimationFinished, SpriteAnimator},
+        resources::AnimationDefinitions,
+    },
+    combat::{
+        components::{MeleeIntent, MeleeState},
+        health::components::Dead,
+    },
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
 };
@@ -58,13 +64,14 @@ pub fn load_animation_definitions(mut commands: Commands) {
 }
 
 pub fn sprite_animator(
-    mut animator_query: Query<(&mut Sprite, &mut SpriteAnimator)>,
+    mut animator_query: Query<(Entity, &mut Sprite, &mut SpriteAnimator)>,
     animation_definitions: Res<AnimationDefinitions>,
     timer: Res<Time>,
     asset_server: Res<AssetServer>,
+    mut commands: Commands,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    for (mut sprite, mut animator) in animator_query.iter_mut() {
+    for (entity, mut sprite, mut animator) in animator_query.iter_mut() {
         if animator.clip_dirty {
             animator.clip_dirty = false;
             swap_clip_texture(
@@ -99,6 +106,7 @@ pub fn sprite_animator(
                 animator.current_frame = 0;
             } else {
                 animator.current_frame -= 1;
+                commands.entity(entity).insert(AnimationFinished);
             }
         }
 
@@ -155,10 +163,18 @@ pub fn player_animation_state(
 }
 
 pub fn zombie_animation_state(
-    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator, &MeleeIntent), With<Zombie>>,
+    mut zombie_query: Query<
+        (
+            &AiMovementIntent,
+            &mut SpriteAnimator,
+            &MeleeIntent,
+            Option<&Dead>,
+        ),
+        With<Zombie>,
+    >,
     animation_defs: Res<AnimationDefinitions>,
 ) {
-    for (intent, mut animator, melee_intent) in zombie_query.iter_mut() {
+    for (intent, mut animator, melee_intent, dead) in zombie_query.iter_mut() {
         let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
@@ -173,6 +189,9 @@ pub fn zombie_animation_state(
         match melee_intent.melee_state {
             MeleeState::AttackDelay(_) => target_clip_name = "attack",
             _ => {}
+        }
+        if dead != None {
+            target_clip_name = "dead";
         }
 
         if intent.move_direction.x < 0.0 {

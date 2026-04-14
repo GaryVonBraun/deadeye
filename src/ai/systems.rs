@@ -5,7 +5,7 @@ use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
     actor::{
-        components::{Actor, Team, Zombie},
+        components::{Actor, Team},
         teams::{TeamStanding, get_standing},
     },
     ai::{
@@ -14,11 +14,10 @@ use crate::{
         },
         vision::components::Vision,
     },
-    animation::{components::SpriteAnimator, resources::AnimationDefinitions, systems::set_clip},
     collision::{components::Collision, systems::check_collision},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
-        health::components::{Hitbox, Hurtbox},
+        health::components::{Dead, Hitbox, Hurtbox},
         messages::ShootMessage,
     },
     map::{
@@ -101,7 +100,7 @@ pub fn ai_movement_system(
 pub fn flow_field_navigation(
     mut ai_query: Query<
         (&AiController, &Transform, &mut AiMovementIntent, &Collision),
-        With<FlowFieldNavigator>,
+        (Without<Dead>, With<FlowFieldNavigator>),
     >,
     target_query: Query<(Entity, &FlowFieldTarget)>,
     active_map: Res<ActiveMap>,
@@ -340,8 +339,14 @@ pub fn ai_shooting_system(
 }
 
 pub fn seek_nearest_target(
-    mut query_seeking_actor: Query<(&mut AiController, &Transform, &Team), With<SeekNearestTarget>>,
-    query_actors: Query<(Entity, &Transform, &Team), (With<Actor>, Without<SeekNearestTarget>)>,
+    mut query_seeking_actor: Query<
+        (&mut AiController, &Transform, &Team),
+        (With<SeekNearestTarget>, Without<Dead>),
+    >,
+    query_actors: Query<
+        (Entity, &Transform, &Team),
+        (With<Actor>, (Without<SeekNearestTarget>, Without<Dead>)),
+    >,
     mut frame_counter: Local<u32>,
 ) {
     *frame_counter = frame_counter.wrapping_add(1);
@@ -385,8 +390,11 @@ pub fn seek_nearest_target(
 }
 
 pub fn ai_melee_system(
-    mut ai_query: Query<(&AiController, &mut MeleeIntent, &Transform, &Hitbox), With<Actor>>,
-    actor_query: Query<(&Transform, &Hurtbox), With<Actor>>,
+    mut ai_query: Query<
+        (&AiController, &mut MeleeIntent, &Transform, &Hitbox),
+        (With<Actor>, Without<Dead>),
+    >,
+    actor_query: Query<(&Transform, &Hurtbox), (With<Actor>, Without<Dead>)>,
 ) {
     for (controller, mut melee_intent, transform, hitbox) in ai_query.iter_mut() {
         match controller.black_board.action_intent {

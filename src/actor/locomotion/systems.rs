@@ -2,10 +2,14 @@ use bevy::prelude::*;
 
 use crate::{
     actor::locomotion::components::Locomotion, ai::components::AiMovementIntent,
-    debug::components::DebugMovementIntent, player::components::PlayerMovementIntent,
+    combat::health::components::Dead, debug::components::DebugMovementIntent,
+    player::components::PlayerMovementIntent,
 };
 
-pub fn integrate_movement(mut query: Query<(&Locomotion, &mut Transform)>, time: Res<Time>) {
+pub fn integrate_movement(
+    mut query: Query<(&Locomotion, &mut Transform), Without<Dead>>,
+    time: Res<Time>,
+) {
     for (locomotion, mut transform) in &mut query {
         // We normalize our vec2 to get a direction
         let direction = locomotion.move_direction.normalize_or_zero();

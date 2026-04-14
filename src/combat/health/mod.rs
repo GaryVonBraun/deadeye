@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    combat::health::{
-        messages::DamageMessage,
-        systems::{apply_damage, death_system},
-    },
+    combat::health::{messages::DamageMessage, systems::*},
     core::states::SimulationState,
 };
 
@@ -18,7 +15,8 @@ impl Plugin for HealthPlugin {
         app.add_message::<DamageMessage>();
         app.add_systems(
             Update,
-            (apply_damage, death_system).run_if(in_state(SimulationState::Running)),
+            (apply_damage, death_system, death_animation_cleanup)
+                .run_if(in_state(SimulationState::Running)),
         );
     }
 }
