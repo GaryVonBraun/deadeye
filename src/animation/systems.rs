@@ -6,6 +6,7 @@ use crate::{
     actor::components::Zombie,
     ai::components::AiMovementIntent,
     animation::{components::SpriteAnimator, resources::AnimationDefinitions},
+    combat::components::{MeleeIntent, MeleeState},
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
 };
@@ -154,26 +155,31 @@ pub fn player_animation_state(
 }
 
 pub fn zombie_animation_state(
-    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator), With<Zombie>>,
+    mut zombie_query: Query<(&AiMovementIntent, &mut SpriteAnimator, &MeleeIntent), With<Zombie>>,
     animation_defs: Res<AnimationDefinitions>,
 ) {
-    for (intent, mut animator) in zombie_query.iter_mut() {
+    for (intent, mut animator, melee_intent) in zombie_query.iter_mut() {
         let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
         };
+
+        let mut target_clip_name = if intent.move_direction == Vec2::default() {
+            "idle"
+        } else {
+            "walk"
+        };
+
+        match melee_intent.melee_state {
+            MeleeState::AttackDelay(_) => target_clip_name = "attack",
+            _ => {}
+        }
 
         if intent.move_direction.x < 0.0 {
             animator.flip_x = true;
         } else if intent.move_direction.x > 0.0 {
             animator.flip_x = false;
         }
-
-        let target_clip_name = if intent.move_direction == Vec2::default() {
-            "idle"
-        } else {
-            "walk"
-        };
 
         if animator.current_clip == target_clip_name {
             continue;
