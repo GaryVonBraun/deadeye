@@ -128,10 +128,13 @@ pub fn set_clip(animator: &mut SpriteAnimator, clip_name: &str, fps: f32) {
 }
 
 pub fn player_animation_state(
-    mut player_query: Query<(&PlayerMovementIntent, &mut SpriteAnimator), With<Player>>,
+    mut player_query: Query<
+        (&PlayerMovementIntent, &mut SpriteAnimator, Option<&Dead>),
+        With<Player>,
+    >,
     animation_defs: Res<AnimationDefinitions>,
 ) {
-    for (intent, mut animator) in player_query.iter_mut() {
+    for (intent, mut animator, dead) in player_query.iter_mut() {
         let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
@@ -143,11 +146,15 @@ pub fn player_animation_state(
             animator.flip_x = false;
         }
 
-        let target_clip_name = if intent.direction == Vec2::default() {
+        let mut target_clip_name = if intent.direction == Vec2::default() {
             "idle"
         } else {
             "run"
         };
+
+        if dead != None {
+            target_clip_name = "dead";
+        }
 
         if animator.current_clip == target_clip_name {
             continue;

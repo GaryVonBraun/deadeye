@@ -6,6 +6,7 @@ use crate::{
         components::{Dead, Health},
         messages::DamageMessage,
     },
+    player::components::Player,
 };
 
 pub fn apply_damage(
@@ -34,7 +35,7 @@ pub fn death_system(mut commands: Commands, query: Query<(Entity, &Health), With
 }
 
 pub fn death_animation_cleanup(
-    dead_query: Query<Entity, (With<AnimationFinished>, With<Dead>)>,
+    dead_query: Query<Entity, (With<AnimationFinished>, (With<Dead>, Without<Player>))>,
     mut commands: Commands,
 ) {
     for entity in dead_query.iter() {

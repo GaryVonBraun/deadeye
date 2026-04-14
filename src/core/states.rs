@@ -7,6 +7,7 @@ pub enum AppState {
     MissionMenu,
     Editor,
     InGame,
+    GameOver,
     #[default]
     Loading,
 }

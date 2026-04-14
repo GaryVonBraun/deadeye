@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     actor::messages::SpawnActorMessage,
+    combat::health::components::Dead,
     core::states::AppState,
     editor::messages::LoadEditorMessage,
     map::{
@@ -22,6 +23,7 @@ use crate::{
         resources::{ActiveMission, Mission},
     },
     navigation::messages::BuildNavGridMessage,
+    player::components::Player,
     props::messages::LoadPropsMessage,
     ui::missions_menu::messages::RefreshMissionListMessage,
 };
@@ -256,5 +258,24 @@ pub fn wave_spawner(
             id: "zombie".to_string(),
             position: pos,
         });
+    }
+}
+
+pub fn player_death_check(
+    player_query: Query<&Dead, With<Player>>,
+    mut timer: Local<Option<Timer>>,
+    time: Res<Time>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    if player_query.is_empty() {
+        *timer = None;
+        return;
+    }
+
+    let timer = timer.get_or_insert_with(|| Timer::from_seconds(2.5, TimerMode::Once));
+    timer.tick(time.delta());
+
+    if timer.just_finished() {
+        next_state.set(AppState::GameOver);
     }
 }

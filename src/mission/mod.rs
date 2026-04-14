@@ -24,6 +24,18 @@ impl Plugin for MissionPlugin {
             Update,
             load_mission.run_if(on_message::<LoadMissionMessage>),
         );
+        app.add_systems(
+            Update,
+            (
+                wave_spawner_gizmo,
+                wave_spawner.run_if(in_state(AppState::InGame)),
+            )
+                .run_if(resource_exists::<ActiveMap>),
+        );
+        app.add_systems(
+            Update,
+            player_death_check.run_if(in_state(AppState::InGame)),
+        );
         // crud systems
         app.add_systems(
             Update,
@@ -40,14 +52,6 @@ impl Plugin for MissionPlugin {
         app.add_systems(
             Update,
             edit_mission.run_if(on_message::<EditMissionMessage>),
-        );
-        app.add_systems(
-            Update,
-            (
-                wave_spawner_gizmo,
-                wave_spawner.run_if(in_state(AppState::InGame)),
-            )
-                .run_if(resource_exists::<ActiveMap>),
         );
     }
 }
