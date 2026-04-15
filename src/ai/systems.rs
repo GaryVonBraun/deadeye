@@ -153,7 +153,7 @@ pub fn flow_field_navigation(
                 let Some(direction) =
                     target_flow_field.directions[current_tile.1 as usize][current_tile.0 as usize]
                 else {
-                    error!("Could not find direction");
+                    // error!("Could not find direction");
                     return;
                 };
 

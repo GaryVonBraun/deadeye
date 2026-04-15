@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::collision::components::{CollisionShape, CollisionShape2d};
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Health {
     pub max: f32,
     pub current: f32,

@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 
 use crate::ui::{
-    common::button::ui_button_interaction, game_over_menu::GameOverMenuPlugin,
+    common::button::ui_button_interaction, game_over_menu::GameOverMenuPlugin, hud::HudPlugin,
     main_menu::MainMenuPlugin, missions_menu::MissionDevMenuPlugin,
     victory_menu::VictoryMenuPlugin,
 };
 
 mod common;
 mod game_over_menu;
+mod hud;
 mod main_menu;
 pub mod missions_menu;
 mod victory_menu;
@@ -20,6 +21,7 @@ impl Plugin for UiPlugin {
             MissionDevMenuPlugin,
             GameOverMenuPlugin,
             VictoryMenuPlugin,
+            HudPlugin,
         ));
         app.add_systems(Update, ui_button_interaction);
     }
