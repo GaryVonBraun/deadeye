@@ -8,6 +8,7 @@ pub enum AppState {
     Editor,
     InGame,
     GameOver,
+    Victory,
     #[default]
     Loading,
 }

@@ -3,7 +3,7 @@ use rand::RngExt;
 use uuid::Uuid;
 
 use crate::{
-    actor::messages::SpawnActorMessage,
+    actor::{components::Zombie, messages::SpawnActorMessage},
     combat::health::components::Dead,
     core::states::AppState,
     editor::messages::LoadEditorMessage,
@@ -330,5 +330,15 @@ pub fn player_death_check(
 
     if timer.just_finished() {
         next_state.set(AppState::GameOver);
+    }
+}
+
+pub fn check_victory_condition(
+    state: Res<WaveSpawnerState>,
+    zombie_query: Query<Entity, With<Zombie>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    if state.finished && zombie_query.is_empty() {
+        next_state.set(AppState::Victory);
     }
 }

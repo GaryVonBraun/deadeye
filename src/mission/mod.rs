@@ -27,7 +27,7 @@ impl Plugin for MissionPlugin {
 
         app.add_systems(
             Update,
-            player_death_check.run_if(in_state(AppState::InGame)),
+            (player_death_check, check_victory_condition).run_if(in_state(AppState::InGame)),
         );
 
         // waves
