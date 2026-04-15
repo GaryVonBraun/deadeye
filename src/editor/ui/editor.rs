@@ -14,7 +14,7 @@ use crate::{
         resources::{EditorSettings, EditorTool, ToolAction},
     },
     map::resources::ActiveMap,
-    mission::resources::ActiveMission,
+    mission::resources::{ActiveMission, WaveDefinition},
     props::io::operations::read_prop_definitions,
 };
 
@@ -128,6 +128,24 @@ pub fn editor_left_panel(
         let back_to_missions = ui.button("back to missions");
         if back_to_missions.clicked() {
             next_state.set(AppState::MissionMenu);
+        }
+
+        ui.separator();
+        ui.label("mission waves");
+        if ui.button("add wave").clicked() {
+            mission.waves.push(WaveDefinition::default());
+        };
+
+        for wave in mission.waves.iter_mut() {
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.label("Zombie count");
+                ui.add(egui::DragValue::new(&mut wave.zombie_count).speed(1.))
+            });
+            ui.horizontal(|ui| {
+                ui.label("Spawn rate");
+                ui.add(egui::DragValue::new(&mut wave.spawn_per_second).speed(1.))
+            });
         }
 
         ui.separator();

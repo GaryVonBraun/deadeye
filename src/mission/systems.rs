@@ -20,7 +20,7 @@ use crate::{
             read_mission_data, remove_mission_file, update_mission_data, write_mission,
         },
         messages::*,
-        resources::{ActiveMission, Mission},
+        resources::{ActiveMission, Mission, WaveSpawnerState},
     },
     navigation::messages::BuildNavGridMessage,
     player::components::Player,
@@ -54,6 +54,20 @@ pub fn load_mission(
         load_props_writer.write(LoadPropsMessage { id: mission.map_id });
 
         build_nav_grid_writer.write(BuildNavGridMessage { id: mission.map_id });
+
+        // is a mission has waves we insert the spawner state here
+        if !mission.waves.is_empty() {
+            commands.insert_resource(WaveSpawnerState {
+                current_wave: 0,
+                wave_zombies_spawned: 0,
+                spawn_timer: Timer::from_seconds(
+                    1.0 / mission.waves[0].spawn_per_second,
+                    TimerMode::Repeating,
+                ),
+                wave_delay_timer: None,
+                finished: false,
+            });
+        }
 
         spawn_actor_writer.write(SpawnActorMessage {
             id: "player".to_string(),
@@ -101,6 +115,7 @@ pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessag
         map_id: map.id,
         player_spawn: Vec2::splat(0.),
         spawn_inset: 1,
+        waves: vec![],
     };
 
     // write the new mission to drive
@@ -231,13 +246,50 @@ pub fn wave_spawner(
     active_map: Res<ActiveMap>,
     active_mission: Res<ActiveMission>,
     mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
+    mut state: ResMut<WaveSpawnerState>,
 ) {
+    // if waves are all finished just return
+    if state.finished {
+        return;
+    }
+
     *timer += time.delta_secs();
 
-    let spawn_interval = 1.0 / 10.0;
+    // get current wave definition
+    let Some(current_wave) = active_mission.mission.waves.get(state.current_wave) else {
+        error!("No wave definition found needed for wave spawner");
+        return;
+    };
 
-    if *timer >= spawn_interval {
-        *timer = 0.;
+    // if at the last wave and all zombies are spawned the waves are finished
+    if active_mission
+        .mission
+        .waves
+        .get(state.current_wave + 1)
+        .is_none()
+        && state.wave_zombies_spawned == current_wave.zombie_count
+    {
+        state.finished = true;
+        info!("All waves finished");
+        return;
+    }
+
+    state.spawn_timer.tick(time.delta());
+    let times_fired = state.spawn_timer.times_finished_this_tick();
+
+    for _ in 0..times_fired {
+        if state.wave_zombies_spawned >= current_wave.zombie_count {
+            if let Some(next_wave) = active_mission.mission.waves.get(state.current_wave + 1)
+                && state.wave_zombies_spawned == current_wave.zombie_count
+            {
+                state.current_wave += 1;
+                state.wave_zombies_spawned = 0;
+                state.spawn_timer =
+                    Timer::from_seconds(1.0 / next_wave.spawn_per_second, TimerMode::Repeating);
+                return;
+            }
+            break;
+        }
         let mut rng = rand::rng();
         let bounds: &MapBounds = &active_map.map.bounds;
 
@@ -258,6 +310,7 @@ pub fn wave_spawner(
             id: "zombie".to_string(),
             position: pos,
         });
+        state.wave_zombies_spawned += 1;
     }
 }
 
