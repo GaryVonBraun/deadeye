@@ -13,3 +13,13 @@ pub enum VictoryMenuInteractions {
 pub struct HudHealthBar {
     pub value: f32,
 }
+
+#[derive(Component, Debug)]
+pub struct HudZombieCount {
+    pub value: usize,
+}
+
+#[derive(Component, Debug)]
+pub struct HudWaves {
+    pub current_wave: usize,
+}
