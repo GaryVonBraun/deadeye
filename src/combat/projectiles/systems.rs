@@ -35,36 +35,84 @@ pub fn move_projectiles(
 pub fn projectile_hit(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Projectile, &Transform, &Hitbox)>,
-    health_query: Query<(Entity, &Hurtbox, &Transform), (With<Health>, Without<Dead>)>,
+    // actors use hurtbox
+    actor_query: Query<(Entity, &Hurtbox, &Transform), (With<Health>, Without<Dead>)>,
+    // props use collision
+    prop_query: Query<(Entity, &Collision, &Transform), With<Prop>>,
     mut message: MessageWriter<DamageMessage>,
     time: Res<Time>,
 ) {
     for (entity, projectile, transform, hitbox) in projectile_query.iter() {
-        for (target_entity, target_collision, target_transform) in health_query.iter() {
+        let mut closest_hit: Option<(Vec2, Entity, f32)> = None; // position, entity, distance
+        let next_pos = transform.translation.truncate()
+            + projectile.direction * projectile.speed * time.delta_secs();
+
+        for (target_entity, target_collision, target_transform) in actor_query.iter() {
             if projectile.owner == target_entity {
                 continue;
             }
 
-            let next_pos = transform.translation.truncate()
-                + projectile.direction * projectile.speed * time.delta_secs();
-
-            if swept_collision(
+            let Some(position) = swept_collision(
                 transform.translation.truncate(),
                 next_pos,
                 target_transform.translation.truncate(),
                 target_collision,
+            ) else {
+                continue;
+            };
+
+            closest_hit = check_closer_position(
+                transform.translation.truncate(),
+                target_entity,
+                position,
+                closest_hit,
             )
-            .is_some()
-            {
-                commands.entity(entity).despawn();
-                message.write(DamageMessage {
-                    target: target_entity,
-                    amount: projectile.damage,
-                });
-                break;
-            }
+        }
+
+        for (prop_entity, prop_collision, prop_transform) in prop_query.iter() {
+            let Some(position) = swept_collision(
+                transform.translation.truncate(),
+                next_pos,
+                prop_transform.translation.truncate(),
+                prop_collision,
+            ) else {
+                continue;
+            };
+
+            closest_hit = check_closer_position(
+                transform.translation.truncate(),
+                prop_entity,
+                position,
+                closest_hit,
+            )
+        }
+
+        if let Some(closest) = closest_hit {
+            commands.entity(entity).despawn();
+            message.write(DamageMessage {
+                target: closest.1,
+                amount: projectile.damage,
+            });
         }
     }
+}
+
+fn check_closer_position(
+    projectile_position: Vec2,
+    entity: Entity,
+    target_position: Vec2,
+    closest_hit: Option<(Vec2, Entity, f32)>,
+) -> Option<(Vec2, Entity, f32)> {
+    let new_distance: f32 = Vec2::distance(projectile_position, target_position);
+
+    let Some(closest) = closest_hit else {
+        return Some((target_position, entity, new_distance));
+    };
+
+    if new_distance < closest.2 {
+        return Some((target_position, entity, new_distance));
+    };
+    closest_hit
 }
 
 pub fn projectile_collision(
@@ -109,12 +157,13 @@ pub fn swept_collision(
                 return None;
             }
             let ray_dir_normalized = ray_dir / ray_length;
-            let t = (circle_center - ray_start)
-                .dot(ray_dir_normalized)
-                .clamp(0.0, ray_length);
-            let closest_point = ray_start + ray_dir_normalized * t;
-            if Vec2::distance(closest_point, circle_center) < *radius {
-                return Some(closest_point);
+            let proj_t = (circle_center - ray_start).dot(ray_dir_normalized);
+            let closest_point = ray_start + ray_dir_normalized * proj_t.clamp(0.0, ray_length);
+            let d_perp = Vec2::distance(closest_point, circle_center);
+            if d_perp < *radius {
+                let entry_t = (proj_t - (radius * radius - d_perp * d_perp).sqrt())
+                    .clamp(0.0, ray_length);
+                return Some(ray_start + ray_dir_normalized * entry_t);
             }
             None
         }
