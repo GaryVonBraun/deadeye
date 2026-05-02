@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use bevy::prelude::*;
+use bevy::{
+    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
+    prelude::*,
+};
 
 use crate::{
     actor::components::Zombie,
@@ -33,7 +36,15 @@ pub fn swap_clip_texture(
         return;
     };
 
-    sprite.image = asset_server.load(&clip.texture);
+    sprite.image =
+        asset_server.load_with_settings(&clip.texture, |settings: &mut ImageLoaderSettings| {
+            settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                min_filter: ImageFilterMode::Nearest,
+                mag_filter: ImageFilterMode::Nearest,
+                mipmap_filter: ImageFilterMode::Nearest,
+                ..default()
+            });
+        });
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(clip.frame_size.0, clip.frame_size.1),
         clip.columns,
