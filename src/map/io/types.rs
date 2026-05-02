@@ -29,6 +29,8 @@ pub struct TileSet {
     pub name: String,
     pub texture: String,
     pub tiles: Vec<TileDef>,
+    pub width: u32,
+    pub height: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

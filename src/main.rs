@@ -35,18 +35,16 @@ mod ui;
 fn main() {
     App::new()
         .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: String::from("Zormb game"),
-                        position: WindowPosition::Centered(MonitorSelection::Primary),
-                        resolution: WindowResolution::new(2000, 1000),
-                        resizable: true,
-                        ..Default::default()
-                    }),
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: String::from("Zormb game"),
+                    position: WindowPosition::Centered(MonitorSelection::Primary),
+                    resolution: WindowResolution::new(2000, 1000),
+                    resizable: true,
                     ..Default::default()
-                })
-                .set(ImagePlugin::default_nearest()),
+                }),
+                ..Default::default()
+            }), // .set(ImagePlugin::default_nearest()),
         )
         .add_plugins((EguiPlugin::default(), FrameTimeDiagnosticsPlugin::default()))
         // .add_plugins(WorldInspectorPlugin::new())

@@ -1,9 +1,137 @@
-use bevy::{asset::RenderAssetUsages, prelude::*};
+use bevy::{
+    asset::RenderAssetUsages,
+    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
+    prelude::*,
+    render::render_resource::{Extent3d, TextureDimension},
+};
+use image::{ImageBuffer, Rgba};
 
 use crate::{
     core::components::GameEntity,
-    map::{components::MissionMapChunk, io::types::TileSet, resources::ActiveMap},
+    map::{
+        components::MissionMapChunk, io::types::TileSet, rendering::resources::TilesetRenderState,
+        resources::ActiveMap,
+    },
 };
+
+pub fn load_tileset(
+    active_map: Res<ActiveMap>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    let handle = asset_server.load_with_settings(
+        &active_map.tileset.texture,
+        |settings: &mut ImageLoaderSettings| {
+            settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                min_filter: ImageFilterMode::Nearest,
+                mag_filter: ImageFilterMode::Nearest,
+                mipmap_filter: ImageFilterMode::Nearest,
+                ..default()
+            });
+        },
+    );
+
+    commands.insert_resource(TilesetRenderState::Loading(handle));
+}
+
+const PADDING: u32 = 2;
+pub fn generate_padding(
+    mut state: ResMut<TilesetRenderState>,
+    mut images: ResMut<Assets<Image>>,
+    asset_server: Res<AssetServer>,
+    active_map: Res<ActiveMap>,
+) {
+    let TilesetRenderState::Loading(handle) = &*state else {
+        return;
+    };
+
+    if !asset_server.is_loaded(handle) {
+        return;
+    }
+
+    let Some(image) = images.get(handle) else {
+        return;
+    };
+
+    // Setup
+    let tile_size = active_map.tileset.tile_size as u32;
+    let padding = PADDING;
+    let padded_tile_size = tile_size + 2 * padding;
+
+    let image_size = image.size();
+    let src_width = image_size.x;
+    let src_height = image_size.y;
+
+    // Make sure its a valid tileset
+    //NOTE - perhaps not make this is a panic later
+    assert!(src_width % tile_size == 0);
+    assert!(src_height % tile_size == 0);
+
+    let tiles_width = src_width / tile_size;
+    let tiles_height = src_height / tile_size;
+
+    let new_width = tiles_width * padded_tile_size;
+    let new_height = tiles_height * padded_tile_size;
+
+    let mut new_data = vec![0; (new_width * new_height * 4) as usize];
+
+    // loop over the pixels yo create the border
+    for tile_y in 0..tiles_height {
+        for tile_x in 0..tiles_width {
+            for out_y in 0..padded_tile_size {
+                for out_x in 0..padded_tile_size {
+                    // Clamp edge pixels
+                    let src_local_x =
+                        (out_x as i32 - padding as i32).clamp(0, tile_size as i32 - 1);
+                    let src_local_y =
+                        (out_y as i32 - padding as i32).clamp(0, tile_size as i32 - 1);
+
+                    // Source pixel in original image
+                    let src_x = tile_x * tile_size + src_local_x as u32;
+                    let src_y = tile_y * tile_size + src_local_y as u32;
+
+                    // Destination pixel in new image
+                    let dst_x = tile_x * padded_tile_size + out_x;
+                    let dst_y = tile_y * padded_tile_size + out_y;
+
+                    let src_index = ((src_y * src_width + src_x) * 4) as usize;
+                    let dst_index = ((dst_y * new_width + dst_x) * 4) as usize;
+
+                    let src_data = image.data.as_ref().unwrap();
+
+                    new_data[dst_index..dst_index + 4]
+                        .copy_from_slice(&src_data[src_index..src_index + 4]);
+                }
+            }
+        }
+    }
+
+    // Create new Image
+    let mut new_image = Image::new_fill(
+        Extent3d {
+            width: new_width,
+            height: new_height,
+            depth_or_array_layers: 1,
+        },
+        TextureDimension::D2,
+        &new_data,
+        image.texture_descriptor.format, // keep same format
+        RenderAssetUsages::default(),
+    );
+
+    // keep sampler settings to prevent filtering issues
+    new_image.sampler = image.sampler.clone();
+
+    let padded_handle = images.add(new_image);
+
+    // let buffer =
+    //     ImageBuffer::<Rgba<u8>, _>::from_raw(new_width, new_height, new_data.clone()).unwrap();
+
+    // buffer.save("padded.png").unwrap();
+
+    // Update set next state
+    *state = TilesetRenderState::Ready(padded_handle);
+}
 
 pub fn render_map(
     active_map: Res<ActiveMap>,
@@ -11,7 +139,11 @@ pub fn render_map(
     mut meshes: ResMut<Assets<Mesh>>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    state: Res<TilesetRenderState>,
 ) {
+    let TilesetRenderState::Ready(handle) = state.clone() else {
+        return;
+    };
     info!("rendering map!");
 
     info!("{:?}", active_map.map.bounds);
@@ -74,9 +206,19 @@ pub fn render_map(
             let mesh_handle = meshes.add(mesh);
 
             // creating material
-            let texture = asset_server.load(&active_map.tileset.texture);
+            // let texture = asset_server.load_with_settings(
+            //     &active_map.tileset.texture,
+            //     |settings: &mut ImageLoaderSettings| {
+            //         settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+            //             min_filter: ImageFilterMode::Nearest,
+            //             mag_filter: ImageFilterMode::Nearest,
+            //             mipmap_filter: ImageFilterMode::Nearest,
+            //             ..default()
+            //         });
+            //     },
+            // );
             let material_handle = materials.add(ColorMaterial {
-                texture: Some(texture),
+                texture: Some(handle.clone()),
                 ..default()
             });
 
@@ -98,43 +240,46 @@ pub fn render_map(
             });
         }
     }
+    commands.remove_resource::<TilesetRenderState>();
 }
 
 fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]>, Vec<[f32; 2]>) {
     let mut positions: Vec<[f32; 3]> = vec![];
     let mut uvs: Vec<[f32; 2]> = vec![];
 
+    let tile_size = tileset.tile_size;
+    let padding = PADDING as f32;
+
+    let padded_tile_size = tile_size + 2.0 * padding;
+
+    let atlas_width = tileset.width as f32 * padded_tile_size;
+    let atlas_height = tileset.height as f32 * padded_tile_size;
+
     for (y, col) in grid.iter().enumerate() {
         for (x, tile_type) in col.iter().enumerate() {
-            // x decreases as column index increases (index 0 = easternmost after row reversal).
-            let tile_left = (7.5 - x as f32) * tileset.tile_size - (tileset.tile_size / 2.);
-            let tile_bottom = (7.5 - y as f32) * tileset.tile_size - (tileset.tile_size / 2.);
+            let tile_left = (7.5 - x as f32) * tile_size - (tile_size / 2.);
+            let tile_bottom = (7.5 - y as f32) * tile_size - (tile_size / 2.);
+
             let Some(tile_def) = tileset.tiles.iter().find(|t| t.index == *tile_type as u16) else {
                 continue;
             };
 
-            // creating 4 positions for each corner of a tile
+            // --- positions ---
             positions.push([tile_left, tile_bottom, 0.]);
-            positions.push([tile_left + tileset.tile_size, tile_bottom, 0.]);
-            positions.push([
-                tile_left + tileset.tile_size,
-                tile_bottom + tileset.tile_size,
-                0.,
-            ]);
-            positions.push([tile_left, tile_bottom + tileset.tile_size, 0.]);
+            positions.push([tile_left + tile_size, tile_bottom, 0.]);
+            positions.push([tile_left + tile_size, tile_bottom + tile_size, 0.]);
+            positions.push([tile_left, tile_bottom + tile_size, 0.]);
 
-            // corners of tile texture
-            //TEMPORARY - currently the texture map 10x10 hardcoded but this should be based on data
-            let columns = 10.0_f32;
-            let rows = 10.0_f32;
+            // --- UVs (fixed) ---
+            let tile_x = tile_def.uv_coordinate[0] as f32;
+            let tile_y = tile_def.uv_coordinate[1] as f32;
 
-            let padding = 0.0;
-            let start_x = tile_def.uv_coordinate[0] as f32 / columns + padding;
-            let end_x = (tile_def.uv_coordinate[0] as f32 + 1.0) / columns - padding;
-            let start_y = tile_def.uv_coordinate[1] as f32 / rows + padding;
-            let end_y = (tile_def.uv_coordinate[1] as f32 + 1.0) / rows - padding;
+            let start_x = (tile_x * padded_tile_size + padding) / atlas_width;
+            let end_x = (tile_x * padded_tile_size + padding + tile_size) / atlas_width;
 
-            // putting values as uv
+            let start_y = (tile_y * padded_tile_size + padding) / atlas_height;
+            let end_y = (tile_y * padded_tile_size + padding + tile_size) / atlas_height;
+
             uvs.push([start_x, end_y]);
             uvs.push([end_x, end_y]);
             uvs.push([end_x, start_y]);
@@ -142,7 +287,7 @@ fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]
         }
     }
 
-    return (positions, uvs);
+    (positions, uvs)
 }
 
 fn construct_chunk_tiles(
@@ -274,7 +419,7 @@ pub fn rerender_map(
     for entity in chunk_query.iter() {
         commands.entity(entity).despawn();
     }
-    render_map(active_map, commands, meshes, asset_server, materials);
+    // render_map(active_map, commands, meshes, asset_server, materials);
 }
 pub fn chunk_rendering_gizmos(
     active_map: Res<ActiveMap>,
