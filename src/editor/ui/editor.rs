@@ -67,14 +67,17 @@ pub fn editor_tile_picker_panel(
 
         ui.label("Tiles");
         ui.separator();
-        for tile in active_map.tileset.tiles.iter() {
-            let selected = matches!(*editor_tools, EditorTool::TilePainter(i) if i == tile.index);
 
-            let tile_button = ui.add(egui::Button::new(tile.name.clone()).selected(selected));
-            if tile_button.clicked() {
-                *editor_tools = EditorTool::TilePainter(tile.index);
-            }
-        }
+        // perhaps
+        // active_map.tileset.name
+        // for tile in active_map.tileset.tiles.iter() {
+        //     let selected = matches!(*editor_tools, EditorTool::TilePainter(i) if i == tile.index);
+
+        //     let tile_button = ui.add(egui::Button::new(tile.name.clone()).selected(selected));
+        //     if tile_button.clicked() {
+        //         *editor_tools = EditorTool::TilePainter(tile.index);
+        //     }
+        // }
     });
     Ok(())
 }

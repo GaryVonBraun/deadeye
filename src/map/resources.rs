@@ -6,4 +6,5 @@ use crate::map::io::types::{MissionMap, TileSet};
 pub struct ActiveMap {
     pub map: MissionMap,
     pub tileset: TileSet,
+    pub texture: Handle<Image>,
 }

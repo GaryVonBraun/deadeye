@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
+    prelude::*,
+};
 
 use crate::{
     map::{
@@ -15,7 +18,11 @@ pub fn delete_map_message(mut message_reader: MessageReader<DeleteMapMessage>) {
     }
 }
 
-pub fn load_map_data(mut message_reader: MessageReader<LoadMapMessage>, mut commands: Commands) {
+pub fn load_map_data(
+    mut message_reader: MessageReader<LoadMapMessage>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
     //NOTE - currently just taking the first message to prevent loading and unloading if multiple messages are present
     for message in message_reader.read() {
         // despawn all existing maps
@@ -30,7 +37,24 @@ pub fn load_map_data(mut message_reader: MessageReader<LoadMapMessage>, mut comm
             info!("failed to load tileset needed for loading map");
             continue;
         };
-        commands.insert_resource(ActiveMap { map, tileset });
+
+        let handle = asset_server.load_with_settings(
+            &tileset.atlas,
+            |settings: &mut ImageLoaderSettings| {
+                settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                    min_filter: ImageFilterMode::Nearest,
+                    mag_filter: ImageFilterMode::Nearest,
+                    mipmap_filter: ImageFilterMode::Nearest,
+                    ..default()
+                });
+            },
+        );
+
+        commands.insert_resource(ActiveMap {
+            map,
+            tileset,
+            texture: handle,
+        });
     }
 }
 

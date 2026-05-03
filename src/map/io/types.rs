@@ -27,7 +27,7 @@ pub struct TileSet {
     pub tile_size: f32,
     pub chunk_size: f32,
     pub name: String,
-    pub texture: String,
+    pub atlas: String,
     pub tiles: Vec<TileDef>,
     pub width: u32,
     pub height: u32,

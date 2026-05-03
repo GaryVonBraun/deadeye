@@ -1,6 +1,5 @@
 use bevy::{
     asset::RenderAssetUsages,
-    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension},
 };
@@ -14,24 +13,8 @@ use crate::{
     },
 };
 
-pub fn load_tileset(
-    active_map: Res<ActiveMap>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    let handle = asset_server.load_with_settings(
-        &active_map.tileset.texture,
-        |settings: &mut ImageLoaderSettings| {
-            settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
-                min_filter: ImageFilterMode::Nearest,
-                mag_filter: ImageFilterMode::Nearest,
-                mipmap_filter: ImageFilterMode::Nearest,
-                ..default()
-            });
-        },
-    );
-
-    commands.insert_resource(TilesetRenderState::Loading(handle));
+pub fn load_tileset(active_map: Res<ActiveMap>, mut commands: Commands) {
+    commands.insert_resource(TilesetRenderState::Loading(active_map.texture.clone()));
 }
 
 const PADDING: u32 = 2;

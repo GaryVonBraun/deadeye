@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     collision::{sets::PhysicsSet, systems::*},
     core::states::SimulationState,
+    map::resources::ActiveMap,
 };
 
 pub mod components;
@@ -18,7 +19,10 @@ impl Plugin for CollisionPlugin {
         );
         app.add_systems(
             Update,
-            (actor_obstruction_collision, actor_vs_actor_collision)
+            (
+                actor_obstruction_collision,
+                actor_vs_actor_collision.run_if(resource_exists::<ActiveMap>),
+            )
                 .chain()
                 .in_set(PhysicsSet::CollisionResolution)
                 .run_if(in_state(SimulationState::Running)),

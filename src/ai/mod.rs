@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     ai::{systems::*, tree::BehaviorTreePlugin, vision::VisionPlugin},
     core::states::{AppState, SimulationState},
+    map::resources::ActiveMap,
 };
 
 pub mod bundles;
@@ -29,7 +30,7 @@ impl Plugin for AiPlugin {
                     flow_field_navigation,
                     // separation_steering
                 )
-                    .chain(),
+                    .run_if(resource_exists::<ActiveMap>),
                 ai_shooting_system,
                 ai_melee_system,
                 seek_nearest_target,
