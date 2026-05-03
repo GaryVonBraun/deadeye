@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use bevy::prelude::*;
+use bevy::{
+    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
+    prelude::*,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -90,11 +93,12 @@ pub fn spawn_actor_handler(
                     &asset_server,
                     Vec3 {
                         x: 0.0,
-                        y: 0.,
-                        z: 1.,
+                        y: -4.,
+                        z: 2.,
                     },
+                    &animation_definitions,
+                    &mut texture_atlas_layouts,
                 );
-
                 let Some(anim_def) = animation_definitions.defs.get("soldier_default") else {
                     error!("animation def not found");
                     continue;
@@ -122,7 +126,18 @@ pub fn spawn_actor_handler(
                             actor,
                         ),
                         Sprite {
-                            image: asset_server.load(&clip.texture),
+                            image: asset_server.load_with_settings(
+                                &clip.texture,
+                                |settings: &mut ImageLoaderSettings| {
+                                    settings.sampler =
+                                        ImageSampler::Descriptor(ImageSamplerDescriptor {
+                                            min_filter: ImageFilterMode::Nearest,
+                                            mag_filter: ImageFilterMode::Nearest,
+                                            mipmap_filter: ImageFilterMode::Nearest,
+                                            ..default()
+                                        });
+                                },
+                            ),
                             texture_atlas: Some(TextureAtlas {
                                 layout: layout_handle,
                                 index: 0,
@@ -199,7 +214,18 @@ pub fn spawn_actor_handler(
                         FlowFieldNavigator,
                         Zombie,
                         Sprite {
-                            image: asset_server.load(&clip.texture),
+                            image: asset_server.load_with_settings(
+                                &clip.texture,
+                                |settings: &mut ImageLoaderSettings| {
+                                    settings.sampler =
+                                        ImageSampler::Descriptor(ImageSamplerDescriptor {
+                                            min_filter: ImageFilterMode::Nearest,
+                                            mag_filter: ImageFilterMode::Nearest,
+                                            mipmap_filter: ImageFilterMode::Nearest,
+                                            ..default()
+                                        });
+                                },
+                            ),
                             texture_atlas: Some(TextureAtlas {
                                 layout: layout_handle,
                                 index: 0,

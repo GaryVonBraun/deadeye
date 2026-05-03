@@ -1,9 +1,9 @@
-use std::path::PathBuf;
-
 use bevy::{
     image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
+use std::f32::consts::PI;
+use std::path::PathBuf;
 
 use crate::{
     actor::components::Zombie,
@@ -15,6 +15,7 @@ use crate::{
     combat::{
         components::{MeleeIntent, MeleeState},
         health::components::Dead,
+        weapon::components::Weapon,
     },
     core::io::read_ron_file,
     player::components::{Player, PlayerMovementIntent},
@@ -228,5 +229,37 @@ pub fn zombie_animation_state(
         };
 
         set_clip(&mut animator, target_clip_name, target_clip.fps);
+    }
+}
+
+pub fn weapon_animation_state(
+    mut weapon_query: Query<(&mut SpriteAnimator, &Transform), With<Weapon>>,
+    animation_defs: Res<AnimationDefinitions>,
+) {
+    for (mut animator, transform) in weapon_query.iter_mut() {
+        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+            error!("animation def not found");
+            continue;
+        };
+
+        let (_, _, angle) = transform.rotation.to_euler(EulerRot::XYZ);
+
+        // Flip when facing left (angle beyond +/- 90 degrees)
+        if angle > PI / 2.0 || angle < -PI / 2.0 {
+            animator.flip_x = true;
+        } else {
+            animator.flip_x = false;
+        }
+
+        // if animator.current_clip == target_clip_name {
+        //     continue;
+        // }
+
+        // let Some(target_clip) = anim_def.clips.get(target_clip_name) else {
+        //     error!("clip {} not found", target_clip_name);
+        //     continue;
+        // };
+
+        // set_clip(&mut animator, target_clip_name, target_clip.fps);
     }
 }

@@ -88,10 +88,10 @@ pub fn load_mission(
         //     }
         // }
 
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "npc".to_string(),
-            position: Vec2 { x: -100., y: -110. },
-        });
+        // spawn_actor_writer.write(SpawnActorMessage {
+        //     id: "npc".to_string(),
+        //     position: Vec2 { x: -100., y: -110. },
+        // });
     }
 }
 
@@ -133,7 +133,7 @@ fn create_map_for_mission() -> MissionMap {
         name: format!("test map {:?}", rng.random_range(1..1000)).to_string(),
         id: Uuid::new_v4(),
         tiles: raw_matrix,
-        tileset_name: "base".to_string(),
+        tileset_name: "Background_Green_TileSet".to_string(),
         bounds: MapBounds::default(),
         placed_props: vec![],
     };

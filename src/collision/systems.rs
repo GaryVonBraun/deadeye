@@ -134,8 +134,8 @@ pub fn actor_obstruction_collision(
         });
 }
 
-const GRID_CELL_SIZE: f32 = 32.;
-const ACTOR_SEPARATION_DISTANCE: f32 = 32.0;
+const GRID_CELL_SIZE: f32 = 16.;
+const ACTOR_SEPARATION_DISTANCE: f32 = 12.0;
 pub fn actor_vs_actor_collision(
     mut moving_query: Query<
         (Entity, &mut Transform, &Locomotion, &Collision),

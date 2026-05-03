@@ -35,6 +35,10 @@ pub fn shoot_weapon(
                     let angle = message.direction.y.atan2(message.direction.x);
                     let rotation = Quat::from_rotation_z(angle);
 
+                    let mut translation = global_transform.translation();
+
+                    translation.z = 1.;
+
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
                             speed: weapon.speed,
@@ -47,10 +51,10 @@ pub fn shoot_weapon(
                             shape: CollisionShape::Circle { radius: 2. },
                             offset: Vec2::default(),
                         },
-                        sprite: Sprite::from_image(asset_server.load("debug_bullet.png")),
+                        sprite: Sprite::from_image(asset_server.load("Gun_Bullet.png")),
                         transform: Transform {
                             rotation: rotation,
-                            translation: global_transform.translation(),
+                            translation: translation,
                             scale: Vec3::ONE,
                         },
                         game_entity: GameEntity,

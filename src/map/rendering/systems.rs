@@ -124,10 +124,10 @@ pub fn generate_padding(
 
     let padded_handle = images.add(new_image);
 
-    // let buffer =
-    //     ImageBuffer::<Rgba<u8>, _>::from_raw(new_width, new_height, new_data.clone()).unwrap();
+    let buffer =
+        ImageBuffer::<Rgba<u8>, _>::from_raw(new_width, new_height, new_data.clone()).unwrap();
 
-    // buffer.save("padded.png").unwrap();
+    buffer.save("padded.png").unwrap();
 
     // Update set next state
     *state = TilesetRenderState::Ready(padded_handle);
@@ -139,7 +139,7 @@ pub fn render_map(
     mut meshes: ResMut<Assets<Mesh>>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    state: Res<TilesetRenderState>,
+    mut state: ResMut<TilesetRenderState>,
 ) {
     let TilesetRenderState::Ready(handle) = state.clone() else {
         return;
@@ -240,7 +240,8 @@ pub fn render_map(
             });
         }
     }
-    commands.remove_resource::<TilesetRenderState>();
+    *state = TilesetRenderState::Cashed(handle);
+    info!("info {:?}", state)
 }
 
 fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]>, Vec<[f32; 2]>) {
@@ -415,11 +416,23 @@ pub fn rerender_map(
     meshes: ResMut<Assets<Mesh>>,
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
+    mut state: ResMut<TilesetRenderState>,
 ) {
     for entity in chunk_query.iter() {
         commands.entity(entity).despawn();
     }
-    // render_map(active_map, commands, meshes, asset_server, materials);
+
+    let TilesetRenderState::Cashed(handle) = &*state else {
+        return;
+    };
+
+    info!("does it get here at least?");
+    // if !asset_server.is_loaded(handle) {
+    //     return;
+    // }
+
+    info!("uh does this work");
+    *state = TilesetRenderState::Ready(handle.clone());
 }
 pub fn chunk_rendering_gizmos(
     active_map: Res<ActiveMap>,

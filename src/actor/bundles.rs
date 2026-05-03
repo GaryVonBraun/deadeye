@@ -28,20 +28,20 @@ impl CoreActorBundle {
             hurtbox: Hurtbox {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
                 shape: CollisionShape::Rect {
-                    width: 32.,
-                    height: 64.,
+                    width: 10.,
+                    height: 16.,
                 },
-                offset: Vec2 { x: 0., y: -32. },
+                offset: Vec2 { x: 0., y: 0. },
             },
             hitbox: Hitbox {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
                 shape: CollisionShape::Circle {
-                    radius: 16. + actor.melee_range,
+                    radius: 8. + actor.melee_range,
                 },
                 offset: Vec2::default(),
             },
             collision: Collision::from_offset_radius(
-                Vec2 { x: 0., y: -48. },
+                Vec2 { x: 0., y: -8. },
                 actor.collision_radius.clone(),
             ),
             game_entity: GameEntity,

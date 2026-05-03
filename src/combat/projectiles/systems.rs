@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    collision::{
-        components::{Collision, CollisionShape2d},
-        systems::check_collision,
-    },
+    collision::components::{Collision, CollisionShape2d},
     combat::{
         health::{
             components::{Dead, Health, Hitbox, Hurtbox},
@@ -161,8 +158,8 @@ pub fn swept_collision(
             let closest_point = ray_start + ray_dir_normalized * proj_t.clamp(0.0, ray_length);
             let d_perp = Vec2::distance(closest_point, circle_center);
             if d_perp < *radius {
-                let entry_t = (proj_t - (radius * radius - d_perp * d_perp).sqrt())
-                    .clamp(0.0, ray_length);
+                let entry_t =
+                    (proj_t - (radius * radius - d_perp * d_perp).sqrt()).clamp(0.0, ray_length);
                 return Some(ray_start + ray_dir_normalized * entry_t);
             }
             None
