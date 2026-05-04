@@ -31,7 +31,6 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                         column_gap: Val::Percent(1.),
                         ..Default::default()
                     },
-                    Hud,
                 ))
                 .with_children(|parent| {
                     parent
