@@ -5,7 +5,10 @@ use bevy::{
 
 use crate::{
     animation::{components::SpriteAnimator, resources::AnimationDefinitions},
-    combat::weapon::{bundles::WeaponBundle, components::Weapon},
+    combat::weapon::{
+        bundles::WeaponBundle,
+        components::{Weapon, WeaponRuntime, WeaponState},
+    },
 };
 
 pub fn spawn_debug_weapon(
@@ -17,16 +20,23 @@ pub fn spawn_debug_weapon(
 ) -> Entity {
     info!("spawning weapon");
 
+    let weapon_config = Weapon {
+        fire_delay: 0.2,
+        reload_time: 3.,
+        magazine_size: 30,
+        speed: 500.,
+        damage: 100.,
+    };
+
     let Some(anim_def) = animation_definitions.defs.get("weapon_default") else {
         error!("animation def not found");
         return commands
             .spawn((
-                Weapon {
-                    fire_delay: 0.1,
-                    cooldown: 0.,
-                    speed: 2000.,
-                    damage: 30.,
+                WeaponRuntime {
+                    state: WeaponState::Ready,
+                    ammo: weapon_config.magazine_size.clone(),
                 },
+                weapon_config,
                 Transform::from_translation(translation),
             ))
             .id();
@@ -38,12 +48,11 @@ pub fn spawn_debug_weapon(
 
         return commands
             .spawn((
-                Weapon {
-                    fire_delay: 0.05,
-                    cooldown: 0.,
-                    speed: 2000.,
-                    damage: 100.,
+                WeaponRuntime {
+                    state: WeaponState::Ready,
+                    ammo: weapon_config.magazine_size.clone(),
                 },
+                weapon_config,
                 Transform::from_translation(translation),
             ))
             .id();
@@ -60,6 +69,10 @@ pub fn spawn_debug_weapon(
 
     commands
         .spawn(WeaponBundle {
+            weapon_runtime: WeaponRuntime {
+                state: WeaponState::Ready,
+                ammo: weapon_config.magazine_size.clone(),
+            },
             sprite: Sprite {
                 image: asset_server.load_with_settings(
                     &clip.texture,
@@ -86,12 +99,7 @@ pub fn spawn_debug_weapon(
                 clip_dirty: false,
                 flip_x: false,
             },
-            weapon: Weapon {
-                fire_delay: 0.01,
-                cooldown: 0.,
-                speed: 2000.,
-                damage: 100.,
-            },
+            weapon: weapon_config,
             transform: Transform::from_translation(translation),
         })
         .id()

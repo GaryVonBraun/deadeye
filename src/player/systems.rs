@@ -4,7 +4,10 @@ use bevy::{
 };
 
 use crate::{
-    combat::{components::ShootingIntent, messages::ShootMessage},
+    combat::{
+        components::ShootingIntent,
+        messages::{ReloadMessage, ShootMessage},
+    },
     player::components::{Player, PlayerMovementIntent},
 };
 
@@ -87,23 +90,28 @@ pub fn player_aim_system(
     .normalize_or_zero();
 }
 
-pub fn player_shoot_input(
+pub fn player_combat_input(
     mut player_query: Query<(Entity, &mut ShootingIntent), With<Player>>,
-    mut messages: MessageWriter<ShootMessage>,
-    buttons: Res<ButtonInput<MouseButton>>,
+    mut shoot_writer: MessageWriter<ShootMessage>,
+    mut reload_writer: MessageWriter<ReloadMessage>,
+    mouse_buttons: Res<ButtonInput<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
 ) {
     let Ok((entity, shooting_intent)) = player_query.single_mut() else {
         return;
     };
 
-    if buttons.pressed(MouseButton::Left) {
+    if mouse_buttons.pressed(MouseButton::Left) {
         //LINK - src/combat/weapon/systems.rs:8
         // this links to where the message is being read
 
-        messages.write(ShootMessage {
+        shoot_writer.write(ShootMessage {
             owner: entity,
             direction: shooting_intent.direction,
         });
+    }
+    if keys.pressed(KeyCode::KeyR) {
+        reload_writer.write(ReloadMessage { entity: entity });
     }
 }
 

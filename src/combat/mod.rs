@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::combat::{
-    health::HealthPlugin, messages::ShootMessage, projectiles::ProjectilePlugin,
-    systems::tick_melee_intents, weapon::WeaponPlugin,
+    health::HealthPlugin, messages::*, projectiles::ProjectilePlugin, systems::tick_melee_intents,
+    weapon::WeaponPlugin,
 };
 
 pub mod components;
@@ -16,6 +16,7 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<ShootMessage>();
+        app.add_message::<ReloadMessage>();
         app.add_plugins((WeaponPlugin, ProjectilePlugin, HealthPlugin));
         app.add_systems(Update, tick_melee_intents);
     }

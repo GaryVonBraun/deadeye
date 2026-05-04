@@ -18,7 +18,7 @@ impl Plugin for PlayerPlugin {
         );
         app.add_systems(
             Update,
-            (player_aim_system, player_shoot_input)
+            (player_aim_system, player_combat_input)
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
         );

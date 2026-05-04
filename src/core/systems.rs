@@ -1,9 +1,6 @@
-use crate::{
-    core::{
-        components::GameEntity,
-        states::{AppState, SimulationState},
-    },
-    player::components::Player,
+use crate::core::{
+    components::GameEntity,
+    states::{AppState, SimulationState},
 };
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
@@ -67,9 +64,9 @@ pub fn run_simulation(mut next_state: ResMut<NextState<SimulationState>>) {
 }
 
 pub fn despawn_game_entities(query: Query<Entity, With<GameEntity>>, mut commands: Commands) {
-    info!("GameEntity count: {}", query.iter().count());
+    info!("Despawning GameEntity amount: {}", query.iter().count());
     for entity in query.iter() {
-        info!("despawning: {:?}", entity);
+        // info!("despawning: {:?}", entity);
         commands.entity(entity).despawn();
     }
 }

@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    combat::weapon::systems::{rotate_weapons, shoot_weapon, weapon_cooldown},
-    core::states::SimulationState,
-};
+use crate::{combat::weapon::systems::*, core::states::SimulationState};
 
 mod bundles;
 pub mod components;
@@ -16,7 +13,12 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (weapon_cooldown, shoot_weapon, rotate_weapons)
+            (
+                weapon_runtime_system,
+                shoot_weapon,
+                rotate_weapons,
+                reload_weapon,
+            )
                 .run_if(in_state(SimulationState::Running)),
         );
     }
