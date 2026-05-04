@@ -5,7 +5,7 @@ use crate::map::{messages::*, rendering::MapRenderingPlugin, systems::*};
 pub mod components;
 pub mod io;
 pub mod messages;
-mod rendering;
+pub mod rendering;
 pub mod resources;
 mod systems;
 pub mod utility;

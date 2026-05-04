@@ -41,7 +41,7 @@ impl CoreActorBundle {
                 offset: Vec2::default(),
             },
             collision: Collision::from_offset_radius(
-                Vec2 { x: 0., y: -8. },
+                Vec2 { x: 0., y: -4. },
                 actor.collision_radius.clone(),
             ),
             game_entity: GameEntity,

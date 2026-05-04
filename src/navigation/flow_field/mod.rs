@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::SimulationState,
+    map::resources::ActiveMap,
     navigation::{flow_field::systems::*, resources::NavGrid},
 };
 

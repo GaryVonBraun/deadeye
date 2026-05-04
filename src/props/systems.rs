@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     collision::components::Collision,
     core::components::GameEntity,
-    map::io::operations::read_map_data,
+    map::{io::{operations::{read_map_data, read_tileset}, paths::tileset_path}, resources::ActiveMap},
     props::{
         bundles::PropBundle,
         components::Prop,
@@ -39,6 +39,12 @@ pub fn load_map_props(
         };
 
         let mut raw_entries: Vec<(i32, i32, Vec2, Collision)> = Vec::new();
+
+        let Ok(tileset) = read_tileset(tileset_path(map_data.tileset_name.clone())) else {
+            info!("failed to load tileset needed for loading map");
+            continue;
+        };
+
 
         let props: Vec<PlacedProp> = map_data
             .placed_props
@@ -84,7 +90,7 @@ pub fn load_map_props(
                 crate::collision::components::CollisionShape::Rect { width, height } => (width/ 2., height / 2.),
                 };
                 
-                let cell_size = 64.;
+                let cell_size = tileset.tile_size;
                 
                 let min_cell_x = ((prop.position.x - size.0) / cell_size).floor() as i32;
                 let max_cell_x = ((prop.position.x + size.0) / cell_size).floor() as i32;
@@ -103,7 +109,7 @@ pub fn load_map_props(
                 }
             })
             .collect();
-        commands.insert_resource(PropSpatialHash::from_entries(raw_entries, 64.));
+        commands.insert_resource(PropSpatialHash::from_entries(raw_entries, tileset.tile_size));
         commands.insert_resource(ActiveMapProps { props });
     }
 }

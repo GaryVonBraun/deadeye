@@ -21,9 +21,9 @@ pub fn spawn_debug_weapon(
     info!("spawning weapon");
 
     let weapon_config = Weapon {
-        fire_delay: 0.2,
+        fire_delay: 0.1,
         reload_time: 3.,
-        magazine_size: 30,
+        magazine_size: 300000,
         speed: 500.,
         damage: 100.,
     };

@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 
-use crate::navigation::{flow_field::FlowFieldPlugin, messages::*, resources::NavGrid, systems::*};
+use crate::{
+    map::resources::ActiveMap,
+    navigation::{flow_field::FlowFieldPlugin, messages::*, resources::NavGrid, systems::*},
+};
 
 pub mod flow_field;
 pub mod messages;
-mod resources;
+pub mod resources;
 mod systems;
 pub struct NavigationPlugin;
 
@@ -14,10 +17,7 @@ impl Plugin for NavigationPlugin {
 
         app.add_plugins(FlowFieldPlugin);
 
-        app.add_systems(
-            Update,
-            build_nav_grid.run_if(on_message::<BuildNavGridMessage>),
-        );
+        app.add_systems(Update, build_nav_grid.run_if(resource_added::<ActiveMap>));
         // app.add_systems(Update, nav_grid_gizmo.run_if(resource_exists::<NavGrid>));
     }
 }

@@ -5,12 +5,9 @@ use crate::{
     ai::{components::AiController, vision::components::Vision},
     collision::{
         self,
-        components::{Collision, CollisionShape, CollisionShape2d},
+        components::{Collision, CollisionShape2d},
     },
-    combat::{
-        components::MeleeIntent,
-        health::components::{Hitbox, Hurtbox},
-    },
+    combat::health::components::{Hitbox, Hurtbox},
     debug::components::DebugMovementIntent,
 };
 

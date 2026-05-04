@@ -1,10 +1,16 @@
-use crate::core::{
-    components::GameEntity,
-    states::{AppState, SimulationState},
+use crate::{
+    core::{
+        components::GameEntity,
+        states::{AppState, SimulationState},
+    },
+    map::{rendering::resources::TilesetRenderState, resources::ActiveMap},
+    mission::resources::ActiveMission,
+    navigation::resources::NavGrid,
 };
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
+    state::commands,
 };
 use bevy_egui::{EguiContexts, egui};
 
@@ -69,6 +75,13 @@ pub fn despawn_game_entities(query: Query<Entity, With<GameEntity>>, mut command
         // info!("despawning: {:?}", entity);
         commands.entity(entity).despawn();
     }
+}
+
+pub fn remove_resources(mut commands: Commands) {
+    commands.remove_resource::<ActiveMap>();
+    commands.remove_resource::<ActiveMission>();
+    commands.remove_resource::<NavGrid>();
+    commands.remove_resource::<TilesetRenderState>();
 }
 
 pub fn fps_ui(mut contexts: EguiContexts, diagnostics: Res<DiagnosticsStore>) -> Result {

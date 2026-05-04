@@ -110,7 +110,6 @@ pub fn rotate_weapons(
 
 pub fn weapon_runtime_system(time: Res<Time>, mut query: Query<(&Weapon, &mut WeaponRuntime)>) {
     for (weapon_config, mut weapon_runtime) in query.iter_mut() {
-        info!("weapon runtime:  {:?}", weapon_runtime);
         match weapon_runtime.state {
             WeaponState::Ready => {}
             WeaponState::Cooldown { mut timer } => {

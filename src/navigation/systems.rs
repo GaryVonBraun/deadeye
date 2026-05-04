@@ -17,13 +17,10 @@ use crate::{
 pub fn build_nav_grid(
     mut build_grid_reader: MessageReader<BuildNavGridMessage>,
     mut commands: Commands,
+    active_map: Res<ActiveMap>,
 ) {
     let Ok(prop_definitions) = read_prop_definitions() else {
         error!("Prop definitions not found needed to build NavGrid");
-        return;
-    };
-
-    let Ok(tile_set) = read_tileset(tileset_path("base".to_string())) else {
         return;
     };
     for message in build_grid_reader.read() {
@@ -62,11 +59,14 @@ pub fn build_nav_grid(
                 continue;
             }
 
-            let tiles_wide = (prop.size.x / tile_set.tile_size).ceil() as u32;
-            let tiles_high = (prop.size.y / tile_set.tile_size).ceil() as u32;
+            let tiles_wide = (prop.size.x / active_map.tileset.tile_size).ceil() as u32;
+            let tiles_high = (prop.size.y / active_map.tileset.tile_size).ceil() as u32;
 
-            let tile_position =
-                world_to_grid(placed_prop.position, tile_set.tile_size, &map_data.bounds);
+            let tile_position = world_to_grid(
+                placed_prop.position,
+                active_map.tileset.tile_size,
+                &map_data.bounds,
+            );
             let start_tile_x = tile_position.0 - (tiles_wide / 2) as i32;
             let start_tile_y = tile_position.1 - (tiles_high / 2) as i32;
 
@@ -76,7 +76,6 @@ pub fn build_nav_grid(
                     let y = start_tile_y + dy as i32;
                     if x >= 0 && y >= 0 && x < width as i32 && y < height as i32 {
                         nav_grid.cells[y as usize][x as usize] = false;
-                        info!("grid position set to false")
                     }
                 }
             }
