@@ -54,6 +54,9 @@ impl Plugin for EditorPlugin {
             Update,
             render_gizmos.run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMission>)),
         );
+        app.add_systems(
+            Update,
+            set_grow_tile.run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMap>)),
+        );
     }
 }
-

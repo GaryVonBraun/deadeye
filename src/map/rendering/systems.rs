@@ -152,9 +152,12 @@ pub fn render_map(
                 y: chunk_y_position as f32 * chunk_pixel_size,
             };
 
+            let id = active_map.tileset.empty_tile.y * active_map.tileset.width
+                + active_map.tileset.empty_tile.x;
+
             // 16x16 grid created filled with the tiles from defined ranges
             let grid: Vec<Vec<u32>> =
-                construct_chunk_tiles(&active_map.map.tiles, y_range, x_range);
+                construct_chunk_tiles(&active_map.map.tiles, y_range, x_range, id);
 
             let mut mesh = Mesh::new(
                 bevy::mesh::PrimitiveTopology::TriangleList,
@@ -244,19 +247,16 @@ fn construct_mesh_data(grid: &Vec<Vec<u32>>, tileset: &TileSet) -> (Vec<[f32; 3]
             let tile_left = (7.5 - x as f32) * tile_size - (tile_size / 2.);
             let tile_bottom = (7.5 - y as f32) * tile_size - (tile_size / 2.);
 
-            let Some(tile_def) = tileset.tiles.iter().find(|t| t.index == *tile_type as u16) else {
-                continue;
-            };
+            let tile_id = *tile_type as u32;
+
+            let tile_x = (tile_id % tileset.width as u32) as f32;
+            let tile_y = (tile_id / tileset.width as u32) as f32;
 
             // --- positions ---
             positions.push([tile_left, tile_bottom, 0.]);
             positions.push([tile_left + tile_size, tile_bottom, 0.]);
             positions.push([tile_left + tile_size, tile_bottom + tile_size, 0.]);
             positions.push([tile_left, tile_bottom + tile_size, 0.]);
-
-            // --- UVs (fixed) ---
-            let tile_x = tile_def.uv_coordinate[0] as f32;
-            let tile_y = tile_def.uv_coordinate[1] as f32;
 
             let start_x = (tile_x * padded_tile_size + padding) / atlas_width;
             let end_x = (tile_x * padded_tile_size + padding + tile_size) / atlas_width;
@@ -278,6 +278,7 @@ fn construct_chunk_tiles(
     tiles: &Vec<Vec<u32>>,
     y_range: &(usize, usize, ChunkSide),
     x_range: &(usize, usize, ChunkSide),
+    empty_tile: u32,
 ) -> Vec<Vec<u32>> {
     // destructuring ranges
     let (y_start, y_end, y_side) = y_range;
@@ -297,7 +298,7 @@ fn construct_chunk_tiles(
         .collect();
 
     // creating 16x16 base grid so sliced grid can be copied on it
-    let mut grid: Vec<Vec<u32>> = vec![vec![0; 16]; 16];
+    let mut grid: Vec<Vec<u32>> = vec![vec![empty_tile; 16]; 16];
 
     // using offsets to decide where tiles are placed
     for (i, row) in sliced_grid.iter().enumerate() {

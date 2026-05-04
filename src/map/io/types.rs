@@ -28,9 +28,10 @@ pub struct TileSet {
     pub chunk_size: f32,
     pub name: String,
     pub atlas: String,
-    pub tiles: Vec<TileDef>,
     pub width: u32,
     pub height: u32,
+    pub empty_tile: UVec2,
+    pub default_grow_tile: UVec2,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

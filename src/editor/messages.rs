@@ -5,6 +5,7 @@ use uuid::Uuid;
 pub struct UpdateMapBoundsMessage {
     pub direction: MapBoundDirectionEnum,
     pub action: MapBoundOperationEnum,
+    pub grow_tile: u32,
 }
 
 #[derive(Debug, Clone)]

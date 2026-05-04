@@ -2,6 +2,7 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
 };
+use bevy_egui::EguiContexts;
 
 use crate::{
     core::states::AppState,
@@ -15,7 +16,6 @@ use crate::{
         io::operations::read_mission_data, messages::SaveMissionMessage, resources::ActiveMission,
     },
     props::{
-        components::Prop,
         messages::{LoadPropsMessage, UnloadPropsMessage},
         resources::ActiveMapProps,
     },
@@ -42,6 +42,9 @@ pub fn load_editor(
             snap_to_grid: true,
             tile_aligned: false,
             size_control_amount: 1,
+            tile_picker_zoom: 1.,
+            tile_picker_offset: bevy_egui::egui::Vec2 { x: 0., y: 0. },
+            grow_tile: 0,
         });
 
         commands.spawn((
@@ -55,6 +58,12 @@ pub fn load_editor(
 
         next_state.set(AppState::Editor);
     }
+}
+
+pub fn set_grow_tile(mut editor_settings: ResMut<EditorSettings>, active_map: Res<ActiveMap>) {
+    let id = active_map.tileset.default_grow_tile.y * active_map.tileset.width
+        + active_map.tileset.default_grow_tile.x;
+    editor_settings.grow_tile = id
 }
 
 pub fn exit_editor(
@@ -84,14 +93,13 @@ pub fn exit_editor(
     commands.remove_resource::<EditorSettings>();
 }
 
-const TILE_INDEX: u32 = 1;
-
 pub fn update_map_bounds(
     mut active_map: ResMut<ActiveMap>,
     mut map_bounds_reader: MessageReader<UpdateMapBoundsMessage>,
 ) {
     for message in map_bounds_reader.read() {
         let map_info = active_map.map.clone();
+        let grow_tile = message.grow_tile;
 
         match message.action {
             MapBoundOperationEnum::Shrink(amount) => {
@@ -105,6 +113,7 @@ pub fn update_map_bounds(
                             active_map.map.tiles = row_operations(
                                 RowOperation::EastShrink,
                                 active_map.map.tiles.clone(),
+                                grow_tile,
                             );
                             active_map.map.bounds.east -= 1
                         }
@@ -116,6 +125,7 @@ pub fn update_map_bounds(
                             active_map.map.tiles = row_operations(
                                 RowOperation::WestShrink,
                                 active_map.map.tiles.clone(),
+                                grow_tile,
                             );
                             active_map.map.bounds.west -= 1
                         }
@@ -129,13 +139,14 @@ pub fn update_map_bounds(
                             active_map
                                 .map
                                 .tiles
-                                .insert(0, vec![TILE_INDEX; map_info.tiles[0].len()]);
+                                .insert(0, vec![grow_tile; map_info.tiles[0].len()]);
                             active_map.map.bounds.north += 1
                         }
                         MapBoundDirectionEnum::East => {
                             active_map.map.tiles = row_operations(
                                 RowOperation::EastExpand,
                                 active_map.map.tiles.clone(),
+                                grow_tile,
                             );
                             active_map.map.bounds.east += 1
                         }
@@ -143,13 +154,14 @@ pub fn update_map_bounds(
                             active_map
                                 .map
                                 .tiles
-                                .push(vec![TILE_INDEX; map_info.tiles[0].len()]);
+                                .push(vec![grow_tile; map_info.tiles[0].len()]);
                             active_map.map.bounds.south += 1
                         }
                         MapBoundDirectionEnum::West => {
                             active_map.map.tiles = row_operations(
                                 RowOperation::WestExpand,
                                 active_map.map.tiles.clone(),
+                                grow_tile,
                             );
                             active_map.map.bounds.west += 1
                         }
@@ -167,11 +179,15 @@ enum RowOperation {
     EastShrink,
 }
 
-fn row_operations(operation: RowOperation, mut tiles: Vec<Vec<u32>>) -> Vec<Vec<u32>> {
+fn row_operations(
+    operation: RowOperation,
+    mut tiles: Vec<Vec<u32>>,
+    grow_tile: u32,
+) -> Vec<Vec<u32>> {
     for row in tiles.iter_mut() {
         match operation {
-            RowOperation::WestExpand => row.insert(0, TILE_INDEX),
-            RowOperation::EastExpand => row.push(TILE_INDEX),
+            RowOperation::WestExpand => row.insert(0, grow_tile),
+            RowOperation::EastExpand => row.push(grow_tile),
             RowOperation::WestShrink => {
                 row.remove(0);
             }
@@ -208,7 +224,15 @@ pub fn editor_camera_controller(
     mut camera_query: Query<(&mut Transform, &mut Projection), With<Camera>>,
     time: Res<Time>,
     mut evr_scroll: MessageReader<MouseWheel>,
+    mut contexts: EguiContexts,
 ) {
+    let Ok(ctx) = contexts.ctx_mut() else {
+        return;
+    };
+    if ctx.is_pointer_over_area() {
+        return;
+    }
+
     let Ok((mut camera_transform, mut projection)) = camera_query.single_mut() else {
         error!("no camera found");
         return;

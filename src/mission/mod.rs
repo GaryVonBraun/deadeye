@@ -34,7 +34,7 @@ impl Plugin for MissionPlugin {
         app.add_systems(
             Update,
             (
-                wave_spawner_gizmo.run_if(resource_exists::<ActiveMission>),
+                // wave_spawner_gizmo.run_if(resource_exists::<ActiveMission>),
                 wave_spawner.run_if(in_state(AppState::InGame)),
             )
                 .run_if(resource_exists::<ActiveMap>),

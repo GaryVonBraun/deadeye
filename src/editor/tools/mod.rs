@@ -78,8 +78,9 @@ pub fn editor_click_system(
     }
 
     match &*editor_tool {
-        EditorTool::TilePainter(tile_index) => {
-            tile_paint_system(tile_index, active_map, tile_position);
+        EditorTool::TilePainter { x, y } => {
+            let id = y * active_map.tileset.width + x;
+            tile_paint_system(&id, active_map, tile_position);
         }
         EditorTool::PlayerSpawn => {
             info!("setting player spawnpoint");
@@ -122,7 +123,7 @@ pub fn update_preview_image(
 
     match &*editor_tool {
         EditorTool::None => {}
-        EditorTool::TilePainter(_) => {
+        EditorTool::TilePainter { x: _, y: _ } => {
             *visibility = Visibility::Hidden;
         }
         EditorTool::PropTool(tool_action) => match tool_action {
