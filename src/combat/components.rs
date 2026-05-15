@@ -29,3 +29,8 @@ pub struct MeleeIntent {
     pub range: f32,
     pub damage: f32,
 }
+
+#[derive(Component)]
+pub struct EquippedWeapon {
+    pub entity: Entity,
+}

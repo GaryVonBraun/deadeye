@@ -4,7 +4,7 @@ use crate::{
     actor::components::Actor,
     collision::components::CollisionShape,
     combat::{
-        components::ShootingIntent,
+        components::{EquippedWeapon, ShootingIntent},
         health::components::Hitbox,
         messages::{ReloadMessage, ShootMessage},
         projectiles::{bundles::ProjectileBundle, component::Projectile},
@@ -16,15 +16,20 @@ use crate::{
 pub fn shoot_weapon(
     mut commands: Commands,
     mut messages: MessageReader<ShootMessage>,
-    children_query: Query<&Children, With<Actor>>,
+    children_query: Query<(&Children, &EquippedWeapon), With<Actor>>,
     mut weapon_query: Query<(&Weapon, &mut WeaponRuntime, &GlobalTransform), With<Weapon>>,
     asset_server: Res<AssetServer>,
 ) {
     for message in messages.read() {
         // get the children of the shooter entity
-        if let Ok(children) = children_query.get(message.owner) {
+        if let Ok((children, equipped_weapon)) = children_query.get(message.owner) {
             for child in children.iter() {
                 // and we check if the child is a weapon
+
+                if child != equipped_weapon.entity {
+                    continue;
+                }
+
                 if let Ok((weapon, mut weapon_runtime, global_transform)) =
                     weapon_query.get_mut(child)
                 {

@@ -20,6 +20,11 @@ pub struct HudZombieCount {
 }
 
 #[derive(Component, Debug)]
+pub struct HudWeaponInfo {
+    pub ammo_count: usize,
+}
+
+#[derive(Component, Debug)]
 pub struct HudWaves {
     pub current_wave: usize,
 }

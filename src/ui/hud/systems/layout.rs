@@ -1,6 +1,6 @@
 use crate::ui::{
     common::styles::{CARD_BACKGROUND_COLOR, CARD_BORDER_COLOR},
-    hud::components::{Hud, HudHealthBar, HudWaves, HudZombieCount},
+    hud::components::*,
 };
 use bevy::prelude::*;
 pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -53,26 +53,43 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                         });
                 });
             parent
-                .spawn((
-                    BackgroundColor(CARD_BACKGROUND_COLOR),
-                    BorderColor::all(CARD_BORDER_COLOR),
-                    Node {
-                        width: Val::Percent(15.),
-                        height: Val::Percent(4.),
-                        border: UiRect::all(Val::Px(1.)),
-                        ..Default::default()
-                    },
-                ))
+                .spawn((Node {
+                    width: Val::Percent(100.),
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..Default::default()
+                },))
                 .with_children(|parent| {
-                    parent.spawn((
-                        BackgroundColor(Color::linear_rgb(1., 0., 0.)),
-                        Node {
-                            width: Val::Percent(100.),
-                            height: Val::Percent(100.),
+                    // HealthBar
+                    parent
+                        .spawn((
+                            BackgroundColor(CARD_BACKGROUND_COLOR),
+                            BorderColor::all(CARD_BORDER_COLOR),
+                            Node {
+                                width: Val::Percent(15.),
+                                height: Val::Percent(100.),
+                                border: UiRect::all(Val::Px(1.)),
+                                ..Default::default()
+                            },
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn((
+                                BackgroundColor(Color::linear_rgb(1., 0., 0.)),
+                                Node {
+                                    width: Val::Percent(100.),
+                                    height: Val::Percent(100.),
+                                    ..Default::default()
+                                },
+                                HudHealthBar { value: 0. },
+                            ));
+                        });
+                    // Ammo count
+                    parent
+                        .spawn((Node {
                             ..Default::default()
-                        },
-                        HudHealthBar { value: 0. },
-                    ));
+                        },))
+                        .with_children(|parent| {
+                            parent.spawn((Text::new(""), HudWeaponInfo { ammo_count: 0 }));
+                        });
                 });
         })
         .id();

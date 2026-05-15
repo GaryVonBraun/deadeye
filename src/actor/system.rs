@@ -20,7 +20,7 @@ use crate::{
     },
     animation::{components::SpriteAnimator, resources::AnimationDefinitions},
     combat::{
-        components::{MeleeIntent, MeleeState, ShootingIntent},
+        components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
         weapon::factories::spawn_debug_weapon,
     },
     core::io::read_ron_file,
@@ -99,6 +99,19 @@ pub fn spawn_actor_handler(
                     &animation_definitions,
                     &mut texture_atlas_layouts,
                 );
+
+                let weapon2 = spawn_debug_weapon(
+                    &mut commands,
+                    &asset_server,
+                    Vec3 {
+                        x: 1.0,
+                        y: 4.,
+                        z: 2.,
+                    },
+                    &animation_definitions,
+                    &mut texture_atlas_layouts,
+                );
+
                 let Some(anim_def) = animation_definitions.defs.get("soldier_default") else {
                     error!("animation def not found");
                     continue;
@@ -125,6 +138,7 @@ pub fn spawn_actor_handler(
                             message.position.extend(0.),
                             actor,
                         ),
+                        EquippedWeapon { entity: weapon },
                         Sprite {
                             image: asset_server.load_with_settings(
                                 &clip.texture,
@@ -161,7 +175,7 @@ pub fn spawn_actor_handler(
                         ShootingIntent::default(),
                         Player,
                     ))
-                    .add_child(weapon)
+                    .add_children(&[weapon, weapon2])
                     .id();
             }
             ActorArchetype::Human => {

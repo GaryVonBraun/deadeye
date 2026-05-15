@@ -2,10 +2,14 @@ use bevy::prelude::*;
 
 use crate::{
     actor::components::Zombie,
-    combat::health::components::Health,
+    combat::{
+        components::EquippedWeapon,
+        health::components::Health,
+        weapon::components::{Weapon, WeaponRuntime},
+    },
     mission::resources::WaveSpawnerState,
     player::components::Player,
-    ui::hud::components::{HudHealthBar, HudWaves, HudZombieCount},
+    ui::hud::components::{HudHealthBar, HudWaves, HudWeaponInfo, HudZombieCount},
 };
 
 pub fn update_health_bar(
@@ -56,4 +60,22 @@ pub fn update_waves(
 
         text.0 = format!("Wave: {}", hud_waves.current_wave);
     }
+}
+
+pub fn update_weapon_information(
+    mut hud_query: Query<(&mut Text, &mut HudWeaponInfo)>,
+    weapon_query: Query<(&Weapon, &mut WeaponRuntime), With<Weapon>>,
+    player_query: Query<&EquippedWeapon, With<Player>>,
+) {
+    let Ok((mut text, mut hud_weapon_info)) = hud_query.single_mut() else {
+        return;
+    };
+    let Ok(equipped_weapon) = player_query.single() else {
+        return;
+    };
+
+    let Ok((weapon, weapon_runtime)) = weapon_query.get(equipped_weapon.entity) else {
+        return;
+    };
+    text.0 = format!("Ammo: {}", weapon_runtime.ammo);
 }
