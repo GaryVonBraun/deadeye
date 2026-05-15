@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub struct ShootMessage {
     pub owner: Entity,
     pub direction: Vec2,
+    pub just_pressed: bool,
 }
 
 #[derive(Message)]

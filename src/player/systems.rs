@@ -101,13 +101,20 @@ pub fn player_combat_input(
         return;
     };
 
-    if mouse_buttons.pressed(MouseButton::Left) {
+    if mouse_buttons.just_pressed(MouseButton::Left) {
         //LINK - src/combat/weapon/systems.rs:8
         // this links to where the message is being read
 
         shoot_writer.write(ShootMessage {
             owner: entity,
             direction: shooting_intent.direction,
+            just_pressed: true,
+        });
+    } else if mouse_buttons.pressed(MouseButton::Left) {
+        shoot_writer.write(ShootMessage {
+            owner: entity,
+            direction: shooting_intent.direction,
+            just_pressed: false,
         });
     }
     if keys.pressed(KeyCode::KeyR) {

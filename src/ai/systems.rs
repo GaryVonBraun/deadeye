@@ -330,6 +330,7 @@ pub fn ai_shooting_system(
                     messages.write(ShootMessage {
                         owner: ai_entity,
                         direction: ai_shooting_intent.direction,
+                        just_pressed: false,
                     });
                 }
             }

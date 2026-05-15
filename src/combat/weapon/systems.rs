@@ -37,13 +37,21 @@ pub fn shoot_weapon(
                 {
                     //NOTE - currently this means if an actor has multiple weapons they all fire
 
-                    if weapon_runtime.state != WeaponState::Ready || weapon_runtime.ammo == 0 {
-                        // let Some(asset) = audio_registry.sounds.get(&weapon.dry_sound) else {
-                        //     return;
-                        // };
+                    if weapon_runtime.state != WeaponState::Ready {
+                        return;
+                    }
 
-                        // commands
-                        //     .spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
+                    if weapon_runtime.ammo == 0 {
+                        if message.just_pressed {
+                            let Some(asset) = audio_registry.sounds.get(&weapon.dry_sound) else {
+                                return;
+                            };
+
+                            commands.spawn((
+                                AudioPlayer::new(asset.clone()),
+                                PlaybackSettings::DESPAWN,
+                            ));
+                        }
                         return;
                     }
 
