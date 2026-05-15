@@ -22,10 +22,13 @@ pub fn spawn_debug_weapon(
 
     let weapon_config = Weapon {
         fire_delay: 0.1,
-        reload_time: 3.,
+        reload_time: 4.,
         magazine_size: 30,
         speed: 500.,
         damage: 100.,
+        shoot_sound: "weapon_pistol_fire".to_string(),
+        reload_sound: "weapon_ak_reload".to_string(),
+        dry_sound: "weapon_pistol_dry".to_string(),
     };
 
     let Some(anim_def) = animation_definitions.defs.get("weapon_default") else {

@@ -2,6 +2,7 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 
 use crate::{
     actor::components::Actor,
+    audio::resources::AudioRegistry,
     collision::components::CollisionShape,
     combat::{
         components::{EquippedWeapon, ShootingIntent},
@@ -19,6 +20,7 @@ pub fn shoot_weapon(
     children_query: Query<(&Children, &EquippedWeapon), With<Actor>>,
     mut weapon_query: Query<(&Weapon, &mut WeaponRuntime, &GlobalTransform), With<Weapon>>,
     asset_server: Res<AssetServer>,
+    audio_registry: Res<AudioRegistry>,
 ) {
     for message in messages.read() {
         // get the children of the shooter entity
@@ -36,6 +38,12 @@ pub fn shoot_weapon(
                     //NOTE - currently this means if an actor has multiple weapons they all fire
 
                     if weapon_runtime.state != WeaponState::Ready || weapon_runtime.ammo == 0 {
+                        // let Some(asset) = audio_registry.sounds.get(&weapon.dry_sound) else {
+                        //     return;
+                        // };
+
+                        // commands
+                        //     .spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
                         return;
                     }
 
@@ -45,6 +53,12 @@ pub fn shoot_weapon(
                     let mut translation = global_transform.translation();
 
                     translation.z = 1.;
+
+                    let Some(asset) = audio_registry.sounds.get(&weapon.shoot_sound) else {
+                        return;
+                    };
+
+                    commands.spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
 
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
@@ -87,13 +101,22 @@ pub fn reload_weapon(
     mut messages: MessageReader<ReloadMessage>,
     children_query: Query<&Children, With<Actor>>,
     mut weapon_query: Query<(&Weapon, &mut WeaponRuntime), With<Weapon>>,
+    audio_registry: Res<AudioRegistry>,
+    mut commands: Commands,
 ) {
     for message in messages.read() {
         if let Ok(children) = children_query.get(message.entity) {
             for child in children.iter() {
                 if let Ok((weapon, mut weapon_runtime)) = weapon_query.get_mut(child) {
-                    weapon_runtime.state = WeaponState::Reloading {
-                        timer: weapon.reload_time,
+                    if !matches!(weapon_runtime.state, WeaponState::Reloading { .. }) {
+                        let Some(asset) = audio_registry.sounds.get(&weapon.reload_sound) else {
+                            return;
+                        };
+                        commands
+                            .spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
+                        weapon_runtime.state = WeaponState::Reloading {
+                            timer: weapon.reload_time,
+                        }
                     }
                 }
             }

@@ -7,6 +7,9 @@ pub struct Weapon {
     pub magazine_size: u32,
     pub speed: f32,
     pub damage: f32,
+    pub shoot_sound: String,
+    pub reload_sound: String,
+    pub dry_sound: String,
 }
 
 #[derive(Component, Debug)]

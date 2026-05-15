@@ -10,7 +10,6 @@ use crate::{
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    state::commands,
 };
 use bevy_egui::{EguiContexts, egui};
 

@@ -5,6 +5,7 @@ use crate::{
     actor::ActorPlugin,
     ai::{AiPlugin, AiSet},
     animation::SpriteAnimationPlugin,
+    audio::GameAudioPlugin,
     collision::{CollisionPlugin, sets::PhysicsSet},
     combat::CombatPlugin,
     core::CorePlugin,
@@ -20,6 +21,7 @@ use crate::{
 mod actor;
 mod ai;
 mod animation;
+mod audio;
 mod collision;
 mod combat;
 mod core;
@@ -63,6 +65,7 @@ fn main() {
             PropsPlugin,
             NavigationPlugin,
             SpriteAnimationPlugin,
+            GameAudioPlugin,
         ))
         .add_plugins(DebugPlugin)
         .add_plugins(UiPlugin)
