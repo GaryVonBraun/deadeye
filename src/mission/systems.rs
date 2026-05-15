@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, state::commands};
 use rand::RngExt;
 use uuid::Uuid;
 
@@ -20,7 +20,7 @@ use crate::{
             read_mission_data, remove_mission_file, update_mission_data, write_mission,
         },
         messages::*,
-        resources::{ActiveMission, Mission, WaveSpawnerState},
+        resources::{ActiveMission, GameOverData, Mission, WaveSpawnerState},
     },
     navigation::messages::BuildNavGridMessage,
     player::components::Player,
@@ -319,6 +319,8 @@ pub fn player_death_check(
     mut timer: Local<Option<Timer>>,
     time: Res<Time>,
     mut next_state: ResMut<NextState<AppState>>,
+    mut commands: Commands,
+    active_mission: Res<ActiveMission>,
 ) {
     if player_query.is_empty() {
         *timer = None;
@@ -329,6 +331,9 @@ pub fn player_death_check(
     timer.tick(time.delta());
 
     if timer.just_finished() {
+        commands.insert_resource(GameOverData {
+            mission_id: active_mission.mission.id,
+        });
         next_state.set(AppState::GameOver);
     }
 }

@@ -42,3 +42,8 @@ pub struct WaveSpawnerState {
     pub wave_delay_timer: Option<Timer>,
     pub finished: bool,
 }
+
+#[derive(Debug, Resource)]
+pub struct GameOverData {
+    pub mission_id: Uuid,
+}

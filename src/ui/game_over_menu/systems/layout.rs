@@ -1,6 +1,9 @@
-use crate::ui::{
-    common::button::UiButton,
-    game_over_menu::components::{GameOverMenu, GameOverMenuInteractions},
+use crate::{
+    mission::resources::GameOverData,
+    ui::{
+        common::button::UiButton,
+        game_over_menu::components::{GameOverMenu, GameOverMenuInteractions},
+    },
 };
 use bevy::prelude::*;
 pub fn spawn_game_over_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -55,4 +58,5 @@ pub fn despawn_game_over_menu(
     };
 
     commands.entity(game_over_menu_entity.0).despawn();
+    commands.remove_resource::<GameOverData>();
 }
