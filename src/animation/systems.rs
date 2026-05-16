@@ -13,7 +13,7 @@ use crate::{
         resources::AnimationDefinitions,
     },
     combat::{
-        components::{MeleeIntent, MeleeState},
+        components::{MeleeIntent, MeleeState, ShootingIntent},
         health::components::Dead,
         weapon::components::Weapon,
     },
@@ -36,6 +36,8 @@ pub fn swap_clip_texture(
         error!("clip {} not found", animator.current_clip);
         return;
     };
+
+    // info!("swapping texture");
 
     sprite.image =
         asset_server.load_with_settings(&clip.texture, |settings: &mut ImageLoaderSettings| {
@@ -84,6 +86,8 @@ pub fn sprite_animator(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for (entity, mut sprite, mut animator) in animator_query.iter_mut() {
+        sprite.flip_x = animator.flip_x;
+        sprite.flip_y = animator.flip_y;
         if animator.clip_dirty {
             animator.clip_dirty = false;
             swap_clip_texture(
@@ -122,8 +126,6 @@ pub fn sprite_animator(
             }
         }
 
-        sprite.flip_x = animator.flip_x;
-
         sprite.texture_atlas.as_mut().unwrap().index = animator.current_frame;
         animator.frame_timer = Timer::from_seconds(1.0 / clip.fps as f32, TimerMode::Once);
     }
@@ -141,24 +143,33 @@ pub fn set_clip(animator: &mut SpriteAnimator, clip_name: &str, fps: f32) {
 
 pub fn player_animation_state(
     mut player_query: Query<
-        (&PlayerMovementIntent, &mut SpriteAnimator, Option<&Dead>),
+        (
+            &Transform,
+            &PlayerMovementIntent,
+            Option<&ShootingIntent>,
+            &mut SpriteAnimator,
+            Option<&Dead>,
+        ),
         With<Player>,
     >,
     animation_defs: Res<AnimationDefinitions>,
 ) {
-    for (intent, mut animator, dead) in player_query.iter_mut() {
+    for (transform, movement_intent, shooting_intent, mut animator, dead) in player_query.iter_mut()
+    {
         let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
         };
 
-        if intent.direction.x < 0.0 {
-            animator.flip_x = true;
-        } else if intent.direction.x > 0.0 {
-            animator.flip_x = false;
+        if let Some(intent) = shooting_intent {
+            let direction = (intent.target_position - transform.translation.truncate()).normalize();
+
+            animator.flip_x = direction.x < 0.0;
+        } else {
+            animator.flip_x = movement_intent.direction.x < 0.0;
         }
 
-        let mut target_clip_name = if intent.direction == Vec2::default() {
+        let mut target_clip_name = if movement_intent.direction == Vec2::default() {
             "idle"
         } else {
             "run"
@@ -246,9 +257,9 @@ pub fn weapon_animation_state(
 
         // Flip when facing left (angle beyond +/- 90 degrees)
         if angle > PI / 2.0 || angle < -PI / 2.0 {
-            animator.flip_x = true;
+            animator.flip_y = true;
         } else {
-            animator.flip_x = false;
+            animator.flip_y = false;
         }
 
         // if animator.current_clip == target_clip_name {

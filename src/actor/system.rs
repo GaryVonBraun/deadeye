@@ -88,7 +88,7 @@ pub fn spawn_actor_handler(
 
         match actor.archetype {
             ActorArchetype::Player => {
-                let weapon = spawn_pistole_weapon(
+                let weapon = spawn_debug_weapon(
                     &mut commands,
                     &asset_server,
                     Vec3 {
@@ -168,6 +168,7 @@ pub fn spawn_actor_handler(
                             def_id: "soldier_default".to_string(),
                             clip_dirty: false,
                             flip_x: false,
+                            flip_y: false,
                         },
                         Locomotion::with_speed(actor.speed),
                         FlowFieldTarget::default(),
@@ -259,6 +260,7 @@ pub fn spawn_actor_handler(
                             def_id: "zombie_default".to_string(),
                             clip_dirty: false,
                             flip_x: false,
+                            flip_y: false,
                         },
                         MeleeIntent {
                             target: None,

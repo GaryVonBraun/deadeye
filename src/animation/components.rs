@@ -8,6 +8,7 @@ pub struct SpriteAnimator {
     pub def_id: String,
     pub clip_dirty: bool,
     pub flip_x: bool,
+    pub flip_y: bool,
 }
 
 #[derive(Component, Debug)]
