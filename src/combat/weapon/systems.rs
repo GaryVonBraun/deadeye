@@ -1,4 +1,5 @@
 use bevy::{ecs::relationship::Relationship, prelude::*};
+use rand::RngExt;
 
 use crate::{
     actor::components::Actor,
@@ -23,6 +24,7 @@ pub fn shoot_weapon(
     audio_registry: Res<AudioRegistry>,
 ) {
     for message in messages.read() {
+        let mut rng = rand::rng();
         // get the children of the shooter entity
         if let Ok((children, equipped_weapon)) = children_query.get(message.owner) {
             for child in children.iter() {
@@ -64,12 +66,24 @@ pub fn shoot_weapon(
                         return;
                     }
 
+                    let final_spread = weapon_runtime.current_spread + weapon.spread_base;
+
                     let direction = (message.target_position
                         - global_transform.translation().truncate())
-                    .normalize();
+                    .normalize_or_zero();
 
-                    let angle = direction.y.atan2(direction.x);
-                    let rotation = Quat::from_rotation_z(angle);
+                    let angle = direction.to_angle();
+
+                    let spread_offset = if final_spread > 0.0 {
+                        rng.random_range(-final_spread..=final_spread)
+                    } else {
+                        0.0
+                    };
+
+                    let final_angle = angle + spread_offset;
+                    let final_direction = Vec2::from_angle(final_angle);
+
+                    let rotation = Quat::from_rotation_z(final_angle);
 
                     let mut translation = global_transform.translation();
 
@@ -84,7 +98,7 @@ pub fn shoot_weapon(
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
                             speed: weapon.speed,
-                            direction: direction,
+                            direction: final_direction,
                             lifetime: 3.,
                             damage: weapon.damage,
                             owner: message.owner,
@@ -101,6 +115,7 @@ pub fn shoot_weapon(
                         },
                         game_entity: GameEntity,
                     });
+                    weapon_runtime.current_spread += weapon.spread_per_shot;
                     weapon_runtime.ammo -= 1;
                     weapon_runtime.state = WeaponState::Cooldown {
                         timer: weapon.fire_delay,
@@ -162,6 +177,13 @@ pub fn rotate_weapons(
 
 pub fn weapon_runtime_system(time: Res<Time>, mut query: Query<(&Weapon, &mut WeaponRuntime)>) {
     for (weapon_config, mut weapon_runtime) in query.iter_mut() {
+        weapon_runtime.current_spread -= weapon_config.spread_recovery * time.delta_secs();
+
+        weapon_runtime.current_spread = weapon_runtime
+            .current_spread
+            .clamp(0.0, weapon_config.spread_max);
+        info!(weapon_runtime.current_spread);
+
         match weapon_runtime.state {
             WeaponState::Ready => {}
             WeaponState::Cooldown { mut timer } => {

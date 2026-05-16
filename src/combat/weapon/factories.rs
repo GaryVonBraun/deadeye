@@ -23,23 +23,26 @@ pub fn spawn_debug_weapon(
     let weapon_config = Weapon {
         fire_delay: 0.1,
         reload_time: 3.,
-        magazine_size: 30,
+        magazine_size: 300,
         speed: 500.,
         damage: 100.,
         shoot_sound: "weapon_pistol_fire".to_string(),
         reload_sound: "weapon_ak_reload".to_string(),
         dry_sound: "weapon_pistol_dry".to_string(),
         fire_mode: FireMode::Auto,
+        // spread
+        spread_base: 0.,
+        spread_max: 0.3,
+        spread_per_shot: 0.2,
+        spread_recovery: 1.,
+        movement_spread: 10.,
     };
 
     let Some(anim_def) = animation_definitions.defs.get("weapon_default") else {
         error!("animation def not found");
         return commands
             .spawn((
-                WeaponRuntime {
-                    state: WeaponState::Ready,
-                    ammo: weapon_config.magazine_size.clone(),
-                },
+                WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
                 weapon_config,
                 Transform::from_translation(translation),
             ))
@@ -52,10 +55,7 @@ pub fn spawn_debug_weapon(
 
         return commands
             .spawn((
-                WeaponRuntime {
-                    state: WeaponState::Ready,
-                    ammo: weapon_config.magazine_size.clone(),
-                },
+                WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
                 weapon_config,
                 Transform::from_translation(translation),
             ))
@@ -73,10 +73,7 @@ pub fn spawn_debug_weapon(
 
     commands
         .spawn(WeaponBundle {
-            weapon_runtime: WeaponRuntime {
-                state: WeaponState::Ready,
-                ammo: weapon_config.magazine_size.clone(),
-            },
+            weapon_runtime: WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
             sprite: Sprite {
                 image: asset_server.load_with_settings(
                     &clip.texture,
@@ -129,16 +126,19 @@ pub fn spawn_pistole_weapon(
         reload_sound: "weapon_ak_reload".to_string(),
         dry_sound: "weapon_pistol_dry".to_string(),
         fire_mode: FireMode::Semi,
+        // spread
+        spread_base: 1.,
+        spread_max: 30.,
+        spread_per_shot: 2.,
+        spread_recovery: 1.,
+        movement_spread: 10.,
     };
 
     let Some(anim_def) = animation_definitions.defs.get("weapon_default") else {
         error!("animation def not found");
         return commands
             .spawn((
-                WeaponRuntime {
-                    state: WeaponState::Ready,
-                    ammo: weapon_config.magazine_size.clone(),
-                },
+                WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
                 weapon_config,
                 Transform::from_translation(translation),
             ))
@@ -151,10 +151,7 @@ pub fn spawn_pistole_weapon(
 
         return commands
             .spawn((
-                WeaponRuntime {
-                    state: WeaponState::Ready,
-                    ammo: weapon_config.magazine_size.clone(),
-                },
+                WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
                 weapon_config,
                 Transform::from_translation(translation),
             ))
@@ -172,10 +169,7 @@ pub fn spawn_pistole_weapon(
 
     commands
         .spawn(WeaponBundle {
-            weapon_runtime: WeaponRuntime {
-                state: WeaponState::Ready,
-                ammo: weapon_config.magazine_size.clone(),
-            },
+            weapon_runtime: WeaponRuntime::new_with_ammo(weapon_config.magazine_size),
             sprite: Sprite {
                 image: asset_server.load_with_settings(
                     &clip.texture,
