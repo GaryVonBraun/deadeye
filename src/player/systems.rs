@@ -62,10 +62,10 @@ pub fn player_movement_controller(
 
 pub fn player_aim_system(
     window: Single<&mut Window>,
-    mut player_query: Query<(&mut ShootingIntent, &GlobalTransform), With<Player>>,
+    mut player_query: Query<(&mut ShootingIntent), With<Player>>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
 ) {
-    let Ok((mut shooting_intent, transform)) = player_query.single_mut() else {
+    let Ok(mut shooting_intent) = player_query.single_mut() else {
         return;
     };
 
@@ -80,14 +80,7 @@ pub fn player_aim_system(
         return;
     };
 
-    let player_position = transform.translation().truncate();
-
-    shooting_intent.direction = (mouse_world_position
-        - Vec2 {
-            x: player_position.x,
-            y: player_position.y,
-        })
-    .normalize_or_zero();
+    shooting_intent.target_position = mouse_world_position
 }
 
 pub fn player_combat_input(
@@ -107,13 +100,13 @@ pub fn player_combat_input(
 
         shoot_writer.write(ShootMessage {
             owner: entity,
-            direction: shooting_intent.direction,
+            target_position: shooting_intent.target_position,
             just_pressed: true,
         });
     } else if mouse_buttons.pressed(MouseButton::Left) {
         shoot_writer.write(ShootMessage {
             owner: entity,
-            direction: shooting_intent.direction,
+            target_position: shooting_intent.target_position,
             just_pressed: false,
         });
     }

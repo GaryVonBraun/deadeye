@@ -64,7 +64,11 @@ pub fn shoot_weapon(
                         return;
                     }
 
-                    let angle = message.direction.y.atan2(message.direction.x);
+                    let direction = (message.target_position
+                        - global_transform.translation().truncate())
+                    .normalize();
+
+                    let angle = direction.y.atan2(direction.x);
                     let rotation = Quat::from_rotation_z(angle);
 
                     let mut translation = global_transform.translation();
@@ -80,7 +84,7 @@ pub fn shoot_weapon(
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
                             speed: weapon.speed,
-                            direction: message.direction,
+                            direction: direction,
                             lifetime: 3.,
                             damage: weapon.damage,
                             owner: message.owner,
@@ -143,11 +147,14 @@ pub fn reload_weapon(
 
 pub fn rotate_weapons(
     parent_query: Query<&ShootingIntent>,
-    mut weapon_query: Query<(&ChildOf, &mut Transform), With<Weapon>>,
+    mut weapon_query: Query<(&ChildOf, &GlobalTransform, &mut Transform), With<Weapon>>,
 ) {
-    for (parent, mut transform) in weapon_query.iter_mut() {
+    for (parent, global_transform, mut transform) in weapon_query.iter_mut() {
         if let Ok(intent) = parent_query.get(parent.get()) {
-            let angle = intent.direction.to_angle();
+            let direction =
+                (intent.target_position - global_transform.translation().truncate()).normalize();
+
+            let angle = direction.to_angle();
             transform.rotation = Quat::from_rotation_z(angle);
         }
     }

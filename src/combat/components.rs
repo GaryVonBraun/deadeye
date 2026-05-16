@@ -2,13 +2,13 @@ use bevy::prelude::*;
 
 #[derive(Component, Debug)]
 pub struct ShootingIntent {
-    pub direction: Vec2,
+    pub target_position: Vec2,
 }
 
 impl ShootingIntent {
     pub fn default() -> Self {
         ShootingIntent {
-            direction: Vec2::default(),
+            target_position: Vec2::default(),
         }
     }
 }

@@ -310,26 +310,19 @@ pub fn separation_steering(
 }
 
 pub fn ai_shooting_system(
-    mut ai_query: Query<
-        (Entity, &AiController, &Transform, &mut ShootingIntent),
-        With<AiController>,
-    >,
+    mut ai_query: Query<(Entity, &AiController, &mut ShootingIntent), With<AiController>>,
     actor_query: Query<&Transform, With<Actor>>,
     mut messages: MessageWriter<ShootMessage>,
 ) {
-    for (ai_entity, controller, ai_transform, mut ai_shooting_intent) in ai_query.iter_mut() {
+    for (ai_entity, controller, mut ai_shooting_intent) in ai_query.iter_mut() {
         match controller.black_board.action_intent {
             AiActionIntent::Shoot(target) => {
                 if let Ok(target_transform) = actor_query.get(target) {
-                    let direction = (target_transform.translation.truncate()
-                        - ai_transform.translation.truncate())
-                    .normalize();
-
-                    ai_shooting_intent.direction = direction;
+                    ai_shooting_intent.target_position = target_transform.translation.truncate();
 
                     messages.write(ShootMessage {
                         owner: ai_entity,
-                        direction: ai_shooting_intent.direction,
+                        target_position: ai_shooting_intent.target_position,
                         just_pressed: false,
                     });
                 }
