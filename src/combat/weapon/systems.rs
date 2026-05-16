@@ -9,7 +9,7 @@ use crate::{
         health::components::Hitbox,
         messages::{ReloadMessage, ShootMessage},
         projectiles::{bundles::ProjectileBundle, component::Projectile},
-        weapon::components::{Weapon, WeaponRuntime, WeaponState},
+        weapon::components::{FireMode, Weapon, WeaponRuntime, WeaponState},
     },
     core::components::GameEntity,
 };
@@ -39,6 +39,15 @@ pub fn shoot_weapon(
 
                     if weapon_runtime.state != WeaponState::Ready {
                         return;
+                    }
+
+                    match weapon.fire_mode {
+                        FireMode::Semi => {
+                            if !message.just_pressed {
+                                return;
+                            }
+                        }
+                        FireMode::Auto => {}
                     }
 
                     if weapon_runtime.ammo == 0 {

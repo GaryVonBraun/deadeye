@@ -10,6 +10,7 @@ pub struct Weapon {
     pub shoot_sound: String,
     pub reload_sound: String,
     pub dry_sound: String,
+    pub fire_mode: FireMode,
 }
 
 #[derive(Component, Debug)]
@@ -23,4 +24,10 @@ pub enum WeaponState {
     Ready,
     Cooldown { timer: f32 },
     Reloading { timer: f32 },
+}
+
+#[derive(Component, Debug, Clone)]
+pub enum FireMode {
+    Semi,
+    Auto,
 }

@@ -21,7 +21,7 @@ use crate::{
     animation::{components::SpriteAnimator, resources::AnimationDefinitions},
     combat::{
         components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
-        weapon::factories::spawn_debug_weapon,
+        weapon::factories::{spawn_debug_weapon, spawn_pistole_weapon},
     },
     core::io::read_ron_file,
     navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
@@ -88,7 +88,7 @@ pub fn spawn_actor_handler(
 
         match actor.archetype {
             ActorArchetype::Player => {
-                let weapon = spawn_debug_weapon(
+                let weapon = spawn_pistole_weapon(
                     &mut commands,
                     &asset_server,
                     Vec3 {
