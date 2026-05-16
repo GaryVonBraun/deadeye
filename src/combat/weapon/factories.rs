@@ -35,7 +35,7 @@ pub fn spawn_debug_weapon(
         spread_max: 0.3,
         spread_per_shot: 0.2,
         spread_recovery: 1.,
-        movement_spread: 10.,
+        movement_spread: 0.2,
     };
 
     let Some(anim_def) = animation_definitions.defs.get("weapon_default") else {

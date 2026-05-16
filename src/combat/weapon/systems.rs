@@ -2,7 +2,7 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 use rand::RngExt;
 
 use crate::{
-    actor::components::Actor,
+    actor::{components::Actor, locomotion::components::Locomotion},
     audio::resources::AudioRegistry,
     collision::components::CollisionShape,
     combat::{
@@ -18,7 +18,7 @@ use crate::{
 pub fn shoot_weapon(
     mut commands: Commands,
     mut messages: MessageReader<ShootMessage>,
-    children_query: Query<(&Children, &EquippedWeapon), With<Actor>>,
+    children_query: Query<(&Children, &EquippedWeapon, &Locomotion), With<Actor>>,
     mut weapon_query: Query<(&Weapon, &mut WeaponRuntime, &GlobalTransform), With<Weapon>>,
     asset_server: Res<AssetServer>,
     audio_registry: Res<AudioRegistry>,
@@ -26,7 +26,7 @@ pub fn shoot_weapon(
     for message in messages.read() {
         let mut rng = rand::rng();
         // get the children of the shooter entity
-        if let Ok((children, equipped_weapon)) = children_query.get(message.owner) {
+        if let Ok((children, equipped_weapon, locomotion)) = children_query.get(message.owner) {
             for child in children.iter() {
                 // and we check if the child is a weapon
 
@@ -66,25 +66,31 @@ pub fn shoot_weapon(
                         return;
                     }
 
-                    let final_spread = weapon_runtime.current_spread + weapon.spread_base;
 
+                    // when the player moves we add extra spread
+                    let final_spread = if locomotion.move_direction != Vec2::ZERO {
+                        weapon_runtime.current_spread + weapon.spread_base + weapon.movement_spread
+                    } else {
+                        weapon_runtime.current_spread + weapon.spread_base
+                    };
+
+                    // get accurate direction
                     let direction = (message.target_position
                         - global_transform.translation().truncate())
                     .normalize_or_zero();
-
                     let angle = direction.to_angle();
 
+                    // add spread in range
                     let spread_offset = if final_spread > 0.0 {
                         rng.random_range(-final_spread..=final_spread)
                     } else {
                         0.0
                     };
 
+                    // adding spread to the accurate angle
                     let final_angle = angle + spread_offset;
                     let final_direction = Vec2::from_angle(final_angle);
-
                     let rotation = Quat::from_rotation_z(final_angle);
-
                     let mut translation = global_transform.translation();
 
                     translation.z = 1.;
@@ -177,13 +183,16 @@ pub fn rotate_weapons(
 
 pub fn weapon_runtime_system(time: Res<Time>, mut query: Query<(&Weapon, &mut WeaponRuntime)>) {
     for (weapon_config, mut weapon_runtime) in query.iter_mut() {
-        weapon_runtime.current_spread -= weapon_config.spread_recovery * time.delta_secs();
 
+
+        // handle spread recovery
+        weapon_runtime.current_spread -= weapon_config.spread_recovery * time.delta_secs();
         weapon_runtime.current_spread = weapon_runtime
             .current_spread
             .clamp(0.0, weapon_config.spread_max);
         info!(weapon_runtime.current_spread);
 
+        // handle weapon cooldown and reloading
         match weapon_runtime.state {
             WeaponState::Ready => {}
             WeaponState::Cooldown { mut timer } => {
