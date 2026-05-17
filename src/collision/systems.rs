@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use bevy::{ecs::batching::BatchingStrategy, prelude::*};
+use bevy::{ecs::batching::BatchingStrategy, platform::collections::HashSet, prelude::*};
 
 use crate::{
     actor::{components::Actor, locomotion::components::Locomotion},
@@ -115,22 +115,30 @@ pub fn actor_obstruction_collision(
             let cx = (pos.x / cell_size).floor() as i32;
             let cy = (pos.y / cell_size).floor() as i32;
 
+            let mut seen: HashSet<(u32, u32)> = HashSet::new();
+            let mut total_push = Vec2::ZERO;
+
             for dx in -1i32..=1 {
                 for dy in -1i32..=1 {
                     for (neighbor_pos, neighbor_collision) in
                         prop_spatial_hash.neighbors(cx + dx, cy + dy)
                     {
+                        let key = (neighbor_pos.x.to_bits(), neighbor_pos.y.to_bits());
+                        if !seen.insert(key) {
+                            continue;
+                        }
                         if let Some(push) = calculate_push_vector(
                             pos,
                             actor_collision,
                             *neighbor_pos,
                             neighbor_collision,
                         ) {
-                            actor_transform.translation += push.extend(0.);
+                            total_push += push;
                         }
                     }
                 }
             }
+            actor_transform.translation += total_push.extend(0.);
         });
 }
 
