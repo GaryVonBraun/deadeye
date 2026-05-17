@@ -2,6 +2,7 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
 };
+use bevy_egui::EguiContexts;
 
 use crate::{
     combat::{
@@ -89,10 +90,17 @@ pub fn player_combat_input(
     mut reload_writer: MessageWriter<ReloadMessage>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     keys: Res<ButtonInput<KeyCode>>,
+    mut contexts: EguiContexts,
 ) {
     let Ok((entity, shooting_intent)) = player_query.single_mut() else {
         return;
     };
+    let Ok(ctx) = contexts.ctx_mut() else {
+        return;
+    };
+    if ctx.is_pointer_over_area() {
+        return;
+    }
 
     if mouse_buttons.just_pressed(MouseButton::Left) {
         //LINK - src/combat/weapon/systems.rs:8

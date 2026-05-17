@@ -1,4 +1,8 @@
 use bevy::prelude::*;
+use bevy_egui::{
+    EguiContexts,
+    egui::{self, Ui},
+};
 
 use crate::{
     actor::components::Actor,
@@ -8,7 +12,7 @@ use crate::{
         components::{Collision, CollisionShape2d},
     },
     combat::health::components::{Hitbox, Hurtbox},
-    debug::components::DebugMovementIntent,
+    debug::{components::DebugMovementIntent, resources::DebugOptions},
 };
 
 //TEMPORARY - This is a quick implementation to see if the locomotion system works
@@ -136,4 +140,23 @@ pub fn debug_target_entity_gizmo(
                 .with_tip_length(10.);
         }
     }
+}
+
+pub fn display_debug_menu(
+    mut contexts: EguiContexts,
+    mut debug_options: ResMut<DebugOptions>,
+) -> Result {
+    egui::Window::new("Debug Menu")
+        .resizable(false)
+        .show(contexts.ctx_mut()?, |ui| {
+            ui.label("Items");
+            ui.toggle_value(&mut debug_options.vision, "Actor vision");
+            ui.toggle_value(&mut debug_options.visible_actors, "Visible actors");
+            ui.toggle_value(&mut debug_options.target_entity, "Target Actor");
+            ui.toggle_value(&mut debug_options.hit_box, "Hitbox");
+            ui.toggle_value(&mut debug_options.hurt_box, "Hurtbox");
+            ui.toggle_value(&mut debug_options.collision, "Collision");
+        });
+
+    Ok(())
 }
