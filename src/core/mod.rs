@@ -31,6 +31,10 @@ impl Plugin for CorePlugin {
             OnExit(AppState::InGame),
             (despawn_game_entities, remove_resources),
         );
+        app.add_systems(
+            OnExit(AppState::Editor),
+            (despawn_game_entities, remove_resources),
+        );
         // app.add_systems(EguiPrimaryContextPass, fps_ui);
     }
 }
