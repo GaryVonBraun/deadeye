@@ -12,8 +12,8 @@ impl Plugin for ProjectilePlugin {
         app.add_systems(
             Update,
             (
-                move_projectiles,
                 projectile_hit,
+                move_projectiles,
                 // projectile_collision
             )
                 .chain()

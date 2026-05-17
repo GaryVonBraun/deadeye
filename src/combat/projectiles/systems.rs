@@ -29,7 +29,6 @@ pub fn move_projectiles(
     }
 }
 
-//FIXME - There seems to be an issue making projectiles phantom tunnel.
 pub fn projectile_hit(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Projectile, &Transform, &Hitbox)>,

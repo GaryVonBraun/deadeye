@@ -66,7 +66,6 @@ pub fn shoot_weapon(
                         return;
                     }
 
-
                     // when the player moves we add extra spread
                     let final_spread = if locomotion.move_direction != Vec2::ZERO {
                         weapon_runtime.current_spread + weapon.spread_base + weapon.movement_spread
@@ -183,14 +182,11 @@ pub fn rotate_weapons(
 
 pub fn weapon_runtime_system(time: Res<Time>, mut query: Query<(&Weapon, &mut WeaponRuntime)>) {
     for (weapon_config, mut weapon_runtime) in query.iter_mut() {
-
-
         // handle spread recovery
         weapon_runtime.current_spread -= weapon_config.spread_recovery * time.delta_secs();
         weapon_runtime.current_spread = weapon_runtime
             .current_spread
             .clamp(0.0, weapon_config.spread_max);
-        info!(weapon_runtime.current_spread);
 
         // handle weapon cooldown and reloading
         match weapon_runtime.state {
