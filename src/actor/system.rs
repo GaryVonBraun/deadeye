@@ -18,7 +18,7 @@ use crate::{
         bundles::{BaseAiBundle, SentientAiBundle},
         components::{AiController, SeekNearestTarget},
     },
-    animation::{components::SpriteAnimator, resources::AnimationDefinitions},
+    animation::{components::SpriteAnimator, resources::AnimationRegistry},
     combat::{
         components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
         weapon::factories::{spawn_debug_weapon, spawn_pistole_weapon},
@@ -62,7 +62,7 @@ pub fn spawn_actor_handler(
     mut spawn_actor_reader: MessageReader<SpawnActorMessage>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    animation_definitions: Res<AnimationDefinitions>,
+    animation_registry: Res<AnimationRegistry>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let Ok(definitions) =
@@ -90,14 +90,12 @@ pub fn spawn_actor_handler(
             ActorArchetype::Player => {
                 let weapon = spawn_debug_weapon(
                     &mut commands,
-                    &asset_server,
                     Vec3 {
                         x: 0.0,
                         y: -4.,
                         z: 2.,
                     },
-                    &animation_definitions,
-                    &mut texture_atlas_layouts,
+                    &animation_registry,
                 );
 
                 // let weapon2 = spawn_debug_weapon(
@@ -112,25 +110,14 @@ pub fn spawn_actor_handler(
                 //     &mut texture_atlas_layouts,
                 // );
 
-                let Some(anim_def) = animation_definitions.defs.get("soldier_default") else {
+                let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
                     error!("animation def not found");
-                    continue;
+                    return;
                 };
-
-                let default_clip_name = &anim_def.default;
-                let Some(clip) = anim_def.clips.get(default_clip_name) else {
-                    error!("default clip not found");
-                    continue;
+                let Some(clip) = anim_def.clips.get(&anim_def.default) else {
+                    error!("clip {} not found", anim_def.default);
+                    return;
                 };
-
-                let layout = TextureAtlasLayout::from_grid(
-                    UVec2::new(clip.frame_size.0, clip.frame_size.1),
-                    clip.columns as u32,
-                    clip.rows as u32,
-                    None,
-                    None,
-                );
-                let layout_handle = texture_atlas_layouts.add(layout);
 
                 let entity = commands
                     .spawn((
@@ -140,26 +127,15 @@ pub fn spawn_actor_handler(
                         ),
                         EquippedWeapon { entity: weapon },
                         Sprite {
-                            image: asset_server.load_with_settings(
-                                &clip.texture,
-                                |settings: &mut ImageLoaderSettings| {
-                                    settings.sampler =
-                                        ImageSampler::Descriptor(ImageSamplerDescriptor {
-                                            min_filter: ImageFilterMode::Nearest,
-                                            mag_filter: ImageFilterMode::Nearest,
-                                            mipmap_filter: ImageFilterMode::Nearest,
-                                            ..default()
-                                        });
-                                },
-                            ),
+                            image: clip.image_handle.clone(),
                             texture_atlas: Some(TextureAtlas {
-                                layout: layout_handle,
+                                layout: clip.layout.clone(),
                                 index: 0,
                             }),
                             ..default()
                         },
                         SpriteAnimator {
-                            current_clip: default_clip_name.clone(),
+                            current_clip: anim_def.default.clone(),
                             frame_timer: Timer::from_seconds(
                                 1.0 / clip.fps as f32,
                                 TimerMode::Repeating,
@@ -200,25 +176,15 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Zombie => {
-                let Some(anim_def) = animation_definitions.defs.get("zombie_default") else {
+                let Some(anim_def) = animation_registry.entries.get("zombie_default") else {
                     error!("animation def not found");
                     continue;
                 };
 
-                let default_clip_name = &anim_def.default;
-                let Some(clip) = anim_def.clips.get(default_clip_name) else {
+                let Some(clip) = anim_def.clips.get(&anim_def.default) else {
                     error!("default clip not found");
                     continue;
                 };
-
-                let layout = TextureAtlasLayout::from_grid(
-                    UVec2::new(clip.frame_size.0, clip.frame_size.1),
-                    clip.columns as u32,
-                    clip.rows as u32,
-                    None,
-                    None,
-                );
-                let layout_handle = texture_atlas_layouts.add(layout);
 
                 let entity = commands
                     .spawn((
@@ -232,26 +198,15 @@ pub fn spawn_actor_handler(
                         FlowFieldNavigator,
                         Zombie,
                         Sprite {
-                            image: asset_server.load_with_settings(
-                                &clip.texture,
-                                |settings: &mut ImageLoaderSettings| {
-                                    settings.sampler =
-                                        ImageSampler::Descriptor(ImageSamplerDescriptor {
-                                            min_filter: ImageFilterMode::Nearest,
-                                            mag_filter: ImageFilterMode::Nearest,
-                                            mipmap_filter: ImageFilterMode::Nearest,
-                                            ..default()
-                                        });
-                                },
-                            ),
+                            image: clip.image_handle.clone(),
                             texture_atlas: Some(TextureAtlas {
-                                layout: layout_handle,
+                                layout: clip.layout.clone(),
                                 index: 0,
                             }),
                             ..default()
                         },
                         SpriteAnimator {
-                            current_clip: default_clip_name.clone(),
+                            current_clip: anim_def.default.clone(),
                             frame_timer: Timer::from_seconds(
                                 1.0 / clip.fps as f32,
                                 TimerMode::Repeating,

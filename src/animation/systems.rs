@@ -2,16 +2,14 @@ use bevy::{
     image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
 };
+use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::path::PathBuf;
 
 use crate::{
     actor::components::Zombie,
     ai::components::AiMovementIntent,
-    animation::{
-        components::{AnimationFinished, SpriteAnimator},
-        resources::AnimationDefinitions,
-    },
+    animation::{components::*, resources::*},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
         health::components::Dead,
@@ -21,14 +19,93 @@ use crate::{
     player::components::{Player, PlayerMovementIntent},
 };
 
+// pub fn load_animation_definitions(mut commands: Commands) {
+//     info!("Loading animation definitions");
+
+//     let Ok(animation_definitions) = read_ron_file::<AnimationRegistry>(PathBuf::from(
+//         "content/animation/animation_definitions.ron",
+//     )) else {
+//         error!("Failed to find animation definitions");
+//         return;
+//     };
+
+//     info!("Loaded: {:?}", animation_definitions);
+
+//     commands.insert_resource(animation_definitions);
+// }
+
+pub fn setup_animations(
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut commands: Commands,
+) {
+    info!("setting up audio");
+    let Ok(animation_entries) = read_ron_file::<Vec<AnimationDefinitions>>(PathBuf::from(
+        "content/animation/animation_definitions.ron",
+    )) else {
+        error!("failed to find audio registry");
+        return;
+    };
+    let mut registry_entries: HashMap<String, LoadedAnimation> = HashMap::new();
+    for definition in animation_entries {
+        let mut clips: HashMap<String, LoadedAnimationClip> = HashMap::new();
+
+        for clip in definition.clips {
+            let image: Handle<Image> = asset_server.load_with_settings(
+                &clip.texture,
+                |settings: &mut ImageLoaderSettings| {
+                    settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                        min_filter: ImageFilterMode::Nearest,
+                        mag_filter: ImageFilterMode::Nearest,
+                        mipmap_filter: ImageFilterMode::Nearest,
+                        ..default()
+                    });
+                },
+            );
+            let layout = TextureAtlasLayout::from_grid(
+                UVec2::new(clip.frame_size.0, clip.frame_size.1),
+                clip.columns,
+                clip.rows,
+                None,
+                None,
+            );
+            let layout_handle = texture_atlas_layouts.add(layout);
+            // if let Some(atlas) = sprite.texture_atlas.as_mut() {
+            //     atlas.layout = layout_handle;
+            //     atlas.index = 0;
+            // }
+
+            clips.insert(
+                clip.name,
+                LoadedAnimationClip {
+                    image_handle: image,
+                    layout: layout_handle,
+                    frame_size: clip.frame_size,
+                    columns: clip.columns,
+                    rows: clip.rows,
+                    fps: clip.fps,
+                    looping: clip.looping,
+                    freeze: clip.freeze,
+                },
+            );
+        }
+        let animation_entry: LoadedAnimation = LoadedAnimation {
+            default: definition.default,
+            clips,
+        };
+        registry_entries.insert(definition.name, animation_entry);
+    }
+    commands.insert_resource(AnimationRegistry {
+        entries: registry_entries,
+    });
+}
+
 pub fn swap_clip_texture(
     sprite: &mut Sprite,
     animator: &mut SpriteAnimator,
-    animation_definitions: &AnimationDefinitions,
-    asset_server: &AssetServer,
-    texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
+    animation_registry: &AnimationRegistry,
 ) {
-    let Some(anim_def) = animation_definitions.defs.get(&animator.def_id) else {
+    let Some(anim_def) = animation_registry.entries.get(&animator.def_id) else {
         error!("animation def not found");
         return;
     };
@@ -39,64 +116,25 @@ pub fn swap_clip_texture(
 
     // info!("swapping texture");
 
-    sprite.image =
-        asset_server.load_with_settings(&clip.texture, |settings: &mut ImageLoaderSettings| {
-            settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
-                min_filter: ImageFilterMode::Nearest,
-                mag_filter: ImageFilterMode::Nearest,
-                mipmap_filter: ImageFilterMode::Nearest,
-                ..default()
-            });
-        });
-    let layout = TextureAtlasLayout::from_grid(
-        UVec2::new(clip.frame_size.0, clip.frame_size.1),
-        clip.columns,
-        clip.rows,
-        None,
-        None,
-    );
-    let layout_handle = texture_atlas_layouts.add(layout);
+    sprite.image = clip.image_handle.clone();
+
     if let Some(atlas) = sprite.texture_atlas.as_mut() {
-        atlas.layout = layout_handle;
+        atlas.layout = clip.layout.clone();
         atlas.index = 0;
     }
 }
-
-pub fn load_animation_definitions(mut commands: Commands) {
-    info!("Loading animation definitions");
-
-    let Ok(animation_definitions) = read_ron_file::<AnimationDefinitions>(PathBuf::from(
-        "content/animation/animation_definitions.ron",
-    )) else {
-        error!("Failed to find animation definitions");
-        return;
-    };
-
-    info!("Loaded: {:?}", animation_definitions);
-
-    commands.insert_resource(animation_definitions);
-}
-
 pub fn sprite_animator(
     mut animator_query: Query<(Entity, &mut Sprite, &mut SpriteAnimator)>,
-    animation_definitions: Res<AnimationDefinitions>,
+    animation_definitions: Res<AnimationRegistry>,
     timer: Res<Time>,
-    asset_server: Res<AssetServer>,
     mut commands: Commands,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for (entity, mut sprite, mut animator) in animator_query.iter_mut() {
         sprite.flip_x = animator.flip_x;
         sprite.flip_y = animator.flip_y;
         if animator.clip_dirty {
             animator.clip_dirty = false;
-            swap_clip_texture(
-                &mut sprite,
-                &mut animator,
-                &animation_definitions,
-                &asset_server,
-                &mut texture_atlas_layouts,
-            );
+            swap_clip_texture(&mut sprite, &mut animator, &animation_definitions);
         }
 
         animator.frame_timer.tick(timer.delta());
@@ -106,7 +144,7 @@ pub fn sprite_animator(
 
         animator.current_frame += 1;
 
-        let Some(anim_def) = animation_definitions.defs.get(&animator.def_id) else {
+        let Some(anim_def) = animation_definitions.entries.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
         };
@@ -152,11 +190,11 @@ pub fn player_animation_state(
         ),
         With<Player>,
     >,
-    animation_defs: Res<AnimationDefinitions>,
+    animation_defs: Res<AnimationRegistry>,
 ) {
     for (transform, movement_intent, shooting_intent, mut animator, dead) in player_query.iter_mut()
     {
-        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+        let Some(anim_def) = animation_defs.entries.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
         };
@@ -202,10 +240,10 @@ pub fn zombie_animation_state(
         ),
         With<Zombie>,
     >,
-    animation_defs: Res<AnimationDefinitions>,
+    animation_defs: Res<AnimationRegistry>,
 ) {
     for (intent, mut animator, melee_intent, dead) in zombie_query.iter_mut() {
-        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+        let Some(anim_def) = animation_defs.entries.get(&animator.def_id) else {
             error!("animation def not found");
             continue;
         };
@@ -245,13 +283,13 @@ pub fn zombie_animation_state(
 
 pub fn weapon_animation_state(
     mut weapon_query: Query<(&mut SpriteAnimator, &Transform), With<Weapon>>,
-    animation_defs: Res<AnimationDefinitions>,
+    // animation_defs: Res<AnimationRegistry>,
 ) {
     for (mut animator, transform) in weapon_query.iter_mut() {
-        let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
-            error!("animation def not found");
-            continue;
-        };
+        // let Some(anim_def) = animation_defs.defs.get(&animator.def_id) else {
+        //     error!("animation def not found");
+        //     continue;
+        // };
 
         let (_, _, angle) = transform.rotation.to_euler(EulerRot::XYZ);
 
