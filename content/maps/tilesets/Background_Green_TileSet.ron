@@ -1,0 +1,20 @@
+(
+    tile_size: 16.0,
+    chunk_size: 16.0,
+
+    name: "Grassland",
+    atlas: "tilesets/Background_Green_TileSet.png",
+
+    width: 24,
+    height: 17,
+
+    empty_tile: (
+        15,
+        0,
+    ),
+
+    default_grow_tile: (
+        15,
+        0,
+    ),
+)

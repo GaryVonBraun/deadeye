@@ -1,0 +1,17 @@
+[AnimationDefinition (
+    default: "idle",
+    name: "default_animation",
+    clips: [
+        ClipDefinition (
+            name: "idle",
+            texture: "actors/soldier_default/Run.png",
+            frame_size: (128, 128),
+            columns: 8,
+            rows: 1,
+            fps: 8,
+            looping: true,
+            freeze: false,
+            ),
+        ]
+    )
+]

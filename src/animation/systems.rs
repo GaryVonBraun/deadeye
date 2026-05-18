@@ -19,28 +19,13 @@ use crate::{
     player::components::{Player, PlayerMovementIntent},
 };
 
-// pub fn load_animation_definitions(mut commands: Commands) {
-//     info!("Loading animation definitions");
-
-//     let Ok(animation_definitions) = read_ron_file::<AnimationRegistry>(PathBuf::from(
-//         "content/animation/animation_definitions.ron",
-//     )) else {
-//         error!("Failed to find animation definitions");
-//         return;
-//     };
-
-//     info!("Loaded: {:?}", animation_definitions);
-
-//     commands.insert_resource(animation_definitions);
-// }
-
 pub fn setup_animations(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
 ) {
     info!("setting up audio");
-    let Ok(animation_entries) = read_ron_file::<Vec<AnimationDefinitions>>(PathBuf::from(
+    let Ok(animation_entries) = read_ron_file::<Vec<AnimationDefinition>>(PathBuf::from(
         "content/animation/animation_definitions.ron",
     )) else {
         error!("failed to find audio registry");

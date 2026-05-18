@@ -8,7 +8,7 @@ pub struct AnimationRegistry {
 }
 
 #[derive(Debug, Resource, Serialize, Deserialize)]
-pub struct AnimationDefinitions {
+pub struct AnimationDefinition {
     pub default: String,
     pub name: String,
     pub clips: Vec<ClipDefinition>,
