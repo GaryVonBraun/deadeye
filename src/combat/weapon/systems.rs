@@ -94,11 +94,13 @@ pub fn shoot_weapon(
 
                     translation.z = 1.;
 
-                    let Some(asset) = audio_registry.sounds.get(&weapon.shoot_sound) else {
+                    if let Some(asset) = audio_registry.sounds.get(&weapon.shoot_sound) {
+                        commands
+                            .spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
+                    } else {
+                        error!("sound: {:?} , not found", weapon.shoot_sound);
                         return;
                     };
-
-                    commands.spawn((AudioPlayer::new(asset.clone()), PlaybackSettings::DESPAWN));
 
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {

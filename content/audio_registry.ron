@@ -1,6 +1,6 @@
 [
     AudioEntry (
-    id: "pistol_shot",
+    id: "weapon_pistol_fire",
     path: "audio/weapons/pistol_shot.ogg",
     )
 ]
