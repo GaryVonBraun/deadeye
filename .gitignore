@@ -1,1 +1,6 @@
 /target
+/content/maps/manifest.ron
+/content/maps/map_data
+
+/content/missions/manifest.ron
+/content/missions/mission_data
