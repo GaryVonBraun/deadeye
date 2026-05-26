@@ -2,5 +2,13 @@
     AudioEntry (
     id: "weapon_pistol_fire",
     path: "audio/weapons/pistol_shot.ogg",
+    ),
+    AudioEntry (
+    id: "weapon_ak_reload",
+    path: "audio/weapons/AK Reload Full.ogg",
+    ),
+    AudioEntry (
+    id: "weapon_pistol_dry",
+    path: "audio/weapons/Pistol Dry Fire.ogg",
     )
 ]
