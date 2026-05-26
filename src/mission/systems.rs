@@ -88,10 +88,10 @@ pub fn load_mission(
         //     }
         // }
 
-        // spawn_actor_writer.write(SpawnActorMessage {
-        //     id: "npc".to_string(),
-        //     position: Vec2 { x: -100., y: -110. },
-        // });
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "npc".to_string(),
+            position: Vec2 { x: -50., y: -50. },
+        });
     }
 }
 
@@ -125,7 +125,7 @@ pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessag
 }
 
 fn create_map_for_mission() -> MissionMap {
-    let raw_matrix: Vec<Vec<u32>> = vec![vec![5, 5], vec![5, 5]];
+    let raw_matrix: Vec<Vec<u32>> = vec![vec![5, 5], vec![5]];
 
     let mut rng = rand::rng();
 

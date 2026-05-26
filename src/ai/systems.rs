@@ -28,17 +28,28 @@ use crate::{
 };
 
 pub fn vision_targeting_system(
-    mut ai_query: Query<(&Transform, &mut AiController), With<Vision>>,
-    actor_query: Query<(Entity, &Transform), With<Actor>>,
+    mut ai_query: Query<(&Transform, &mut AiController, &Team), With<Vision>>,
+    actor_query: Query<(Entity, &Transform, &Team), (With<Actor>, Without<Dead>)>,
 ) {
-    for (ai_transform, mut ai_controller) in ai_query.iter_mut() {
+    for (ai_transform, mut ai_controller, team) in ai_query.iter_mut() {
         let mut closest_distance = f32::MAX;
         let mut closest_entity: Option<Entity> = None;
 
+        if ai_controller.black_board.visible_actors.is_empty() {
+            ai_controller.black_board.current_target = None;
+            continue;
+        }
+
         for visible_entity in ai_controller.black_board.visible_actors.iter() {
-            let Ok((actor_entity, actor_transform)) = actor_query.get(*visible_entity) else {
+            let Ok((actor_entity, actor_transform, target_team)) = actor_query.get(*visible_entity)
+            else {
                 continue;
             };
+
+            if !matches!(get_standing(&team.0, &target_team.0), TeamStanding::Hostile) {
+                continue;
+            }
+
             let distance = Vec2::distance(
                 ai_transform.translation.truncate(),
                 actor_transform.translation.truncate(),

@@ -102,7 +102,7 @@ fn collision_shape_gizmo<A: CollisionShape2d>(
 }
 
 pub fn debug_visible_entities_gizmo(
-    ai_query: Query<(&Transform, &AiController)>,
+    ai_query: Query<(&Transform, &AiController), With<Vision>>,
     actor_query: Query<&Transform, With<Actor>>,
     mut gizmos: Gizmos,
 ) {
@@ -115,7 +115,7 @@ pub fn debug_visible_entities_gizmo(
             gizmos.line_2d(
                 ai_transform.translation.truncate(),
                 actor_transform.translation.truncate(),
-                Color::srgba(0.5, 0.5, 0.5, 0.1),
+                Color::srgba(0.5, 0.5, 0.5, 0.8),
             );
         }
     }

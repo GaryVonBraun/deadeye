@@ -3,9 +3,25 @@
         (
             id: "player",
             archetype: Player,
-            health: 120.0,
+            health: 10020.0,
             speed: 50,
             vision_range: 14.0,
+            sprite: "sprites/soldier_default.png",
+            team: Team(Player),
+            collision_radius: 8.,
+
+            // melee stats
+            melee_delay: 0.2,
+            melee_cooldown: 1.0,
+            melee_range: 1.4,
+            melee_damage: 18.0,
+        ),
+        (
+            id: "npc",
+            archetype: Human,
+            health: 120.0,
+            speed: 50,
+            vision_range: 200.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Player),
             collision_radius: 8.,

@@ -80,7 +80,7 @@ pub fn spawn_actor_handler(
             .iter()
             .find(|actor| actor.id == message.id)
         else {
-            info!("Failed to find actor with id: {}", message.id);
+            error!("Failed to find actor with id: {}", message.id);
             return;
         };
 
@@ -159,20 +159,59 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Human => {
+                error!("see if it gets here?");
+                let weapon = spawn_debug_weapon(
+                    &mut commands,
+                    Vec3 {
+                        x: 0.0,
+                        y: -4.,
+                        z: 2.,
+                    },
+                    &animation_registry,
+                );
+
+                let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
+                    error!("animation def not found");
+                    return;
+                };
+                let Some(clip) = anim_def.clips.get(&anim_def.default) else {
+                    error!("clip {} not found", anim_def.default);
+                    return;
+                };
+
                 let entity: Entity = commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
                             actor,
                         ),
+                        Sprite {
+                            image: clip.image_handle.clone(),
+                            texture_atlas: Some(TextureAtlas {
+                                layout: clip.layout.clone(),
+                                index: 0,
+                            }),
+                            ..default()
+                        },
+                        EquippedWeapon { entity: weapon },
+                        FlowFieldTarget::default(),
                         SentientAiBundle::with_vision_range(actor.vision_range),
                         Locomotion::with_speed(actor.speed),
-                        FlowFieldTarget::default(),
-                        AppearanceBundle {
-                            sprite: Sprite::from_image(asset_server.load("debug_ball.png")),
-                            appearance: Appearance,
+                        SpriteAnimator {
+                            current_clip: anim_def.default.clone(),
+                            frame_timer: Timer::from_seconds(
+                                1.0 / clip.fps as f32,
+                                TimerMode::Repeating,
+                            ),
+                            current_frame: 0,
+                            def_id: "soldier_default".to_string(),
+                            clip_dirty: false,
+                            flip_x: false,
+                            flip_y: false,
                         },
+                        ShootingIntent::default(),
                     ))
+                    .add_child(weapon)
                     .id();
             }
             ActorArchetype::Zombie => {

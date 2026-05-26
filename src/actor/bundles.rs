@@ -24,7 +24,10 @@ impl CoreActorBundle {
         CoreActorBundle {
             actor: Actor,
             transform: Transform::from_translation(translation),
-            health: Health::default(),
+            health: Health {
+                max: actor.health,
+                current: actor.health,
+            },
             hurtbox: Hurtbox {
                 //TEMPORARY - for now its a hardcoded size, will probably be properly implement when actual sprites are done
                 shape: CollisionShape::Rect {

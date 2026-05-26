@@ -10,7 +10,6 @@ pub fn vision_detection_system(
     actor_query: Query<(Entity, &Transform), With<Actor>>,
 ) {
     for (ai_entity, ai_transform, ai_vision, mut ai_controller) in ai_query.iter_mut() {
-
         let mut visible_actors: Vec<Entity> = [].to_vec();
 
         for (actor_entity, actor_transform) in actor_query.iter() {
@@ -24,10 +23,6 @@ pub fn vision_detection_system(
             ) < ai_vision.range
             {
                 visible_actors.push(actor_entity);
-                // info!(
-                //     "actor: {:?} in in vision of actor {:?}",
-                //     ai_entity, actor_entity
-                // );
             }
         }
 
