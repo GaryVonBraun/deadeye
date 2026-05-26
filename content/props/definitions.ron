@@ -1,3 +1,21 @@
-PropDefinitions (
-    props: []
+PropDefinitions(
+    props: [
+        (
+            name: "Wall_16",
+            sprite: "prototype_wall_16",
+
+            size: (16.0, 16.0),
+
+            tile_aligned: true,
+
+            collision: (
+                shape: Rect(
+                    width: 16.0,
+                    height: 16.0,
+                ),
+
+                offset: (0.0, 0.0),
+            ),
+        ),
+    ],
 )
