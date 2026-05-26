@@ -25,6 +25,32 @@
             ),
         ],
     ),
+     AnimationDefinition (
+    default: "idle",
+    name: "zombie_default",
+    clips: [
+        ClipDefinition (
+            name: "idle",
+            texture: "actors/zombie/Idle.png",
+            frame_size: (11, 15),
+            columns: 6,
+            rows: 1,
+            fps: 8,
+            looping: true,
+            freeze: false,
+            ),
+        ClipDefinition (
+            name: "walk",
+            texture: "actors/zombie/Walk.png",
+            frame_size: (13, 15),
+            columns: 6,
+            rows: 1,
+            fps: 8,
+            looping: true,
+            freeze: false,
+            ),
+        ],
+    ),
     AnimationDefinition (
     default: "idle",
     name: "weapon_default",

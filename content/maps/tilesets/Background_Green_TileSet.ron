@@ -9,12 +9,12 @@
     height: 17,
 
     empty_tile: (
-        15,
         0,
+        16,
     ),
 
     default_grow_tile: (
-        15,
+        5,
         0,
     ),
 )

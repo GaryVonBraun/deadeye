@@ -125,7 +125,7 @@ pub fn create_new_mission(mut load_editor_writer: MessageWriter<LoadEditorMessag
 }
 
 fn create_map_for_mission() -> MissionMap {
-    let raw_matrix: Vec<Vec<u32>> = vec![vec![2, 2], vec![2, 2]];
+    let raw_matrix: Vec<Vec<u32>> = vec![vec![5, 5], vec![5, 5]];
 
     let mut rng = rand::rng();
 

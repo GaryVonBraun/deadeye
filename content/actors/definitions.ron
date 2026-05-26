@@ -20,7 +20,7 @@
             id: "zombie",
             archetype: Zombie,
             health: 120.0,
-            speed: 100,
+            speed: 40,
             vision_range: 14.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Zombie),
