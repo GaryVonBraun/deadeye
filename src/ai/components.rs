@@ -105,3 +105,9 @@ impl AiController {
         }
     }
 }
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AiSet {
+    Perception,
+    Targeting,
+    Decision,
+}

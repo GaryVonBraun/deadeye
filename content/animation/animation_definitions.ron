@@ -1,17 +1,39 @@
 [AnimationDefinition (
     default: "idle",
-    name: "default_animation",
+    name: "soldier_default",
     clips: [
         ClipDefinition (
             name: "idle",
-            texture: "actors/soldier_default/Run.png",
-            frame_size: (128, 128),
-            columns: 8,
+            texture: "actors/soldier_default/Idle.png",
+            frame_size: (64, 64),
+            columns: 1,
             rows: 1,
             fps: 8,
             looping: true,
             freeze: false,
             ),
-        ]
+        ClipDefinition (
+            name: "walk",
+            texture: "actors/soldier_default/Walk.png",
+            frame_size: (64, 64),
+            columns: 3,
+            rows: 3,
+            fps: 8,
+            looping: true,
+            freeze: false,
+            ),
+        ClipDefinition (
+            name: "run",
+            texture: "actors/soldier_default/Run.png",
+            frame_size: (64, 64),
+            columns: 3,
+            rows: 3,
+            fps: 16,
+            looping: true,
+            freeze: false,
+            ),
+        ],
+        
+        
     )
 ]
