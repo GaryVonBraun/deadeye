@@ -195,7 +195,7 @@ pub fn player_animation_state(
         let mut target_clip_name = if movement_intent.direction == Vec2::default() {
             "idle"
         } else {
-            "walk"
+            "run"
         };
 
         if dead != None {
