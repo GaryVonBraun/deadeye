@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::ai::{components::*, vision::components::Vision};
+use crate::ai::{components::*, directive::components::AiDirective, vision::components::Vision};
 
 #[derive(Bundle)]
 pub struct BaseAiBundle {
@@ -26,6 +26,7 @@ impl BaseAiBundle {
 #[derive(Bundle)]
 pub struct SentientAiBundle {
     base_ai: BaseAiBundle,
+    directive: AiDirective,
     vision: Vision,
 }
 
@@ -41,6 +42,7 @@ impl SentientAiBundle {
                     move_direction: Vec2::default(),
                 },
             },
+            directive: AiDirective::SearchAndDestroy,
             vision: Vision {
                 range: vision_range,
             },

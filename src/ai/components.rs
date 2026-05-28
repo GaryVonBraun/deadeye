@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-use crate::ai::tree::{
-    BtNode, Selector, Sequence,
-    actions::{ActionIdle, ActionMelee, ActionShoot, LocomotionChase, LocomotionIdle},
-    conditions::HasTarget,
+use crate::ai::{
+    directive::components::AiDirective,
+    tree::{BtNode, Selector, Sequence, actions::*, conditions::HasTarget},
 };
 
 #[derive(Component, Default, Debug)]
@@ -31,6 +30,7 @@ pub struct Blackboard {
     pub current_target: Option<Entity>,
     pub locomotion_intent: AiLocomotionIntent,
     pub action_intent: AiActionIntent,
+    pub directive: AiDirective,
 }
 
 #[derive(Component, Debug)]
@@ -70,6 +70,7 @@ impl AiController {
                 current_target: None,
                 locomotion_intent: AiLocomotionIntent::Idle,
                 action_intent: AiActionIntent::Idle,
+                directive: AiDirective::Idle,
             },
             action_tree,
             locomotion_tree,
@@ -99,6 +100,7 @@ impl AiController {
                 current_target: None,
                 locomotion_intent: AiLocomotionIntent::Idle,
                 action_intent: AiActionIntent::Idle,
+                directive: AiDirective::Idle,
             },
             action_tree,
             locomotion_tree,

@@ -13,3 +13,14 @@ impl BtNode for HasTarget {
         }
     }
 }
+
+pub struct FollowingTarget;
+
+impl BtNode for FollowingTarget {
+    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+        match blackboard.current_target {
+            Some(_) => BtStatus::Success,
+            None => BtStatus::Failure,
+        }
+    }
+}

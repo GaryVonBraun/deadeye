@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 
 use crate::{
-    ai::{systems::*, tree::BehaviorTreePlugin, vision::VisionPlugin},
-    core::states::{AppState, SimulationState},
+    ai::{directive::DirectivePlugin, systems::*, tree::BehaviorTreePlugin, vision::VisionPlugin},
+    core::states::SimulationState,
     map::resources::ActiveMap,
 };
 
 pub mod bundles;
 pub mod components;
+mod directive;
 mod systems;
 pub mod tree;
 pub mod vision;
@@ -20,7 +21,7 @@ impl Plugin for AiPlugin {
             Update,
             (AiSet::Perception, AiSet::Targeting, AiSet::Decision).chain(),
         );
-        app.add_plugins((VisionPlugin, BehaviorTreePlugin));
+        app.add_plugins((VisionPlugin, BehaviorTreePlugin, DirectivePlugin));
         app.add_systems(
             Update,
             (
