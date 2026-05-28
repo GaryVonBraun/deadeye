@@ -191,6 +191,7 @@ pub fn flow_field_navigation(
         );
 }
 
+//Deprecated -  
 const SEPARATION_RADIUS: f32 = 32.0;
 const SEPARATION_RADIUS_SQ: f32 = SEPARATION_RADIUS * SEPARATION_RADIUS;
 const SEPARATION_WEIGHT: f32 = 500.0;

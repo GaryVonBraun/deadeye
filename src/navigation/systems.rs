@@ -1,15 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    map::{
-        io::{
-            operations::{read_map_data, read_tileset},
-            paths::tileset_path,
-            types::MapBounds,
-        },
-        resources::ActiveMap,
-        utility::world_to_grid,
-    },
+    map::{io::operations::read_map_data, resources::ActiveMap, utility::world_to_grid},
     navigation::{messages::BuildNavGridMessage, resources::NavGrid},
     props::io::operations::read_prop_definitions,
 };
