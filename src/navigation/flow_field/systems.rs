@@ -41,8 +41,8 @@ pub fn build_flow_field(
         flow_field.last_calculated_tile = Some(current_tile);
 
         // checking if target is within bounds
-        if current_tile.1 as usize > active_map.map.tiles.len()
-            || current_tile.0 as usize > active_map.map.tiles[0].len()
+        if current_tile.y as usize > active_map.map.tiles.len()
+            || current_tile.x as usize > active_map.map.tiles[0].len()
         {
             continue;
         }
@@ -52,11 +52,11 @@ pub fn build_flow_field(
             vec![vec![None; nav_grid.width as usize]; nav_grid.height as usize];
 
         // setting the target position
-        cost_grid[current_tile.1 as usize][current_tile.0 as usize] = Some(0);
+        cost_grid[current_tile.y as usize][current_tile.x as usize] = Some(0);
 
         let mut queue: VecDeque<(i32, i32)> = VecDeque::new();
 
-        queue.push_back((current_tile.0, current_tile.1));
+        queue.push_back((current_tile.x, current_tile.y));
 
         let directions = [
             (-1, 0),
@@ -235,14 +235,14 @@ pub fn flow_field_navigation(
                 );
 
                 // this ensures that the entity is on the grid, it would crash if it was not
-                if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
+                if current_tile.x as usize >= tile_cols || current_tile.y as usize >= tile_rows {
                     return;
                 }
 
                 // get the direction of current tile position
                 //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
-                let Some(target_tile) = target_flow_field.waypoint_grid[current_tile.1 as usize]
-                    [current_tile.0 as usize]
+                let Some(target_tile) = target_flow_field.waypoint_grid[current_tile.y as usize]
+                    [current_tile.x as usize]
                 else {
                     // error!("Could not find direction");
                     return;

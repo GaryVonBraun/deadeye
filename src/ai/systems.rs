@@ -1,7 +1,7 @@
 use core::f32;
 use std::sync::Arc;
 
-use bevy::{ecs::batching::BatchingStrategy, math::VectorSpace, prelude::*};
+use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
     actor::{
@@ -24,10 +24,7 @@ use crate::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
     },
-    navigation::{
-        components::NavigationTargetTile,
-        flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
-    },
+    navigation::{components::NavigationTargetTile, flow_field::components::FlowFieldNavigator},
 };
 
 pub fn vision_targeting_system(
@@ -146,7 +143,7 @@ pub fn target_navigation(
                 );
 
                 // this ensures that the entity is on the grid, it would crash if it was not
-                if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
+                if current_tile.x as usize >= tile_cols || current_tile.y as usize >= tile_rows {
                     return;
                 }
 
@@ -168,8 +165,8 @@ pub fn target_navigation(
                 let cardinal_scale = 1.0 - diagonal_amount;
 
                 let tile_center = grid_to_world(
-                    current_tile.0,
-                    current_tile.1,
+                    current_tile.x,
+                    current_tile.y,
                     active_map.tileset.tile_size,
                     &active_map.map.bounds,
                 );

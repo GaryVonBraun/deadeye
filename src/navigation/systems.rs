@@ -59,8 +59,8 @@ pub fn build_nav_grid(
                 active_map.tileset.tile_size,
                 &map_data.bounds,
             );
-            let start_tile_x = tile_position.0 - (tiles_wide / 2) as i32;
-            let start_tile_y = tile_position.1 - (tiles_high / 2) as i32;
+            let start_tile_x = tile_position.x - (tiles_wide / 2) as i32;
+            let start_tile_y = tile_position.y - (tiles_high / 2) as i32;
 
             for dx in 0..tiles_wide {
                 for dy in 0..tiles_high {
