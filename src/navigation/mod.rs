@@ -9,6 +9,7 @@ use crate::{
 };
 
 pub mod astar;
+pub mod components;
 pub mod flow_field;
 pub mod messages;
 pub mod resources;

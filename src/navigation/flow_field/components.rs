@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+
+use crate::navigation::components::NavigationTargetTile;
 #[derive(Component, Debug)]
 pub struct FlowFieldTarget {
     pub costs: Vec<Vec<Option<u32>>>,
@@ -18,3 +20,18 @@ impl FlowFieldTarget {
 
 #[derive(Component, Debug)]
 pub struct FlowFieldNavigator;
+
+#[derive(Bundle)]
+pub struct FlowFieldBundle {
+    flow_field: FlowFieldNavigator,
+    target_tile: NavigationTargetTile,
+}
+
+impl FlowFieldBundle {
+    pub fn default() -> Self {
+        FlowFieldBundle {
+            flow_field: FlowFieldNavigator,
+            target_tile: NavigationTargetTile::default(),
+        }
+    }
+}

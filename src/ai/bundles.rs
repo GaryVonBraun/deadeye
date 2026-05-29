@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     ai::{components::*, directive::components::AiDirective, vision::components::Vision},
-    navigation::astar::components::AStarPath,
+    navigation::astar::components::{AStarBundle, AStarPath},
 };
 
 #[derive(Bundle)]
@@ -31,7 +31,7 @@ pub struct SentientAiBundle {
     base_ai: BaseAiBundle,
     directive: AiDirective,
     vision: Vision,
-    astar: AStarPath,
+    astar: AStarBundle,
 }
 
 impl SentientAiBundle {
@@ -50,12 +50,7 @@ impl SentientAiBundle {
             vision: Vision {
                 range: vision_range,
             },
-            astar: AStarPath {
-                target: Some(IVec2 { x: 10, y: 10 }),
-                calculated_target: None,
-                path: vec![],
-                current_index: 0,
-            },
+            astar: AStarBundle::default(),
         }
     }
 }

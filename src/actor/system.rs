@@ -24,7 +24,7 @@ use crate::{
         weapon::factories::{spawn_debug_weapon, spawn_pistole_weapon},
     },
     core::io::read_ron_file,
-    navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
+    navigation::flow_field::components::{FlowFieldBundle, FlowFieldNavigator, FlowFieldTarget},
     player::components::{Player, PlayerMovementIntent},
 };
 
@@ -159,7 +159,6 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Human => {
-                error!("see if it gets here?");
                 let weapon = spawn_debug_weapon(
                     &mut commands,
                     Vec3 {
@@ -234,7 +233,7 @@ pub fn spawn_actor_handler(
                         BaseAiBundle::with_controller(AiController::zombie()),
                         Locomotion::with_speed(actor.speed),
                         SeekNearestTarget,
-                        FlowFieldNavigator,
+                        FlowFieldBundle::default(),
                         Zombie,
                         Sprite {
                             image: clip.image_handle.clone(),
