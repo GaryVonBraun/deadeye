@@ -28,7 +28,7 @@ impl Plugin for AiPlugin {
                 vision_targeting_system,
                 // ai_movement_system,
                 (
-                    flow_field_navigation,
+                    target_navigation,
                     // separation_steering
                 )
                     .run_if(resource_exists::<ActiveMap>),

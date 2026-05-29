@@ -20,7 +20,7 @@ impl AStarBundle {
     pub fn default() -> Self {
         AStarBundle {
             astar: AStarPath {
-                target: None,
+                target: Some(IVec2 { x: 15, y: 15 }),
                 calculated_target: None,
                 //NOTE - maybe make it optional
                 path: vec![],

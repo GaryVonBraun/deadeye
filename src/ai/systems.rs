@@ -1,7 +1,7 @@
 use core::f32;
 use std::sync::Arc;
 
-use bevy::{ecs::batching::BatchingStrategy, prelude::*};
+use bevy::{ecs::batching::BatchingStrategy, math::VectorSpace, prelude::*};
 
 use crate::{
     actor::{
@@ -24,7 +24,10 @@ use crate::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
     },
-    navigation::flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
+    navigation::{
+        components::NavigationTargetTile,
+        flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
+    },
 };
 
 pub fn vision_targeting_system(
@@ -108,45 +111,33 @@ pub fn ai_movement_system(
     }
 }
 
-pub fn flow_field_navigation(
+pub fn target_navigation(
     mut ai_query: Query<
-        (&AiController, &Transform, &mut AiMovementIntent, &Collision),
-        (Without<Dead>, With<FlowFieldNavigator>),
+        (
+            &Transform,
+            &mut AiMovementIntent,
+            &Collision,
+            &NavigationTargetTile,
+        ),
+        Without<Dead>,
     >,
-    target_query: Query<(Entity, &FlowFieldTarget)>,
     active_map: Res<ActiveMap>,
 ) {
     // Pre-compute tile bounds once so each parallel task doesn't recompute them.
     let tile_cols = active_map.map.tiles.first().map_or(0, |row| row.len());
     let tile_rows = active_map.map.tiles.len();
 
-    // Collect flow field targets — typically just 1 (the player).
-    // Vec<(Entity, &FlowFieldTarget)> is Send because FlowFieldTarget: Sync.
-    let targets: Vec<(Entity, &FlowFieldTarget)> = target_query.iter().collect();
-
     ai_query
         .par_iter_mut()
-        .batching_strategy(BatchingStrategy::fixed(64))
+        .batching_strategy(BatchingStrategy::fixed(100000))
         .for_each(
-            |(controller, ai_transform, mut movement_intent, collision)| {
-                let offset_position = ai_transform.translation.truncate() + collision.offset;
-
-                let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent
-                else {
+            |(ai_transform, mut movement_intent, collision, navigation_target)| {
+                let Some(mut target) = navigation_target.0 else {
                     movement_intent.move_direction = Vec2::ZERO;
                     return;
                 };
 
-                // Linear scan — fine since there are very few targets (usually just 1)
-                let target_flow_field = match targets.iter().find(|(e, _)| *e == target) {
-                    Some((_, ff)) => *ff,
-                    None => return,
-                };
-
-                // this ensures the flow field is calculated first
-                if target_flow_field.last_calculated_tile.is_none() {
-                    return;
-                }
+                let offset_position = ai_transform.translation.truncate() + collision.offset;
 
                 let current_tile = world_to_grid(
                     offset_position,
@@ -159,14 +150,15 @@ pub fn flow_field_navigation(
                     return;
                 }
 
-                // get the direction of current tile position
-                //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
-                let Some(direction) =
-                    target_flow_field.directions[current_tile.1 as usize][current_tile.0 as usize]
-                else {
-                    // error!("Could not find direction");
-                    return;
-                };
+                let tile_position = grid_to_world(
+                    target.x,
+                    target.y,
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                );
+
+                // get the direction to current tile target
+                let direction = (tile_position - offset_position).normalize_or_zero();
 
                 // centering: keep entity on the path centerline for cardinal movement.
                 // scaled to zero for diagonal directions — cross-track correction skews
@@ -191,7 +183,7 @@ pub fn flow_field_navigation(
         );
 }
 
-//Deprecated -  
+//Deprecated -
 const SEPARATION_RADIUS: f32 = 32.0;
 const SEPARATION_RADIUS_SQ: f32 = SEPARATION_RADIUS * SEPARATION_RADIUS;
 const SEPARATION_WEIGHT: f32 = 500.0;

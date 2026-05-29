@@ -1,14 +1,10 @@
 use std::path::PathBuf;
 
-use bevy::{
-    image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
-    prelude::*,
-};
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     actor::{
-        appearance::bundles::{Appearance, AppearanceBundle},
         bundles::CoreActorBundle,
         components::{Team, Zombie},
         locomotion::components::Locomotion,
@@ -21,10 +17,10 @@ use crate::{
     animation::{components::SpriteAnimator, resources::AnimationRegistry},
     combat::{
         components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
-        weapon::factories::{spawn_debug_weapon, spawn_pistole_weapon},
+        weapon::factories::spawn_debug_weapon,
     },
     core::io::read_ron_file,
-    navigation::flow_field::components::{FlowFieldBundle, FlowFieldNavigator, FlowFieldTarget},
+    navigation::flow_field::components::{FlowFieldBundle, FlowFieldTarget},
     player::components::{Player, PlayerMovementIntent},
 };
 

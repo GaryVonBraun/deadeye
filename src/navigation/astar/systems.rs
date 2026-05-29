@@ -13,7 +13,8 @@ use crate::{
         utility::{grid_to_world, world_to_grid},
     },
     navigation::{
-        astar::components::AStarPath, flow_field::components::FlowFieldTarget, resources::NavGrid,
+        astar::components::AStarPath, components::NavigationTargetTile,
+        flow_field::components::FlowFieldTarget, resources::NavGrid,
     },
 };
 
@@ -187,6 +188,46 @@ pub fn calculate_astar_path(
         path.reverse();
         astar.path = path;
         info!("{:?}", astar.path)
+    }
+}
+
+pub fn astar_navigation(
+    mut astar_query: Query<(
+        &mut AStarPath,
+        &Transform,
+        &Collision,
+        &mut NavigationTargetTile,
+    )>,
+    active_map: Res<ActiveMap>,
+) {
+    for (mut astar_path, transform, collision, mut navigation_target) in astar_query.iter_mut() {
+        info!("{:?}", navigation_target);
+        let offset_position = transform.translation.truncate() + collision.offset;
+        let current_tile = world_to_grid(
+            offset_position,
+            active_map.tileset.tile_size,
+            &active_map.map.bounds,
+        );
+
+        let current_tile_ivec = IVec2 {
+            x: current_tile.0,
+            y: current_tile.1,
+        };
+
+        if let Some(target) = astar_path.target {
+            if current_tile_ivec == target {
+                navigation_target.0 = None;
+                continue;
+            }
+        }
+
+        if let Some(target) = navigation_target.0 {
+            if current_tile_ivec == target && astar_path.current_index + 1 < astar_path.path.len() {
+                astar_path.current_index += 1;
+            }
+        };
+
+        navigation_target.0 = Some(astar_path.path[astar_path.current_index]);
     }
 }
 

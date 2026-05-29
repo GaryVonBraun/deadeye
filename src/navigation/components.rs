@@ -1,14 +1,10 @@
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
-pub struct NavigationTargetTile {
-    target: IVec2,
-}
+pub struct NavigationTargetTile(pub Option<IVec2>);
 
 impl NavigationTargetTile {
     pub fn default() -> Self {
-        NavigationTargetTile {
-            target: IVec2::default(),
-        }
+        NavigationTargetTile(None)
     }
 }

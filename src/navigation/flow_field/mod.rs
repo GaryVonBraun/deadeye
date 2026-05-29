@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 use crate::{
     core::states::SimulationState,
-    map::resources::ActiveMap,
     navigation::{flow_field::systems::*, resources::NavGrid},
 };
 
@@ -17,6 +16,7 @@ impl Plugin for FlowFieldPlugin {
             (
                 build_flow_field,
                 // flow_field_gizmos
+                flow_field_navigation,
             )
                 .run_if(in_state(SimulationState::Running).and(resource_exists::<NavGrid>)),
         );

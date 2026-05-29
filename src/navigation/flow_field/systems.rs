@@ -1,14 +1,20 @@
 use std::{collections::VecDeque, u32};
 
-use bevy::prelude::*;
+use bevy::{ecs::batching::BatchingStrategy, prelude::*};
 
 use crate::{
+    ai::components::{AiController, AiLocomotionIntent, AiMovementIntent},
     collision::components::Collision,
+    combat::health::components::Dead,
     map::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
     },
-    navigation::{flow_field::components::FlowFieldTarget, resources::NavGrid},
+    navigation::{
+        components::NavigationTargetTile,
+        flow_field::components::{FlowFieldNavigator, FlowFieldTarget},
+        resources::NavGrid,
+    },
 };
 
 pub fn build_flow_field(
@@ -121,7 +127,7 @@ pub fn build_flow_field(
         // info!("cost grid - {:?}", cost_grid);
         flow_field.costs = cost_grid;
 
-        let mut directions_grid: Vec<Vec<Option<Vec2>>> =
+        let mut waypoint_grid: Vec<Vec<Option<IVec2>>> =
             vec![vec![None; nav_grid.width as usize]; nav_grid.height as usize];
 
         for y in 0..nav_grid.height as i32 {
@@ -134,7 +140,7 @@ pub fn build_flow_field(
                 }
 
                 let mut cheapest_cost = u32::MAX;
-                let mut best_direction = Vec2::ZERO;
+                let mut best_tile = IVec2::ZERO;
 
                 for (dx, dy) in directions {
                     let nx = x + dx;
@@ -164,16 +170,87 @@ pub fn build_flow_field(
 
                     if tile_cost < cheapest_cost {
                         cheapest_cost = tile_cost;
-                        best_direction = Vec2::new(dx as f32, -dy as f32).normalize();
+                        best_tile = IVec2 { x: nx, y: ny }
                     }
                 }
 
-                directions_grid[y as usize][x as usize] = Some(best_direction);
+                waypoint_grid[y as usize][x as usize] = Some(best_tile);
             }
         }
 
-        flow_field.directions = directions_grid;
+        flow_field.waypoint_grid = waypoint_grid;
     }
+}
+
+pub fn flow_field_navigation(
+    mut ai_query: Query<
+        (
+            &AiController,
+            &Transform,
+            &mut NavigationTargetTile,
+            &Collision,
+        ),
+        (Without<Dead>, With<FlowFieldNavigator>),
+    >,
+    target_query: Query<(Entity, &FlowFieldTarget)>,
+    active_map: Res<ActiveMap>,
+) {
+    // Pre-compute tile bounds once so each parallel task doesn't recompute them.
+    let tile_cols = active_map.map.tiles.first().map_or(0, |row| row.len());
+    let tile_rows = active_map.map.tiles.len();
+
+    // Collect flow field targets — typically just 1 (the player).
+    // Vec<(Entity, &FlowFieldTarget)> is Send because FlowFieldTarget: Sync.
+    let targets: Vec<(Entity, &FlowFieldTarget)> = target_query.iter().collect();
+
+    ai_query
+        .par_iter_mut()
+        .batching_strategy(BatchingStrategy::fixed(100000))
+        .for_each(
+            |(controller, ai_transform, mut navigation_target, collision)| {
+                let offset_position = ai_transform.translation.truncate() + collision.offset;
+
+                //FIXME - setting the the target tile to ZERO every time is not needed i think
+                let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent
+                else {
+                    navigation_target.0 = None;
+                    return;
+                };
+
+                // Linear scan — fine since there are very few targets (usually just 1)
+                let target_flow_field = match targets.iter().find(|(e, _)| *e == target) {
+                    Some((_, ff)) => *ff,
+                    None => return,
+                };
+
+                // this ensures the flow field is calculated first
+                if target_flow_field.last_calculated_tile.is_none() {
+                    return;
+                }
+
+                let current_tile = world_to_grid(
+                    offset_position,
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                );
+
+                // this ensures that the entity is on the grid, it would crash if it was not
+                if current_tile.0 as usize >= tile_cols || current_tile.1 as usize >= tile_rows {
+                    return;
+                }
+
+                // get the direction of current tile position
+                //FIXME - currently if the entity is on the target tile it does not know what to do, potential solution is to fallback on direct steering
+                let Some(target_tile) = target_flow_field.waypoint_grid[current_tile.1 as usize]
+                    [current_tile.0 as usize]
+                else {
+                    // error!("Could not find direction");
+                    return;
+                };
+
+                navigation_target.0 = Some(target_tile);
+            },
+        );
 }
 
 pub fn flow_field_gizmos(
@@ -181,14 +258,15 @@ pub fn flow_field_gizmos(
     active_map: Res<ActiveMap>,
     mut gizmos: Gizmos,
 ) {
+    //FIXME - the old gizmo's were based on a direction vector, currently model is now a tile position
     for flow_field in target_query.iter() {
         // flowfield is empty if there is not been a calculated tile before
         if flow_field.last_calculated_tile == None {
             continue;
         }
-        for y in 0..flow_field.directions.len() {
-            for x in 0..flow_field.directions[y].len() {
-                let Some(direction) = flow_field.directions[y][x] else {
+        for y in 0..flow_field.waypoint_grid.len() {
+            for x in 0..flow_field.waypoint_grid[y].len() {
+                let Some(direction) = flow_field.waypoint_grid[y][x] else {
                     continue;
                 };
 
@@ -201,7 +279,7 @@ pub fn flow_field_gizmos(
 
                 let scale = 25.;
 
-                gizmos.arrow_2d(tile_center, tile_center + direction * scale, Color::WHITE);
+                // gizmos.arrow_2d(tile_center, tile_center + direction * scale, Color::WHITE);
             }
         }
     }

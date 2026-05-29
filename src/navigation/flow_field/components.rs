@@ -4,7 +4,7 @@ use crate::navigation::components::NavigationTargetTile;
 #[derive(Component, Debug)]
 pub struct FlowFieldTarget {
     pub costs: Vec<Vec<Option<u32>>>,
-    pub directions: Vec<Vec<Option<Vec2>>>,
+    pub waypoint_grid: Vec<Vec<Option<IVec2>>>,
     pub last_calculated_tile: Option<(i32, i32)>,
 }
 
@@ -12,7 +12,7 @@ impl FlowFieldTarget {
     pub fn default() -> Self {
         FlowFieldTarget {
             costs: vec![],
-            directions: vec![],
+            waypoint_grid: vec![],
             last_calculated_tile: None,
         }
     }
