@@ -4,10 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     collision::components::Collision,
-    map::{
-        resources::ActiveMap,
-        utility::{grid_to_world, world_to_grid},
-    },
+    map::{resources::ActiveMap, utility::world_to_grid},
     navigation::{
         astar::components::AStarPath, components::NavigationTargetTile, resources::NavGrid,
     },
@@ -193,6 +190,10 @@ pub fn astar_navigation(
     active_map: Res<ActiveMap>,
 ) {
     for (mut astar_path, transform, collision, mut navigation_target) in astar_query.iter_mut() {
+        if astar_path.path.is_empty() {
+            continue;
+        }
+
         let offset_position = transform.translation.truncate() + collision.offset;
         let current_tile = world_to_grid(
             offset_position,
@@ -214,38 +215,5 @@ pub fn astar_navigation(
         };
 
         navigation_target.0 = Some(astar_path.path[astar_path.current_index]);
-    }
-}
-
-pub fn astar_gizmos(
-    target_query: Query<&AStarPath>,
-    active_map: Res<ActiveMap>,
-    mut gizmos: Gizmos,
-) {
-    for astar in target_query.iter() {
-        if astar.path.is_empty() {
-            continue;
-        }
-
-        let gizmo_color = Color::linear_rgb(1., 0., 0.);
-        let tile_size = &active_map.tileset.tile_size;
-
-        for tile in astar.path.iter() {
-            let tile_center = grid_to_world(
-                tile.x,
-                tile.y,
-                active_map.tileset.tile_size,
-                &active_map.map.bounds,
-            );
-
-            gizmos.circle_2d(
-                Vec2 {
-                    x: tile_center.x,
-                    y: tile_center.y,
-                },
-                *tile_size / 2.,
-                gizmo_color,
-            );
-        }
     }
 }

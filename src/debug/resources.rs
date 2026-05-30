@@ -8,6 +8,7 @@ pub struct DebugOptions {
     pub hit_box: bool,
     pub hurt_box: bool,
     pub collision: bool,
+    pub astar_paths: bool,
 }
 
 impl DebugOptions {
@@ -19,6 +20,7 @@ impl DebugOptions {
             hit_box: false,
             hurt_box: false,
             collision: false,
+            astar_paths: false,
         }
     }
 }

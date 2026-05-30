@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use bevy_egui::EguiPrimaryContextPass;
 
-use crate::debug::{resources::DebugOptions, systems::*};
+use crate::{
+    debug::{resources::DebugOptions, systems::*},
+    map::resources::ActiveMap,
+    navigation::resources::NavGrid,
+};
 
 pub mod components;
 mod resources;
@@ -23,6 +27,9 @@ impl Plugin for DebugPlugin {
                 debug_hitbox_gizmo.run_if(|opts: Res<DebugOptions>| opts.hit_box),
                 debug_hurtbox_gizmo.run_if(|opts: Res<DebugOptions>| opts.hurt_box),
                 debug_collision_gizmo.run_if(|opts: Res<DebugOptions>| opts.collision),
+                astar_gizmos
+                    .run_if(resource_exists::<NavGrid>)
+                    .run_if(|opts: Res<DebugOptions>| opts.astar_paths),
             ),
         );
     }

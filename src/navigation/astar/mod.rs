@@ -14,7 +14,7 @@ impl Plugin for AstarPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (calculate_astar_path, astar_gizmos, astar_navigation)
+            (calculate_astar_path, astar_navigation)
                 .run_if(resource_exists::<NavGrid>)
                 .run_if(in_state(AppState::InGame)),
         );

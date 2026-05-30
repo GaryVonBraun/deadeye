@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{
     EguiContexts,
-    egui::{self, Ui},
+    egui::{self},
 };
 
 use crate::{
@@ -13,7 +13,28 @@ use crate::{
     },
     combat::health::components::{Hitbox, Hurtbox},
     debug::{components::DebugMovementIntent, resources::DebugOptions},
+    map::{resources::ActiveMap, utility::grid_to_world},
+    navigation::astar::components::AStarPath,
 };
+pub fn display_debug_menu(
+    mut contexts: EguiContexts,
+    mut debug_options: ResMut<DebugOptions>,
+) -> Result {
+    egui::Window::new("Debug Menu")
+        .resizable(false)
+        .show(contexts.ctx_mut()?, |ui| {
+            ui.label("Items");
+            ui.toggle_value(&mut debug_options.vision, "Actor vision");
+            ui.toggle_value(&mut debug_options.visible_actors, "Visible actors");
+            ui.toggle_value(&mut debug_options.target_entity, "Target Actor");
+            ui.toggle_value(&mut debug_options.hit_box, "Hitbox");
+            ui.toggle_value(&mut debug_options.hurt_box, "Hurtbox");
+            ui.toggle_value(&mut debug_options.collision, "Collision");
+            ui.toggle_value(&mut debug_options.astar_paths, "A* paths");
+        });
+
+    Ok(())
+}
 
 //TEMPORARY - This is a quick implementation to see if the locomotion system works
 pub fn debug_movement_controller(
@@ -142,21 +163,32 @@ pub fn debug_target_entity_gizmo(
     }
 }
 
-pub fn display_debug_menu(
-    mut contexts: EguiContexts,
-    mut debug_options: ResMut<DebugOptions>,
-) -> Result {
-    egui::Window::new("Debug Menu")
-        .resizable(false)
-        .show(contexts.ctx_mut()?, |ui| {
-            ui.label("Items");
-            ui.toggle_value(&mut debug_options.vision, "Actor vision");
-            ui.toggle_value(&mut debug_options.visible_actors, "Visible actors");
-            ui.toggle_value(&mut debug_options.target_entity, "Target Actor");
-            ui.toggle_value(&mut debug_options.hit_box, "Hitbox");
-            ui.toggle_value(&mut debug_options.hurt_box, "Hurtbox");
-            ui.toggle_value(&mut debug_options.collision, "Collision");
-        });
+pub fn astar_gizmos(
+    astar_query: Query<&AStarPath>,
+    active_map: Res<ActiveMap>,
+    mut gizmos: Gizmos,
+) {
+    for astar in astar_query.iter() {
+        if astar.path.is_empty() {
+            continue;
+        }
 
-    Ok(())
+        let gizmo_color = Color::linear_rgb(1., 0., 0.);
+
+        let path: Vec<Vec2> = astar
+            .path
+            .iter()
+            .skip(astar.current_index)
+            .map(|v: &IVec2| {
+                grid_to_world(
+                    v.x,
+                    v.y,
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                )
+            })
+            .collect();
+
+        gizmos.linestrip_2d(path, gizmo_color);
+    }
 }
