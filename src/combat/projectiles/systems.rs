@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    collision::components::{Collision, CollisionShape2d},
+    collision::{
+        components::{Collision, CollisionShape2d},
+        utility::swept_collision,
+    },
     combat::{
         health::{
             components::{Dead, Health, Hitbox, Hurtbox},
@@ -134,78 +137,6 @@ pub fn projectile_collision(
                 commands.entity(entity).despawn();
                 break;
             }
-        }
-    }
-}
-
-pub fn swept_collision(
-    ray_start: Vec2,
-    ray_end: Vec2,
-    target_pos: Vec2,
-    target: &impl CollisionShape2d,
-) -> Option<Vec2> {
-    match target.shape() {
-        crate::collision::components::CollisionShape::Circle { radius } => {
-            let circle_center = target_pos + target.offset();
-
-            let ray_dir = ray_end - ray_start;
-            let ray_length = ray_dir.length();
-            if ray_length == 0.0 {
-                return None;
-            }
-            let ray_dir_normalized = ray_dir / ray_length;
-            let proj_t = (circle_center - ray_start).dot(ray_dir_normalized);
-            let closest_point = ray_start + ray_dir_normalized * proj_t.clamp(0.0, ray_length);
-            let d_perp = Vec2::distance(closest_point, circle_center);
-            if d_perp < *radius {
-                let entry_t =
-                    (proj_t - (radius * radius - d_perp * d_perp).sqrt()).clamp(0.0, ray_length);
-                return Some(ray_start + ray_dir_normalized * entry_t);
-            }
-            None
-        }
-        crate::collision::components::CollisionShape::Rect { width, height } => {
-            let rect_center = target_pos + target.offset();
-            let half_w = width / 2.0;
-            let half_h = height / 2.0;
-
-            let tl = rect_center + Vec2::new(-half_w, half_h);
-            let tr = rect_center + Vec2::new(half_w, half_h);
-            let bl = rect_center + Vec2::new(-half_w, -half_h);
-            let br = rect_center + Vec2::new(half_w, -half_h);
-
-            let edges = [(tl, tr), (tr, br), (br, bl), (bl, tl)];
-
-            let ray_dir = ray_end - ray_start;
-            let ray_length = ray_dir.length();
-            if ray_length == 0.0 {
-                return None;
-            }
-            let ray_dir_normalized = ray_dir / ray_length;
-
-            let mut closest_hit: Option<(f32, Vec2)> = None; // (distance, point)
-
-            for (a, b) in edges {
-                let segment_dir = b - a;
-                let denom = ray_dir_normalized.perp_dot(segment_dir);
-                if denom.abs() < 0.0001 {
-                    continue;
-                }
-
-                let t = (a - ray_start).perp_dot(segment_dir) / denom;
-                let u = (a - ray_start).perp_dot(ray_dir_normalized) / denom;
-
-                if t >= 0.0 && t <= ray_length && u >= 0.0 && u <= 1.0 {
-                    let hit_point = ray_start + ray_dir_normalized * t;
-                    match closest_hit {
-                        None => closest_hit = Some((t, hit_point)),
-                        Some((prev_t, _)) if t < prev_t => closest_hit = Some((t, hit_point)),
-                        _ => {}
-                    }
-                }
-            }
-
-            closest_hit.map(|(_, point)| point)
         }
     }
 }

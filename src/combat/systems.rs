@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     actor::components::Actor,
-    collision::systems::check_collision,
+    collision::utility::check_collision,
     combat::{
         components::{MeleeIntent, MeleeState},
         health::{

@@ -14,7 +14,7 @@ use crate::{
         },
         vision::components::Vision,
     },
-    collision::{components::Collision, systems::check_collision},
+    collision::{components::Collision, utility::check_collision},
     combat::{
         components::{MeleeIntent, MeleeState, ShootingIntent},
         health::components::{Dead, Hitbox, Hurtbox},

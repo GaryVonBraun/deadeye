@@ -8,7 +8,8 @@ use crate::{
 
 pub mod components;
 pub mod sets;
-pub mod systems;
+mod systems;
+pub mod utility;
 pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
