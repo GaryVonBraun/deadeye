@@ -5,7 +5,7 @@ use crate::{
     ai::{components::AiController, vision::components::Vision},
 };
 
-pub fn vision_detection_system(
+pub fn nearby_detection_system(
     mut ai_query: Query<(Entity, &Transform, &Vision, &mut AiController)>,
     actor_query: Query<(Entity, &Transform), With<Actor>>,
 ) {
@@ -26,6 +26,6 @@ pub fn vision_detection_system(
             }
         }
 
-        ai_controller.black_board.visible_actors = visible_actors;
+        ai_controller.black_board.nearby_actors = visible_actors;
     }
 }

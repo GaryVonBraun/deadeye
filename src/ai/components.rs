@@ -26,6 +26,7 @@ pub enum AiActionIntent {
 
 #[derive(Component)]
 pub struct Blackboard {
+    pub nearby_actors: Vec<Entity>,
     pub visible_actors: Vec<Entity>,
     pub current_target: Option<Entity>,
     pub locomotion_intent: AiLocomotionIntent,
@@ -66,7 +67,8 @@ impl AiController {
 
         AiController {
             black_board: Blackboard {
-                visible_actors: [].to_vec(),
+                nearby_actors: vec![],
+                visible_actors: vec![],
                 current_target: None,
                 locomotion_intent: AiLocomotionIntent::Idle,
                 action_intent: AiActionIntent::Idle,
@@ -96,7 +98,8 @@ impl AiController {
 
         AiController {
             black_board: Blackboard {
-                visible_actors: [].to_vec(),
+                nearby_actors: vec![],
+                visible_actors: vec![],
                 current_target: None,
                 locomotion_intent: AiLocomotionIntent::Idle,
                 action_intent: AiActionIntent::Idle,

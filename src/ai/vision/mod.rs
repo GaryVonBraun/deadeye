@@ -13,7 +13,7 @@ impl Plugin for VisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (vision_detection_system)
+            (nearby_detection_system)
                 .in_set(AiSet::Perception)
                 .run_if(in_state(SimulationState::Running)),
         );
