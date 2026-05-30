@@ -128,7 +128,7 @@ pub fn debug_visible_entities_gizmo(
     mut gizmos: Gizmos,
 ) {
     for (ai_transform, ai_controller) in ai_query.iter() {
-        for visible_entity in ai_controller.black_board.nearby_actors.iter() {
+        for visible_entity in ai_controller.black_board.visible_actors.iter() {
             let Ok(actor_transform) = actor_query.get(*visible_entity) else {
                 continue;
             };

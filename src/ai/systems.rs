@@ -35,12 +35,12 @@ pub fn vision_targeting_system(
         let mut closest_distance = f32::MAX;
         let mut closest_entity: Option<Entity> = None;
 
-        if ai_controller.black_board.nearby_actors.is_empty() {
+        if ai_controller.black_board.visible_actors.is_empty() {
             ai_controller.black_board.current_target = None;
             continue;
         }
 
-        for visible_entity in ai_controller.black_board.nearby_actors.iter() {
+        for visible_entity in ai_controller.black_board.visible_actors.iter() {
             let Ok((actor_entity, actor_transform, target_team)) = actor_query.get(*visible_entity)
             else {
                 continue;
