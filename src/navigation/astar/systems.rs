@@ -203,17 +203,17 @@ pub fn astar_navigation(
 
         if let Some(target) = astar_path.target {
             if current_tile == target {
-                navigation_target.0 = None;
+                navigation_target.value = None;
                 continue;
             }
         }
 
-        if let Some(target) = navigation_target.0 {
+        if let Some(target) = navigation_target.value {
             if current_tile == target && astar_path.current_index + 1 < astar_path.path.len() {
                 astar_path.current_index += 1;
             }
         };
 
-        navigation_target.0 = Some(astar_path.path[astar_path.current_index]);
+        navigation_target.value = Some(astar_path.path[astar_path.current_index]);
     }
 }

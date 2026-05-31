@@ -89,7 +89,7 @@ pub fn target_navigation(
         .batching_strategy(BatchingStrategy::fixed(100000))
         .for_each(
             |(ai_transform, mut movement_intent, collision, navigation_target)| {
-                let Some(mut target) = navigation_target.0 else {
+                let Some(target) = navigation_target.value else {
                     movement_intent.move_direction = Vec2::ZERO;
                     return;
                 };

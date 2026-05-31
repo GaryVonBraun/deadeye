@@ -212,7 +212,7 @@ pub fn flow_field_navigation(
 
                 //FIXME - setting the the target tile to ZERO every time is not needed i think
                 let AiLocomotionIntent::Chase(target) = controller.intent.locomotion else {
-                    navigation_target.0 = None;
+                    navigation_target.value = None;
                     return;
                 };
 
@@ -247,7 +247,7 @@ pub fn flow_field_navigation(
                     return;
                 };
 
-                navigation_target.0 = Some(target_tile);
+                navigation_target.value = Some(target_tile);
             },
         );
 }
