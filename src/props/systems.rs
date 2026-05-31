@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{image::{ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor}, prelude::*};
 
 use crate::{
     collision::components::Collision,
@@ -72,11 +72,22 @@ pub fn load_map_props(
                         ..prop.clone()
                     };
                 };
-                
+                let image: Handle<Image> = asset_server.load_with_settings(
+                    format!("props/{}.png", prop_definition.sprite),
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+                            min_filter: ImageFilterMode::Nearest,
+                            mag_filter: ImageFilterMode::Nearest,
+                            mipmap_filter: ImageFilterMode::Nearest,
+                            ..default()
+                        });
+                    },
+                );
+
                 let entity = commands
                 .spawn(PropBundle{
                     prop: Prop::with_size(prop_definition.size), 
-                    sprite: Sprite::from_image(asset_server.load(format!("props/{}.png", prop_definition.sprite))), 
+                    sprite: Sprite::from_image(image), 
                     transform: Transform::from_xyz(prop.position.x, prop.position.y, 0.), 
                     collision: prop_definition.collision.clone(),  
                     game_entity: GameEntity } )
