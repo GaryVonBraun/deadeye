@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::components::Actor,
+    actor::{
+        components::{Actor, Team},
+        teams::{TeamStanding, get_standing},
+    },
     ai::{components::AiController, vision::components::Vision},
     collision::{components::Collision, utility::swept_collision},
     combat::health::components::Dead,
@@ -66,5 +69,42 @@ pub fn compute_visible_actors(
             }
         }
         ai_controller.black_board.visible_actors = visible_actors
+    }
+}
+
+pub fn get_nearest_visible_hostile_system(
+    mut ai_query: Query<(&Transform, &mut AiController, &Team), With<Vision>>,
+    actor_query: Query<(Entity, &Transform, &Team), (With<Actor>, Without<Dead>)>,
+) {
+    for (ai_transform, mut ai_controller, team) in ai_query.iter_mut() {
+        let mut closest_distance = f32::MAX;
+        let mut closest_entity: Option<Entity> = None;
+
+        if ai_controller.black_board.visible_actors.is_empty() {
+            ai_controller.black_board.nearest_visible_hostile = None;
+            continue;
+        }
+
+        for visible_entity in ai_controller.black_board.visible_actors.iter() {
+            let Ok((actor_entity, actor_transform, target_team)) = actor_query.get(*visible_entity)
+            else {
+                continue;
+            };
+
+            if !matches!(get_standing(&team.0, &target_team.0), TeamStanding::Hostile) {
+                continue;
+            }
+
+            let distance = Vec2::distance(
+                ai_transform.translation.truncate(),
+                actor_transform.translation.truncate(),
+            );
+
+            if distance < closest_distance {
+                closest_distance = distance;
+                closest_entity = Some(actor_entity);
+            }
+        }
+        ai_controller.black_board.nearest_visible_hostile = closest_entity;
     }
 }

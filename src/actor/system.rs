@@ -12,7 +12,7 @@ use crate::{
     },
     ai::{
         bundles::{BaseAiBundle, SentientAiBundle},
-        components::{AiController, SeekNearestTarget},
+        components::{AiController, SeekNearestHostile},
     },
     animation::{components::SpriteAnimator, resources::AnimationRegistry},
     combat::{
@@ -228,7 +228,7 @@ pub fn spawn_actor_handler(
                         ),
                         BaseAiBundle::with_controller(AiController::zombie()),
                         Locomotion::with_speed(actor.speed),
-                        SeekNearestTarget,
+                        SeekNearestHostile,
                         FlowFieldBundle::default(),
                         Zombie,
                         Sprite {

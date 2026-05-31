@@ -13,7 +13,11 @@ impl Plugin for VisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (collect_nearby_actors, compute_visible_actors)
+            (
+                collect_nearby_actors,
+                compute_visible_actors,
+                get_nearest_visible_hostile_system,
+            )
                 .chain()
                 .in_set(AiSet::Perception)
                 .run_if(in_state(SimulationState::Running)),

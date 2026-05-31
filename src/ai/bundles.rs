@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     ai::{components::*, directive::components::AiDirective, vision::components::Vision},
-    navigation::astar::components::{AStarBundle, AStarPath},
+    navigation::astar::components::AStarBundle,
 };
 
 #[derive(Bundle)]

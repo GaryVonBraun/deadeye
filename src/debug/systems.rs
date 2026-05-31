@@ -26,7 +26,10 @@ pub fn display_debug_menu(
             ui.label("Items");
             ui.toggle_value(&mut debug_options.vision, "Actor vision");
             ui.toggle_value(&mut debug_options.visible_actors, "Visible actors");
-            ui.toggle_value(&mut debug_options.target_entity, "Target Actor");
+            ui.toggle_value(
+                &mut debug_options.nearest_visible_hostile,
+                "Nearest visible hostile",
+            );
             ui.toggle_value(&mut debug_options.hit_box, "Hitbox");
             ui.toggle_value(&mut debug_options.hurt_box, "Hurtbox");
             ui.toggle_value(&mut debug_options.collision, "Collision");
@@ -141,13 +144,13 @@ pub fn debug_visible_entities_gizmo(
         }
     }
 }
-pub fn debug_target_entity_gizmo(
+pub fn debug_nearest_visible_hostile_gizmo(
     ai_query: Query<(&Transform, &AiController)>,
     actor_query: Query<&Transform, With<Actor>>,
     mut gizmos: Gizmos,
 ) {
     for (ai_transform, ai_controller) in ai_query.iter() {
-        if let Some(target_entity) = ai_controller.black_board.current_target {
+        if let Some(target_entity) = ai_controller.black_board.nearest_visible_hostile {
             let Ok(actor_transform) = actor_query.get(target_entity) else {
                 continue;
             };

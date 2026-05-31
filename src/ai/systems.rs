@@ -8,11 +8,8 @@ use crate::{
         components::{Actor, Team},
         teams::{TeamStanding, get_standing},
     },
-    ai::{
-        components::{
-            AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, SeekNearestTarget,
-        },
-        vision::components::Vision,
+    ai::components::{
+        AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, SeekNearestHostile,
     },
     collision::{components::Collision, utility::check_collision},
     combat::{
@@ -26,43 +23,6 @@ use crate::{
     },
     navigation::{components::NavigationTargetTile, flow_field::components::FlowFieldNavigator},
 };
-
-pub fn vision_targeting_system(
-    mut ai_query: Query<(&Transform, &mut AiController, &Team), With<Vision>>,
-    actor_query: Query<(Entity, &Transform, &Team), (With<Actor>, Without<Dead>)>,
-) {
-    for (ai_transform, mut ai_controller, team) in ai_query.iter_mut() {
-        let mut closest_distance = f32::MAX;
-        let mut closest_entity: Option<Entity> = None;
-
-        if ai_controller.black_board.visible_actors.is_empty() {
-            ai_controller.black_board.current_target = None;
-            continue;
-        }
-
-        for visible_entity in ai_controller.black_board.visible_actors.iter() {
-            let Ok((actor_entity, actor_transform, target_team)) = actor_query.get(*visible_entity)
-            else {
-                continue;
-            };
-
-            if !matches!(get_standing(&team.0, &target_team.0), TeamStanding::Hostile) {
-                continue;
-            }
-
-            let distance = Vec2::distance(
-                ai_transform.translation.truncate(),
-                actor_transform.translation.truncate(),
-            );
-
-            if distance < closest_distance {
-                closest_distance = distance;
-                closest_entity = Some(actor_entity);
-            }
-        }
-        ai_controller.black_board.current_target = closest_entity;
-    }
-}
 
 pub fn ai_movement_system(
     mut ai_query: Query<(&AiController, &Transform, &mut AiMovementIntent, &Collision)>,
@@ -333,14 +293,14 @@ pub fn ai_shooting_system(
     }
 }
 
-pub fn seek_nearest_target(
+pub fn seek_nearest_hostile(
     mut query_seeking_actor: Query<
         (&mut AiController, &Transform, &Team),
-        (With<SeekNearestTarget>, Without<Dead>),
+        (With<SeekNearestHostile>, Without<Dead>),
     >,
     query_actors: Query<
         (Entity, &Transform, &Team),
-        (With<Actor>, (Without<SeekNearestTarget>, Without<Dead>)),
+        (With<Actor>, (Without<SeekNearestHostile>, Without<Dead>)),
     >,
     mut frame_counter: Local<u32>,
 ) {
@@ -380,7 +340,7 @@ pub fn seek_nearest_target(
             }
         }
 
-        seeker_controller.black_board.current_target = nearest_entity;
+        seeker_controller.black_board.nearest_hostile = nearest_entity;
     }
 }
 

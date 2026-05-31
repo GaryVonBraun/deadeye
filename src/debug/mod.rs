@@ -23,7 +23,8 @@ impl Plugin for DebugPlugin {
                 debug_movement_controller,
                 debug_vision_gizmo.run_if(|opts: Res<DebugOptions>| opts.vision),
                 debug_visible_entities_gizmo.run_if(|opts: Res<DebugOptions>| opts.visible_actors),
-                debug_target_entity_gizmo.run_if(|opts: Res<DebugOptions>| opts.target_entity),
+                debug_nearest_visible_hostile_gizmo
+                    .run_if(|opts: Res<DebugOptions>| opts.nearest_visible_hostile),
                 debug_hitbox_gizmo.run_if(|opts: Res<DebugOptions>| opts.hit_box),
                 debug_hurtbox_gizmo.run_if(|opts: Res<DebugOptions>| opts.hurt_box),
                 debug_collision_gizmo.run_if(|opts: Res<DebugOptions>| opts.collision),

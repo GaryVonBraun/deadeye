@@ -25,7 +25,6 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             (
-                vision_targeting_system,
                 // ai_movement_system,
                 (
                     target_navigation,
@@ -34,7 +33,7 @@ impl Plugin for AiPlugin {
                     .run_if(resource_exists::<ActiveMap>),
                 ai_shooting_system,
                 ai_melee_system,
-                seek_nearest_target,
+                seek_nearest_hostile,
             )
                 .in_set(AiSet::Targeting)
                 .run_if(in_state(SimulationState::Running)),

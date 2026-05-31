@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub struct DebugOptions {
     pub vision: bool,
     pub visible_actors: bool,
-    pub target_entity: bool,
+    pub nearest_visible_hostile: bool,
     pub hit_box: bool,
     pub hurt_box: bool,
     pub collision: bool,
@@ -16,7 +16,7 @@ impl DebugOptions {
         DebugOptions {
             vision: false,
             visible_actors: false,
-            target_entity: false,
+            nearest_visible_hostile: false,
             hit_box: false,
             hurt_box: false,
             collision: false,

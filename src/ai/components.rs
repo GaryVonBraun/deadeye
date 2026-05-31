@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::ai::{
     directive::components::AiDirective,
-    tree::{BtNode, Selector, Sequence, actions::*, conditions::HasTarget},
+    tree::{BtNode, Selector, Sequence, actions::*, conditions::*},
 };
 
 #[derive(Component, Default, Debug)]
@@ -13,7 +13,7 @@ pub enum AiLocomotionIntent {
 }
 
 #[derive(Component, Debug)]
-pub struct SeekNearestTarget;
+pub struct SeekNearestHostile;
 
 // ai decision making
 #[derive(Component, Default, Debug)]
@@ -28,9 +28,21 @@ pub enum AiActionIntent {
 pub struct Blackboard {
     pub nearby_actors: Vec<Entity>,
     pub visible_actors: Vec<Entity>,
-    pub current_target: Option<Entity>,
-
+    pub nearest_visible_hostile: Option<Entity>,
+    pub nearest_hostile: Option<Entity>,
     pub directive: AiDirective,
+}
+
+impl Blackboard {
+    pub fn default() -> Self {
+        Blackboard {
+            nearby_actors: vec![],
+            visible_actors: vec![],
+            nearest_visible_hostile: None,
+            nearest_hostile: None,
+            directive: AiDirective::Idle,
+        }
+    }
 }
 
 #[derive(Component, Debug)]
@@ -66,27 +78,22 @@ impl AiController {
         let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(ActionShoot)],
+                    children: vec![Box::new(HasNearestVisibleHostile), Box::new(ActionShoot)],
                 }),
                 Box::new(ActionIdle),
             ],
         });
         let locomotion_tree = Box::new(Selector {
             children: vec![
-                Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
-                }),
+                // Box::new(Sequence {
+                //     children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
+                // }),
                 Box::new(LocomotionIdle),
             ],
         });
 
         AiController {
-            black_board: Blackboard {
-                nearby_actors: vec![],
-                visible_actors: vec![],
-                current_target: None,
-                directive: AiDirective::Idle,
-            },
+            black_board: Blackboard::default(),
             intent: AiIntent::idle(),
             action_tree,
             locomotion_tree,
@@ -96,7 +103,7 @@ impl AiController {
         let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(ActionMelee)],
+                    children: vec![Box::new(HasNearestHostile), Box::new(ActionMelee)],
                 }),
                 Box::new(ActionIdle),
             ],
@@ -104,19 +111,17 @@ impl AiController {
         let locomotion_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
-                    children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
+                    children: vec![
+                        Box::new(HasNearestHostile),
+                        Box::new(LocomotionChaseNearestHostile),
+                    ],
                 }),
                 Box::new(LocomotionIdle),
             ],
         });
 
         AiController {
-            black_board: Blackboard {
-                nearby_actors: vec![],
-                visible_actors: vec![],
-                current_target: None,
-                directive: AiDirective::Idle,
-            },
+            black_board: Blackboard::default(),
             intent: AiIntent::idle(),
             action_tree,
             locomotion_tree,

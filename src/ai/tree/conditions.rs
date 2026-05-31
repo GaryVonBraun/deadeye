@@ -3,22 +3,22 @@ use crate::ai::{
     tree::{BtNode, BtStatus},
 };
 
-pub struct HasTarget;
+pub struct HasNearestHostile;
 
-impl BtNode for HasTarget {
+impl BtNode for HasNearestHostile {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
-        match blackboard.current_target {
+        match blackboard.nearest_hostile {
             Some(_) => BtStatus::Success,
             None => BtStatus::Failure,
         }
     }
 }
 
-pub struct FollowingTarget;
+pub struct HasNearestVisibleHostile;
 
-impl BtNode for FollowingTarget {
+impl BtNode for HasNearestVisibleHostile {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
-        match blackboard.current_target {
+        match blackboard.nearest_visible_hostile {
             Some(_) => BtStatus::Success,
             None => BtStatus::Failure,
         }
