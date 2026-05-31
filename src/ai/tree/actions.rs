@@ -1,7 +1,5 @@
-use bevy::log::info;
-
 use crate::ai::{
-    components::{AiActionIntent, AiLocomotionIntent, Blackboard},
+    components::{AiActionIntent, AiIntent, AiLocomotionIntent, Blackboard},
     tree::{BtNode, BtStatus},
 };
 
@@ -9,8 +7,8 @@ use crate::ai::{
 pub struct LocomotionIdle;
 
 impl BtNode for LocomotionIdle {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
-        blackboard.locomotion_intent = AiLocomotionIntent::Idle;
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        intent.locomotion = AiLocomotionIntent::Idle;
         BtStatus::Success
     }
 }
@@ -18,9 +16,9 @@ impl BtNode for LocomotionIdle {
 pub struct LocomotionChase;
 
 impl BtNode for LocomotionChase {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         if let Some(target) = blackboard.current_target {
-            blackboard.locomotion_intent = AiLocomotionIntent::Chase(target);
+            intent.locomotion = AiLocomotionIntent::Chase(target);
             BtStatus::Running
         } else {
             BtStatus::Failure
@@ -32,17 +30,17 @@ impl BtNode for LocomotionChase {
 pub struct ActionIdle;
 
 impl BtNode for ActionIdle {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
-        blackboard.action_intent = AiActionIntent::Idle;
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        intent.action = AiActionIntent::Idle;
         BtStatus::Success
     }
 }
 pub struct ActionShoot;
 
 impl BtNode for ActionShoot {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         if let Some(target) = blackboard.current_target {
-            blackboard.action_intent = AiActionIntent::Shoot(target);
+            intent.action = AiActionIntent::Shoot(target);
             BtStatus::Running
         } else {
             BtStatus::Failure
@@ -53,9 +51,9 @@ impl BtNode for ActionShoot {
 pub struct ActionMelee;
 
 impl BtNode for ActionMelee {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BtStatus {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         if let Some(target) = blackboard.current_target {
-            blackboard.action_intent = AiActionIntent::Melee(target);
+            intent.action = AiActionIntent::Melee(target);
             BtStatus::Running
         } else {
             BtStatus::Failure

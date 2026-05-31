@@ -29,8 +29,7 @@ pub struct Blackboard {
     pub nearby_actors: Vec<Entity>,
     pub visible_actors: Vec<Entity>,
     pub current_target: Option<Entity>,
-    pub locomotion_intent: AiLocomotionIntent,
-    pub action_intent: AiActionIntent,
+
     pub directive: AiDirective,
 }
 
@@ -39,11 +38,27 @@ pub struct AiMovementIntent {
     pub move_direction: Vec2,
 }
 
+#[derive(Component, Debug)]
+pub struct AiIntent {
+    pub locomotion: AiLocomotionIntent,
+    pub action: AiActionIntent,
+}
+
+impl AiIntent {
+    fn idle() -> Self {
+        AiIntent {
+            locomotion: AiLocomotionIntent::Idle,
+            action: AiActionIntent::Idle,
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct AiController {
     pub black_board: Blackboard,
     pub action_tree: Box<dyn BtNode>,
     pub locomotion_tree: Box<dyn BtNode>,
+    pub intent: AiIntent,
 }
 
 impl AiController {
@@ -70,10 +85,9 @@ impl AiController {
                 nearby_actors: vec![],
                 visible_actors: vec![],
                 current_target: None,
-                locomotion_intent: AiLocomotionIntent::Idle,
-                action_intent: AiActionIntent::Idle,
                 directive: AiDirective::Idle,
             },
+            intent: AiIntent::idle(),
             action_tree,
             locomotion_tree,
         }
@@ -101,10 +115,9 @@ impl AiController {
                 nearby_actors: vec![],
                 visible_actors: vec![],
                 current_target: None,
-                locomotion_intent: AiLocomotionIntent::Idle,
-                action_intent: AiActionIntent::Idle,
                 directive: AiDirective::Idle,
             },
+            intent: AiIntent::idle(),
             action_tree,
             locomotion_tree,
         }

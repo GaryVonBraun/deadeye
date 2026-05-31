@@ -211,8 +211,7 @@ pub fn flow_field_navigation(
                 let offset_position = ai_transform.translation.truncate() + collision.offset;
 
                 //FIXME - setting the the target tile to ZERO every time is not needed i think
-                let AiLocomotionIntent::Chase(target) = controller.black_board.locomotion_intent
-                else {
+                let AiLocomotionIntent::Chase(target) = controller.intent.locomotion else {
                     navigation_target.0 = None;
                     return;
                 };

@@ -69,7 +69,7 @@ pub fn ai_movement_system(
     actor_query: Query<(&Transform, &Collision), With<Actor>>,
 ) {
     for (controller, ai_transform, mut movement_intent, collision) in ai_query.iter_mut() {
-        match controller.black_board.locomotion_intent {
+        match controller.intent.locomotion {
             AiLocomotionIntent::Chase(target) => {
                 if let Ok((target_transform, target_collision)) = actor_query.get(target) {
                     let distance = Vec2::distance(
@@ -316,7 +316,7 @@ pub fn ai_shooting_system(
     mut messages: MessageWriter<ShootMessage>,
 ) {
     for (ai_entity, controller, mut ai_shooting_intent) in ai_query.iter_mut() {
-        match controller.black_board.action_intent {
+        match controller.intent.action {
             AiActionIntent::Shoot(target) => {
                 if let Ok(target_transform) = actor_query.get(target) {
                     ai_shooting_intent.target_position = target_transform.translation.truncate();
@@ -392,7 +392,7 @@ pub fn ai_melee_system(
     actor_query: Query<(&Transform, &Hurtbox), (With<Actor>, Without<Dead>)>,
 ) {
     for (controller, mut melee_intent, transform, hitbox) in ai_query.iter_mut() {
-        match controller.black_board.action_intent {
+        match controller.intent.action {
             AiActionIntent::Melee(entity) => {
                 if melee_intent.melee_state != MeleeState::Ready {
                     continue;
