@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 
 use crate::{
-    actor::components::{Actor, Team},
+    actor::components::Actor,
     ai::{components::AiController, vision::components::Vision},
     collision::{components::Collision, utility::swept_collision},
     combat::health::components::Dead,
     props::components::Prop,
 };
 
-pub fn nearby_detection_system(
+pub fn collect_nearby_actors(
     mut ai_query: Query<(Entity, &Transform, &Vision, &mut AiController)>,
     actor_query: Query<(Entity, &Transform), With<Actor>>,
 ) {
@@ -33,16 +33,15 @@ pub fn nearby_detection_system(
     }
 }
 
-pub fn get_visible_actors(
-    mut ai_query: Query<(&Transform, &mut AiController, &Team), With<Vision>>,
-    actor_query: Query<(Entity, &Transform, &Team), (With<Actor>, Without<Dead>)>,
+pub fn compute_visible_actors(
+    mut ai_query: Query<(&Transform, &mut AiController), With<Vision>>,
+    actor_query: Query<(Entity, &Transform), (With<Actor>, Without<Dead>)>,
     prop_query: Query<(&Collision, &Transform), With<Prop>>,
 ) {
-    for (ai_transform, mut ai_controller, team) in ai_query.iter_mut() {
+    for (ai_transform, mut ai_controller) in ai_query.iter_mut() {
         let mut visible_actors: Vec<Entity> = vec![];
         for entity in ai_controller.black_board.nearby_actors.iter() {
-            let Ok((nearby_entity, nearby_transform, nearby_team)) = actor_query.get(*entity)
-            else {
+            let Ok((nearby_entity, nearby_transform)) = actor_query.get(*entity) else {
                 continue;
             };
 
