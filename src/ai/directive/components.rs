@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, PartialEq, Clone)]
 pub enum AiDirective {
     Idle,
     SearchAndDestroy,

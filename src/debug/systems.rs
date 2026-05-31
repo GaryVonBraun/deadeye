@@ -172,7 +172,7 @@ pub fn astar_gizmos(
     mut gizmos: Gizmos,
 ) {
     for astar in astar_query.iter() {
-        if astar.path.is_empty() {
+        if astar.path.is_empty() || astar.target.is_none() {
             continue;
         }
 

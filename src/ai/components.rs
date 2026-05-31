@@ -10,6 +10,7 @@ pub enum AiLocomotionIntent {
     #[default]
     Idle,
     Chase(Entity),
+    Follow(Entity),
 }
 
 #[derive(Component, Debug)]
@@ -85,9 +86,9 @@ impl AiController {
         });
         let locomotion_tree = Box::new(Selector {
             children: vec![
-                // Box::new(Sequence {
-                //     children: vec![Box::new(HasTarget), Box::new(LocomotionChase)],
-                // }),
+                Box::new(Sequence {
+                    children: vec![Box::new(HasFollowDirective), Box::new(LocomotionFollow)],
+                }),
                 Box::new(LocomotionIdle),
             ],
         });

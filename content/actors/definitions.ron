@@ -4,7 +4,7 @@
             id: "player",
             archetype: Player,
             health: 10020.0,
-            speed: 50,
+            speed: 100,
             vision_range: 14.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Player),

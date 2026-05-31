@@ -58,6 +58,8 @@ pub fn calculate_astar_path(
             continue;
         }
 
+        astar.path.clear();
+        astar.current_index = 0;
         astar.calculated_target = astar.target;
 
         // bounds check (fixed logic)
@@ -190,7 +192,7 @@ pub fn astar_navigation(
     active_map: Res<ActiveMap>,
 ) {
     for (mut astar_path, transform, collision, mut navigation_target) in astar_query.iter_mut() {
-        if astar_path.path.is_empty() {
+        if astar_path.path.is_empty() || astar_path.target.is_none() {
             continue;
         }
 

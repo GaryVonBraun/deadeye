@@ -9,7 +9,8 @@ use crate::{
         teams::{TeamStanding, get_standing},
     },
     ai::components::{
-        AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, SeekNearestHostile,
+        AiActionIntent, AiController, AiIntent, AiLocomotionIntent, AiMovementIntent,
+        SeekNearestHostile,
     },
     collision::{components::Collision, utility::check_collision},
     combat::{
@@ -21,7 +22,10 @@ use crate::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
     },
-    navigation::{components::NavigationTargetTile, flow_field::components::FlowFieldNavigator},
+    navigation::{
+        astar::components::AStarPath, components::NavigationTargetTile,
+        flow_field::components::FlowFieldNavigator,
+    },
 };
 
 pub fn ai_movement_system(
@@ -371,6 +375,41 @@ pub fn ai_melee_system(
                 ) {
                     melee_intent.melee_state = MeleeState::AttackDelay(melee_intent.delay);
                     melee_intent.target = Some(entity);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn follow_target_actor(
+    mut ai_query: Query<(&AiController, &mut NavigationTargetTile, &mut AStarPath)>,
+    actor_query: Query<&Transform, With<Actor>>,
+    active_map: Res<ActiveMap>,
+) {
+    for (controller, mut target_tile, mut astar) in ai_query.iter_mut() {
+        match controller.intent.locomotion {
+            AiLocomotionIntent::Follow(entity) => {
+                let Ok(actor_transform) = actor_query.get(entity) else {
+                    warn!("Could not find actor {:?} needed for following", entity);
+                    continue;
+                };
+
+                let actor_tile_position = world_to_grid(
+                    actor_transform.translation.truncate(),
+                    active_map.tileset.tile_size,
+                    &active_map.map.bounds,
+                );
+
+                if controller.black_board.visible_actors.contains(&entity) {
+                    astar.target = None;
+                    target_tile.value = Some(actor_tile_position);
+                } else {
+                    if astar.target == Some(actor_tile_position) {
+                        continue;
+                    }
+                    target_tile.value = None;
+                    astar.target = Some(actor_tile_position);
                 }
             }
             _ => {}

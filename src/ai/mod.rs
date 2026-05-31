@@ -28,6 +28,7 @@ impl Plugin for AiPlugin {
                 // ai_movement_system,
                 (
                     target_navigation,
+                    follow_target_actor,
                     // separation_steering
                 )
                     .run_if(resource_exists::<ActiveMap>),

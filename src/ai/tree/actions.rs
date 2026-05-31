@@ -1,5 +1,8 @@
+use bevy::log::{info, warn};
+
 use crate::ai::{
     components::{AiActionIntent, AiIntent, AiLocomotionIntent, Blackboard},
+    directive::components::AiDirective,
     tree::{BtNode, BtStatus},
 };
 
@@ -10,6 +13,23 @@ impl BtNode for LocomotionIdle {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         intent.locomotion = AiLocomotionIntent::Idle;
         BtStatus::Success
+    }
+}
+
+pub struct LocomotionFollow;
+
+impl BtNode for LocomotionFollow {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        match blackboard.directive {
+            AiDirective::Follow(entity) => {
+                intent.locomotion = AiLocomotionIntent::Follow(entity);
+                BtStatus::Success
+            }
+            _ => {
+                warn!("Ai directive expected to be Follow");
+                BtStatus::Failure
+            }
+        }
     }
 }
 
