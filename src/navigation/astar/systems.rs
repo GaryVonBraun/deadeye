@@ -10,18 +10,26 @@ use crate::{
     },
 };
 
-#[derive(Eq, PartialEq, PartialOrd)]
+#[derive(Eq, PartialEq, Clone)] // remove ONLY PartialOrd — keep PartialEq/Eq derived
 struct AStarNode {
     position: (i32, i32),
     g_cost: u32,
     f_score: u32,
 }
 
+impl PartialOrd for AStarNode {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl Ord for AStarNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        // its being ordered in reverse due
-        other.f_score.cmp(&self.f_score)
-        //NOTE - currently only using f_score meaning it could have a tie when ordering
+        other
+            .f_score
+            .cmp(&self.f_score)
+            .then_with(|| self.g_cost.cmp(&other.g_cost))
+            .then_with(|| other.position.cmp(&self.position))
     }
 }
 
