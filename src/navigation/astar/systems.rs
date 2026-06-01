@@ -204,6 +204,7 @@ pub fn astar_navigation(
             continue;
         }
 
+        // get position on grid
         let offset_position = transform.translation.truncate() + collision.offset;
         let current_tile = world_to_grid(
             offset_position,
@@ -211,6 +212,7 @@ pub fn astar_navigation(
             &active_map.map.bounds,
         );
 
+        // when already on target position set target to none
         if let Some(target) = astar_path.target {
             if current_tile == target {
                 navigation_target.value = None;
@@ -218,12 +220,14 @@ pub fn astar_navigation(
             }
         }
 
-        if let Some(target) = navigation_target.value {
-            if current_tile == target && astar_path.current_index + 1 < astar_path.path.len() {
+        // when target tile is reached it increments to the next index if available
+        if let Some(next_target) = navigation_target.value {
+            if current_tile == next_target && astar_path.current_index + 1 < astar_path.path.len() {
                 astar_path.current_index += 1;
             }
         };
 
+        // set new target based on index
         navigation_target.value = Some(astar_path.path[astar_path.current_index]);
     }
 }

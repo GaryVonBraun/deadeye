@@ -8,7 +8,7 @@
             vision_range: 14.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Player),
-            collision_radius: 8.,
+            collision_radius: 4.,
 
             // melee stats
             melee_delay: 0.2,
@@ -24,7 +24,7 @@
             vision_range: 200.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Player),
-            collision_radius: 8.,
+            collision_radius: 4.,
 
             // melee stats
             melee_delay: 0.2,
@@ -40,7 +40,7 @@
             vision_range: 14.0,
             sprite: "sprites/soldier_default.png",
             team: Team(Zombie),
-            collision_radius: 8.,
+            collision_radius: 4.,
 
             // melee stats
             melee_delay: 0.2,

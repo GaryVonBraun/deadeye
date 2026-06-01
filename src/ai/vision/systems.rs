@@ -19,10 +19,12 @@ pub fn collect_nearby_actors(
         let mut visible_actors: Vec<Entity> = [].to_vec();
 
         for (actor_entity, actor_transform) in actor_query.iter() {
+            // skip self
             if ai_entity == actor_entity {
                 continue;
             }
 
+            // if entity is within vision range it collects
             if Vec2::distance(
                 ai_transform.translation.truncate(),
                 actor_transform.translation.truncate(),
@@ -50,6 +52,7 @@ pub fn compute_visible_actors(
 
             let mut vision_blocked = false;
 
+            // perform "raycast" like collision check to see if prop intersects between 2 actors
             for (prop_collision, prop_transform) in prop_query.iter() {
                 if swept_collision(
                     ai_transform.translation.truncate(),

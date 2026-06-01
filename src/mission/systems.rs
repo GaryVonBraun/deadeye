@@ -88,10 +88,17 @@ pub fn load_mission(
         //     }
         // }
 
-        spawn_actor_writer.write(SpawnActorMessage {
-            id: "npc".to_string(),
-            position: Vec2 { x: -50., y: -50. },
-        });
+        for y in 0..1 {
+            for x in 0..1 {
+                spawn_actor_writer.write(SpawnActorMessage {
+                    id: "npc".to_string(),
+                    position: Vec2 {
+                        x: x as f32 * 5.,
+                        y: y as f32 * 5.,
+                    },
+                });
+            }
+        }
     }
 }
 

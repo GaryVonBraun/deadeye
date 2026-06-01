@@ -401,10 +401,13 @@ pub fn follow_target_actor(
                     &active_map.map.bounds,
                 );
 
+                //FIXME - currently around corners npc's tend to get stuck due to target being visible
+                // direct targeting
                 if controller.black_board.visible_actors.contains(&entity) {
                     astar.target = None;
                     target_tile.value = Some(actor_tile_position);
                 } else {
+                    // A* path
                     if astar.target == Some(actor_tile_position) {
                         continue;
                     }
