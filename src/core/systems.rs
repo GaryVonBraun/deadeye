@@ -83,23 +83,7 @@ pub fn remove_resources(mut commands: Commands) {
     commands.remove_resource::<TilesetRenderState>();
 }
 
-pub fn fps_ui(mut contexts: EguiContexts, diagnostics: Res<DiagnosticsStore>) -> Result {
-    let fps = diagnostics
-        .get(&FrameTimeDiagnosticsPlugin::FPS)
-        .and_then(|d| d.smoothed());
-
-    egui::Window::new("FPS")
-        .resizable(false)
-        .show(contexts.ctx_mut()?, |ui| {
-            match fps {
-                Some(fps) => ui.label(format!("FPS: {fps:.1}")),
-                None => ui.label("FPS: --"),
-            };
-        });
-
-    Ok(())
-}
-
+//NOTE - Idk what this is/was for
 pub fn world_to_hash(world_pos: Vec2, cell_size: f32) -> (i32, i32) {
     let cell_x = (world_pos.x / cell_size).floor() as i32;
     let cell_y = (world_pos.y / cell_size).floor() as i32;

@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_egui::{
     EguiContexts,
     egui::{self},
@@ -19,10 +22,20 @@ use crate::{
 pub fn display_debug_menu(
     mut contexts: EguiContexts,
     mut debug_options: ResMut<DebugOptions>,
+    diagnostics: Res<DiagnosticsStore>,
 ) -> Result {
+    let fps = diagnostics
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
+        .and_then(|d| d.smoothed());
+
     egui::Window::new("Debug Menu")
         .resizable(false)
         .show(contexts.ctx_mut()?, |ui| {
+            match fps {
+                Some(fps) => ui.label(format!("FPS: {fps:.1}")),
+                None => ui.label("FPS: --"),
+            };
+
             ui.label("Items");
             ui.toggle_value(&mut debug_options.vision, "Actor vision");
             ui.toggle_value(&mut debug_options.visible_actors, "Visible actors");
