@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
+    actor::{
+        components::Team,
+        teams::{TeamStanding, get_standing},
+    },
     collision::{
         components::{Collision, CollisionShape2d},
         utility::swept_collision,
@@ -36,7 +40,7 @@ pub fn projectile_hit(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Projectile, &Transform, &Hitbox)>,
     // actors use hurtbox
-    actor_query: Query<(Entity, &Hurtbox, &Transform), (With<Health>, Without<Dead>)>,
+    actor_query: Query<(Entity, &Hurtbox, &Transform, &Team), (With<Health>, Without<Dead>)>,
     // props use collision
     prop_query: Query<(Entity, &Collision, &Transform), With<Prop>>,
     mut message: MessageWriter<DamageMessage>,
@@ -47,8 +51,15 @@ pub fn projectile_hit(
         let next_pos = transform.translation.truncate()
             + projectile.direction * projectile.speed * time.delta_secs();
 
-        for (target_entity, target_collision, target_transform) in actor_query.iter() {
+        for (target_entity, target_collision, target_transform, target_team) in actor_query.iter() {
             if projectile.owner == target_entity {
+                continue;
+            }
+
+            if matches!(
+                get_standing(&projectile.team.0, &target_team.0),
+                TeamStanding::Friendly
+            ) {
                 continue;
             }
 

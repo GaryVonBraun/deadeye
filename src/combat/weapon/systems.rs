@@ -2,7 +2,10 @@ use bevy::{ecs::relationship::Relationship, prelude::*};
 use rand::RngExt;
 
 use crate::{
-    actor::{components::Actor, locomotion::components::Locomotion},
+    actor::{
+        components::{Actor, Team},
+        locomotion::components::Locomotion,
+    },
     audio::resources::AudioRegistry,
     collision::components::CollisionShape,
     combat::{
@@ -18,7 +21,7 @@ use crate::{
 pub fn shoot_weapon(
     mut commands: Commands,
     mut messages: MessageReader<ShootMessage>,
-    children_query: Query<(&Children, &EquippedWeapon, &Locomotion), With<Actor>>,
+    children_query: Query<(&Children, &EquippedWeapon, &Locomotion, &Team), With<Actor>>,
     mut weapon_query: Query<(&Weapon, &mut WeaponRuntime, &GlobalTransform), With<Weapon>>,
     asset_server: Res<AssetServer>,
     audio_registry: Res<AudioRegistry>,
@@ -26,7 +29,8 @@ pub fn shoot_weapon(
     for message in messages.read() {
         let mut rng = rand::rng();
         // get the children of the shooter entity
-        if let Ok((children, equipped_weapon, locomotion)) = children_query.get(message.owner) {
+        if let Ok((children, equipped_weapon, locomotion, team)) = children_query.get(message.owner)
+        {
             for child in children.iter() {
                 // and we check if the child is a weapon
 
@@ -109,6 +113,7 @@ pub fn shoot_weapon(
                             lifetime: 3.,
                             damage: weapon.damage,
                             owner: message.owner,
+                            team: team.clone(),
                         },
                         hitbox: Hitbox {
                             shape: CollisionShape::Circle { radius: 2. },
