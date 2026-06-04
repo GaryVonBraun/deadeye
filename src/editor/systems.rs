@@ -207,12 +207,19 @@ pub fn save_editor_changes(
     save_mission_writer.write(SaveMissionMessage);
 }
 
-pub fn render_gizmos(active_mission: Res<ActiveMission>, mut gizmos: Gizmos) {
+pub fn player_spawn_gizmo(
+    active_mission: Res<ActiveMission>,
+    active_map: Res<ActiveMap>,
+    mut gizmos: Gizmos,
+) {
     let spawn_position = active_mission.mission.player_spawn;
 
     gizmos.rounded_rect_2d(
-        Isometry2d::from_xy(spawn_position.x, spawn_position.y),
-        Vec2::splat(50.),
+        Isometry2d::from_xy(
+            spawn_position.x - active_map.tileset.tile_size * 0.5,
+            spawn_position.y - active_map.tileset.tile_size * 0.5,
+        ),
+        Vec2::splat(active_map.tileset.tile_size),
         Color::linear_rgb(1., 0.4, 0.4),
     );
 }

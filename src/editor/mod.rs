@@ -28,6 +28,7 @@ impl Plugin for EditorPlugin {
                 editor_click_system,
                 update_preview_position,
                 update_preview_image,
+                (player_spawn_gizmo).run_if(resource_exists::<ActiveMission>),
             )
                 .run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMap>)),
         );
@@ -49,10 +50,6 @@ impl Plugin for EditorPlugin {
         app.add_systems(
             Update,
             (editor_camera_controller).run_if(in_state(AppState::Editor)),
-        );
-        app.add_systems(
-            Update,
-            render_gizmos.run_if(in_state(AppState::Editor).and(resource_exists::<ActiveMission>)),
         );
         app.add_systems(
             Update,
