@@ -383,15 +383,20 @@ pub fn ai_melee_system(
 }
 
 pub fn follow_target_actor(
-    mut ai_query: Query<(&AiController, &mut NavigationTargetTile, &mut AStarPath)>,
+    mut ai_query: Query<(
+        &Transform,
+        &AiController,
+        &mut NavigationTargetTile,
+        &mut AStarPath,
+    )>,
     actor_query: Query<&Transform, With<Actor>>,
     active_map: Res<ActiveMap>,
 ) {
-    for (controller, mut target_tile, mut astar) in ai_query.iter_mut() {
+    for (transform, controller, mut target_tile, mut astar) in ai_query.iter_mut() {
         match controller.intent.locomotion {
-            AiLocomotionIntent::Follow(entity) => {
-                let Ok(actor_transform) = actor_query.get(entity) else {
-                    warn!("Could not find actor {:?} needed for following", entity);
+            AiLocomotionIntent::Follow { target, distance } => {
+                let Ok(actor_transform) = actor_query.get(target) else {
+                    warn!("Could not find actor {:?} needed for following", target);
                     continue;
                 };
 
@@ -403,7 +408,15 @@ pub fn follow_target_actor(
 
                 //FIXME - currently around corners npc's tend to get stuck due to target being visible
                 // direct targeting
-                if controller.black_board.visible_actors.contains(&entity) {
+                if controller.black_board.visible_actors.contains(&target) {
+                    if Vec2::distance(
+                        transform.translation.truncate(),
+                        actor_transform.translation.truncate(),
+                    ) < distance
+                    {
+                        target_tile.value = None;
+                        continue;
+                    }
                     astar.target = None;
                     target_tile.value = Some(actor_tile_position);
                 } else {

@@ -15,7 +15,10 @@ pub fn set_follow_player_directive(
     };
 
     for mut directive in directive_query.iter_mut() {
-        *directive = AiDirective::Follow(player);
+        *directive = AiDirective::Follow {
+            target: player,
+            distance: 30.,
+        };
     }
 }
 

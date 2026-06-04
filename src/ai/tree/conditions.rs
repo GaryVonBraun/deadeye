@@ -32,7 +32,7 @@ pub struct HasFollowDirective;
 
 impl BtNode for HasFollowDirective {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
-        if matches!(blackboard.directive, AiDirective::Follow(..)) {
+        if matches!(blackboard.directive, AiDirective::Follow { .. }) {
             BtStatus::Success
         } else {
             BtStatus::Failure

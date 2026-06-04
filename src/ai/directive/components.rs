@@ -4,5 +4,5 @@ use bevy::prelude::*;
 pub enum AiDirective {
     Idle,
     SearchAndDestroy,
-    Follow(Entity),
+    Follow { target: Entity, distance: f32 },
 }

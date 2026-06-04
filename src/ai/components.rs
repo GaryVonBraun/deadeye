@@ -10,7 +10,10 @@ pub enum AiLocomotionIntent {
     #[default]
     Idle,
     Chase(Entity),
-    Follow(Entity),
+    Follow {
+        target: Entity,
+        distance: f32,
+    },
 }
 
 #[derive(Component, Debug)]

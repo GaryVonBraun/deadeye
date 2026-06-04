@@ -21,8 +21,8 @@ pub struct LocomotionFollow;
 impl BtNode for LocomotionFollow {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         match blackboard.directive {
-            AiDirective::Follow(entity) => {
-                intent.locomotion = AiLocomotionIntent::Follow(entity);
+            AiDirective::Follow { target, distance } => {
+                intent.locomotion = AiLocomotionIntent::Follow { target, distance };
                 BtStatus::Success
             }
             _ => {
