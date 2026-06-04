@@ -23,7 +23,8 @@ use crate::{
         utility::{grid_to_world, world_to_grid},
     },
     navigation::{
-        astar::components::AStarPath, components::NavigationTargetTile,
+        astar::{self, components::AStarPath},
+        components::NavigationTargetTile,
         flow_field::components::FlowFieldNavigator,
     },
 };
@@ -406,9 +407,17 @@ pub fn follow_target_actor(
                     &active_map.map.bounds,
                 );
 
-                //FIXME - currently around corners npc's tend to get stuck due to target being visible
+                //FIXME - Following around corners the ai can be a little funky
                 // direct targeting
                 if controller.black_board.visible_actors.contains(&target) {
+                    if let Some(commit_index) = astar.commit_until_index {
+                        if astar.current_index < commit_index {
+                            continue;
+                        }
+
+                        astar.commit_until_index = None;
+                    }
+
                     if Vec2::distance(
                         transform.translation.truncate(),
                         actor_transform.translation.truncate(),
@@ -420,6 +429,10 @@ pub fn follow_target_actor(
                     astar.target = None;
                     target_tile.value = Some(actor_tile_position);
                 } else {
+                    if astar.target != Some(actor_tile_position) {
+                        astar.commit_until_index = Some(astar.current_index + 1);
+                        astar.target = Some(actor_tile_position);
+                    }
                     // A* path
                     if astar.target == Some(actor_tile_position) {
                         continue;

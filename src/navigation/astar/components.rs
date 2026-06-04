@@ -8,6 +8,7 @@ pub struct AStarPath {
     pub calculated_target: Option<IVec2>,
     pub path: Vec<IVec2>,
     pub current_index: usize,
+    pub commit_until_index: Option<usize>,
 }
 
 #[derive(Bundle)]
@@ -25,6 +26,7 @@ impl AStarBundle {
                 //NOTE - maybe make it optional
                 path: vec![],
                 current_index: 0,
+                commit_until_index: None,
             },
             target_tile: NavigationTargetTile::default(),
         }
