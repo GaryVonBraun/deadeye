@@ -14,14 +14,14 @@ pub fn main_menu_interactions(
         if *interaction == Interaction::Pressed {
             match menu_interaction {
                 MainMenuInteractions::PlayButton => {
-                    next_state.set(AppState::InGame);
+                    next_state.set(AppState::MissionMenu);
                 }
                 MainMenuInteractions::MissionsButton => {
                     next_state.set(AppState::MissionMenu);
                 }
                 MainMenuInteractions::SettingsButton => {
                     //TEMPORARY - currently settings don't exist so its placeholder
-                    next_state.set(AppState::InGame);
+                    next_state.set(AppState::MissionMenu);
                 }
                 MainMenuInteractions::QuitButton => {
                     app_exit_message_writer.write(AppExit::Success);

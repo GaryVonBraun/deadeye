@@ -9,6 +9,9 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
     println!("Building main menu");
+
+    let image = asset_server.load("main_menu_placeholder.png");
+
     let main_menu_entity = commands
         .spawn((
             Node {
@@ -20,6 +23,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                 row_gap: Val::Px(20.),
                 ..Default::default()
             },
+            ImageNode { image, ..default() },
             MainMenu,
         ))
         .with_children(|parent| {
