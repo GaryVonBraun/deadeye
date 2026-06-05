@@ -34,7 +34,9 @@ impl Plugin for AiPlugin {
                     .run_if(resource_exists::<ActiveMap>),
                 ai_shooting_system,
                 ai_melee_system,
+                ai_weapon_awareness_system,
                 seek_nearest_hostile,
+                ai_reloading_system,
             )
                 .in_set(AiSet::Targeting)
                 .run_if(in_state(SimulationState::Running)),

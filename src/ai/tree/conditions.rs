@@ -1,7 +1,5 @@
-use bevy::log::info;
-
 use crate::ai::{
-    components::{AiIntent, Blackboard},
+    components::{AiIntent, AmmoAmount, Blackboard},
     directive::components::AiDirective,
     tree::{BtNode, BtStatus},
 };
@@ -33,6 +31,30 @@ pub struct HasFollowDirective;
 impl BtNode for HasFollowDirective {
     fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
         if matches!(blackboard.directive, AiDirective::Follow { .. }) {
+            BtStatus::Success
+        } else {
+            BtStatus::Failure
+        }
+    }
+}
+
+pub struct NeedsReload;
+
+impl BtNode for NeedsReload {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        if matches!(blackboard.weapon_info.magazine_ammo, AmmoAmount::Empty) {
+            BtStatus::Success
+        } else {
+            BtStatus::Failure
+        }
+    }
+}
+
+pub struct HasLowAmmo;
+
+impl BtNode for HasLowAmmo {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        if matches!(blackboard.weapon_info.magazine_ammo, AmmoAmount::Low) {
             BtStatus::Success
         } else {
             BtStatus::Failure

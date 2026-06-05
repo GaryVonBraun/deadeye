@@ -24,12 +24,14 @@ pub struct SeekNearestHostile;
 pub enum AiActionIntent {
     #[default]
     Idle,
+    Reload,
     Shoot(Entity),
     Melee(Entity),
 }
 
 #[derive(Component)]
 pub struct Blackboard {
+    pub weapon_info: AiWeaponInfo,
     pub nearby_actors: Vec<Entity>,
     pub visible_actors: Vec<Entity>,
     pub nearest_visible_hostile: Option<Entity>,
@@ -40,6 +42,7 @@ pub struct Blackboard {
 impl Blackboard {
     pub fn default() -> Self {
         Blackboard {
+            weapon_info: AiWeaponInfo::default(),
             nearby_actors: vec![],
             visible_actors: vec![],
             nearest_visible_hostile: None,
@@ -77,12 +80,41 @@ pub struct AiController {
     pub intent: AiIntent,
 }
 
+#[derive(Component, Debug)]
+pub struct AiWeaponInfo {
+    pub magazine_ammo: AmmoAmount,
+    reserve_ammo: AmmoAmount,
+}
+
+impl AiWeaponInfo {
+    pub fn default() -> Self {
+        AiWeaponInfo {
+            magazine_ammo: AmmoAmount::Empty,
+            reserve_ammo: AmmoAmount::Empty,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum AmmoAmount {
+    Empty,
+    Low,
+    Medium,
+    Full,
+}
+
 impl AiController {
     pub fn default_human() -> Self {
         let action_tree = Box::new(Selector {
             children: vec![
                 Box::new(Sequence {
+                    children: vec![Box::new(NeedsReload), Box::new(ActionReload)],
+                }),
+                Box::new(Sequence {
                     children: vec![Box::new(HasNearestVisibleHostile), Box::new(ActionShoot)],
+                }),
+                Box::new(Sequence {
+                    children: vec![Box::new(HasLowAmmo), Box::new(ActionReload)],
                 }),
                 Box::new(ActionIdle),
             ],

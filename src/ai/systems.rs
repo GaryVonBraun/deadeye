@@ -9,22 +9,22 @@ use crate::{
         teams::{TeamStanding, get_standing},
     },
     ai::components::{
-        AiActionIntent, AiController, AiIntent, AiLocomotionIntent, AiMovementIntent,
+        AiActionIntent, AiController, AiLocomotionIntent, AiMovementIntent, AmmoAmount,
         SeekNearestHostile,
     },
     collision::{components::Collision, utility::check_collision},
     combat::{
-        components::{MeleeIntent, MeleeState, ShootingIntent},
+        components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
         health::components::{Dead, Hitbox, Hurtbox},
-        messages::ShootMessage,
+        messages::{ReloadMessage, ShootMessage},
+        weapon::components::{Weapon, WeaponRuntime},
     },
     map::{
         resources::ActiveMap,
         utility::{grid_to_world, world_to_grid},
     },
     navigation::{
-        astar::{self, components::AStarPath},
-        components::NavigationTargetTile,
+        astar::components::AStarPath, components::NavigationTargetTile,
         flow_field::components::FlowFieldNavigator,
     },
 };
@@ -295,6 +295,40 @@ pub fn ai_shooting_system(
             }
             _ => {}
         }
+    }
+}
+
+pub fn ai_reloading_system(
+    mut ai_query: Query<(Entity, &AiController), With<AiController>>,
+    mut messages: MessageWriter<ReloadMessage>,
+) {
+    for (entity, controller) in ai_query.iter_mut() {
+        match controller.intent.action {
+            AiActionIntent::Reload => {
+                messages.write(ReloadMessage { entity });
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn ai_weapon_awareness_system(
+    mut ai_query: Query<(&mut AiController, &EquippedWeapon), With<AiController>>,
+    weapon_query: Query<(&Weapon, &WeaponRuntime), With<Weapon>>,
+) {
+    for (mut controller, equipped_weapon) in ai_query.iter_mut() {
+        let Ok((weapon, runtime)) = weapon_query.get(equipped_weapon.entity) else {
+            continue;
+        };
+
+        let reserve = match runtime.ammo {
+            0 => AmmoAmount::Empty,
+            a if a <= weapon.magazine_size / 3 => AmmoAmount::Low,
+            a if a <= weapon.magazine_size / 3 * 2 => AmmoAmount::Medium,
+            _ => AmmoAmount::Full,
+        };
+
+        controller.black_board.weapon_info.magazine_ammo = reserve;
     }
 }
 

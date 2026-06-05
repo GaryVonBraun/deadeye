@@ -18,7 +18,7 @@ pub fn spawn_debug_weapon(
     let weapon_config = Weapon {
         fire_delay: 0.1,
         reload_time: 3.,
-        magazine_size: 300,
+        magazine_size: 30,
         speed: 500.,
         damage: 100.,
         shoot_sound: "weapon_pistol_fire".to_string(),

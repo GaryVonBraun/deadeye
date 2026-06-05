@@ -68,6 +68,15 @@ impl BtNode for ActionShoot {
     }
 }
 
+pub struct ActionReload;
+
+impl BtNode for ActionReload {
+    fn tick(&mut self, blackboard: &Blackboard, intent: &mut AiIntent) -> BtStatus {
+        intent.action = AiActionIntent::Reload;
+        BtStatus::Running
+    }
+}
+
 pub struct ActionMelee;
 
 impl BtNode for ActionMelee {

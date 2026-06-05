@@ -156,7 +156,9 @@ pub fn reload_weapon(
         if let Ok(children) = children_query.get(message.entity) {
             for child in children.iter() {
                 if let Ok((weapon, mut weapon_runtime)) = weapon_query.get_mut(child) {
-                    if !matches!(weapon_runtime.state, WeaponState::Reloading { .. }) {
+                    if !matches!(weapon_runtime.state, WeaponState::Reloading { .. })
+                        && weapon_runtime.ammo < weapon.magazine_size
+                    {
                         let Some(asset) = audio_registry.sounds.get(&weapon.reload_sound) else {
                             return;
                         };
