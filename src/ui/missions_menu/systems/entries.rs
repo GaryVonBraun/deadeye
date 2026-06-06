@@ -45,11 +45,11 @@ pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<M
                                 ));
                             });
                         UiButton::new("Play".to_string())
-                            .variant(UiButtonVariant::Success)
+                            .variant(UiButtonVariant::Primary)
                             .spawn(parent, MissionListInteractions::Play(mission.id));
 
                         UiButton::new("Edit".to_string())
-                            .variant(UiButtonVariant::Success)
+                            .variant(UiButtonVariant::Primary)
                             .spawn(parent, MissionListInteractions::Edit(mission.id));
 
                         UiButton::new("Delete".to_string())

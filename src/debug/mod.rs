@@ -16,7 +16,7 @@ pub struct DebugPlugin;
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource::<DebugOptions>(DebugOptions::default());
-        app.add_systems(EguiPrimaryContextPass, display_debug_menu);
+        // app.add_systems(EguiPrimaryContextPass, display_debug_menu);
         app.add_systems(
             Update,
             (

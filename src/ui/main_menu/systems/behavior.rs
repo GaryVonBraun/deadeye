@@ -15,7 +15,7 @@ pub fn main_menu_interactions(
             match menu_interaction {
                 MainMenuInteractions::ContinueButton => {
                     // next_state.set(AppState::MissionMenu);
-                    todo!("yea so this shit not implemented yet")
+                    info!("yea so this shit not implemented yet")
                 }
                 MainMenuInteractions::LoadButton => {
                     next_state.set(AppState::CampaignMenu);
@@ -25,7 +25,7 @@ pub fn main_menu_interactions(
                 }
                 MainMenuInteractions::SettingsButton => {
                     //TEMPORARY - currently settings don't exist so its placeholder
-                    next_state.set(AppState::MissionMenu);
+                    // next_state.set(AppState::MissionMenu);
                 }
                 MainMenuInteractions::QuitButton => {
                     app_exit_message_writer.write(AppExit::Success);

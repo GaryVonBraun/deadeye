@@ -40,7 +40,7 @@ pub fn build_missions_menu(commands: &mut Commands, asset_server: &Res<AssetServ
                 });
 
             UiButton::new("New Mission".to_string())
-                .variant(UiButtonVariant::Success)
+                .variant(UiButtonVariant::Primary)
                 .spawn(parent, MissionMenuInteractions::New);
             // card that will hold the missions
             parent.spawn((ui_card_list(), MissionListUi));

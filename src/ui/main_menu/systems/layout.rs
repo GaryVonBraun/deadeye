@@ -1,5 +1,8 @@
 use crate::ui::{
-    common::button::UiButton,
+    common::{
+        button::{UiButton, UiButtonVariant},
+        styles::BACKGROUND_PRIMARY_COLOR,
+    },
     main_menu::components::{MainMenu, MainMenuInteractions},
 };
 use bevy::prelude::*;
@@ -17,9 +20,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
             Node {
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
+                flex_direction: FlexDirection::Row,
                 row_gap: Val::Px(20.),
                 ..Default::default()
             },
@@ -29,25 +30,36 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
         .with_children(|parent| {
             // title
             parent
-                .spawn((Node {
-                    width: Val::Px(300.),
-                    height: Val::Px(120.),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..Default::default()
-                },))
+                .spawn((
+                    Node {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        max_width: Val::Percent(30.),
+
+                        row_gap: Val::Vh(1.),
+                        ..Default::default()
+                    },
+                    BackgroundColor::from(BACKGROUND_PRIMARY_COLOR),
+                ))
                 .with_children(|parent| {
                     // title
-                    parent.spawn((Text::new("HUH".to_string()), TextColor::WHITE));
+                    parent.spawn((
+                        Text::new("Zormb Game".to_string()),
+                        TextColor::WHITE,
+                        TextFont::from_font_size(50.),
+                    ));
+                    UiButton::new("continue".to_string())
+                        .spawn(parent, MainMenuInteractions::ContinueButton);
+                    UiButton::new("load".to_string())
+                        .spawn(parent, MainMenuInteractions::LoadButton);
+                    UiButton::new("setting".to_string())
+                        .variant(UiButtonVariant::Warn)
+                        .spawn(parent, MainMenuInteractions::SettingsButton);
+                    UiButton::new("missions".to_string())
+                        .spawn(parent, MainMenuInteractions::MissionsButton);
+                    UiButton::new("quit".to_string())
+                        .spawn(parent, MainMenuInteractions::QuitButton);
                 });
-            UiButton::new("continue".to_string())
-                .spawn(parent, MainMenuInteractions::ContinueButton);
-            UiButton::new("load".to_string()).spawn(parent, MainMenuInteractions::LoadButton);
-            UiButton::new("setting".to_string())
-                .spawn(parent, MainMenuInteractions::SettingsButton);
-            UiButton::new("missions".to_string())
-                .spawn(parent, MainMenuInteractions::MissionsButton);
-            UiButton::new("quit".to_string()).spawn(parent, MainMenuInteractions::QuitButton);
         })
         .id();
     main_menu_entity
