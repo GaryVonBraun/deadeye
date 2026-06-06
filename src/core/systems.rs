@@ -7,14 +7,10 @@ use crate::{
     mission::resources::ActiveMission,
     navigation::resources::NavGrid,
 };
-use bevy::{
-    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
-    prelude::*,
-};
-use bevy_egui::{EguiContexts, egui};
+use bevy::prelude::*;
 
 pub fn load_app(mut state: ResMut<NextState<AppState>>) {
-    const INITIAL_STATE: AppState = AppState::MissionMenu;
+    const INITIAL_STATE: AppState = AppState::MainMenu;
 
     info!("Finished loading, setting AppState to {:?}", INITIAL_STATE);
     state.set(INITIAL_STATE);

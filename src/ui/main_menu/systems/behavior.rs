@@ -13,8 +13,12 @@ pub fn main_menu_interactions(
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {
             match menu_interaction {
-                MainMenuInteractions::PlayButton => {
-                    next_state.set(AppState::MissionMenu);
+                MainMenuInteractions::ContinueButton => {
+                    // next_state.set(AppState::MissionMenu);
+                    todo!("yea so this shit not implemented yet")
+                }
+                MainMenuInteractions::LoadButton => {
+                    next_state.set(AppState::CampaignMenu);
                 }
                 MainMenuInteractions::MissionsButton => {
                     next_state.set(AppState::MissionMenu);

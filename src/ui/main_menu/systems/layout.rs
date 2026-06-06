@@ -40,7 +40,9 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                     // title
                     parent.spawn((Text::new("HUH".to_string()), TextColor::WHITE));
                 });
-            UiButton::new("play".to_string()).spawn(parent, MainMenuInteractions::PlayButton);
+            UiButton::new("continue".to_string())
+                .spawn(parent, MainMenuInteractions::ContinueButton);
+            UiButton::new("load".to_string()).spawn(parent, MainMenuInteractions::LoadButton);
             UiButton::new("setting".to_string())
                 .spawn(parent, MainMenuInteractions::SettingsButton);
             UiButton::new("missions".to_string())

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum AppState {
     MainMenu,
+    CampaignMenu,
     MissionMenu,
     Editor,
     InGame,

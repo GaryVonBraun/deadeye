@@ -5,7 +5,8 @@ pub struct MainMenu;
 
 #[derive(Component, Debug, Clone, Copy)]
 pub enum MainMenuInteractions {
-    PlayButton,
+    ContinueButton,
+    LoadButton,
     SettingsButton,
     MissionsButton,
     QuitButton,

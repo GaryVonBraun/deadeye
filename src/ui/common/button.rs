@@ -46,10 +46,11 @@ impl UiButton {
                     width: Val::Px(200.),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
+                    border: UiRect::all(Val::Vw(0.1)),
                     ..default()
                 },
                 Button,
-                BackgroundColor(UiButtonVariant::base_color(self.variant)),
+                BorderColor::all(UiButtonVariant::base_color(self.variant)),
                 self.variant,
                 interaction,
             ))
@@ -62,7 +63,7 @@ impl UiButton {
 
 pub fn ui_button_interaction(
     mut query: Query<
-        (&Interaction, &mut BackgroundColor, &UiButtonVariant),
+        (&Interaction, &mut BorderColor, &UiButtonVariant),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
