@@ -1,8 +1,5 @@
 use crate::ui::{
-    common::{
-        button::{UiButton, UiButtonVariant},
-        styles::BACKGROUND_PRIMARY_COLOR,
-    },
+    common::{components::UiVariant, menu_button::UiMenuButton, styles::*},
     main_menu::components::{MainMenu, MainMenuInteractions},
 };
 use bevy::prelude::*;
@@ -21,7 +18,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
                 flex_direction: FlexDirection::Row,
-                row_gap: Val::Px(20.),
+                row_gap: Val::Px(24.),
                 ..Default::default()
             },
             ImageNode { image, ..default() },
@@ -34,30 +31,38 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                     Node {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
-                        max_width: Val::Percent(30.),
-
+                        padding: UiRect::horizontal(Val::Px(20.)),
+                        border: UiRect::right(Val::Px(2.)),
                         row_gap: Val::Vh(1.),
                         ..Default::default()
                     },
-                    BackgroundColor::from(BACKGROUND_PRIMARY_COLOR),
+                    BorderColor::all(BORDER_STRONG_COLOR),
+                    BackgroundColor::from(BACKGROUND_DEEP_COLOR),
                 ))
                 .with_children(|parent| {
                     // title
                     parent.spawn((
-                        Text::new("Zormb Game".to_string()),
-                        TextColor::WHITE,
-                        TextFont::from_font_size(50.),
+                        Text::new("Dead\nSector".to_string()),
+                        TextColor::from(TEXT_PRIMARY_COLOR),
+                        TextFont::from_font_size(70.),
                     ));
-                    UiButton::new("continue".to_string())
+                    UiMenuButton::new("continue".to_string(), "Continue last campaign".to_string())
+                        .variant(UiVariant::Primary)
                         .spawn(parent, MainMenuInteractions::ContinueButton);
-                    UiButton::new("load".to_string())
+                    UiMenuButton::new("load".to_string(), "Select campaign".to_string())
+                        .variant(UiVariant::Primary)
                         .spawn(parent, MainMenuInteractions::LoadButton);
-                    UiButton::new("setting".to_string())
-                        .variant(UiButtonVariant::Warn)
-                        .spawn(parent, MainMenuInteractions::SettingsButton);
-                    UiButton::new("missions".to_string())
+                    UiMenuButton::new(
+                        "setting".to_string(),
+                        "Audio - Controls - Visuals".to_string(),
+                    )
+                    .variant(UiVariant::Primary)
+                    .spawn(parent, MainMenuInteractions::SettingsButton);
+                    UiMenuButton::new("missions".to_string(), "Edit or Play a mission".to_string())
+                        .variant(UiVariant::Primary)
                         .spawn(parent, MainMenuInteractions::MissionsButton);
-                    UiButton::new("quit".to_string())
+                    UiMenuButton::new("quit".to_string(), "Exit to desktop".to_string())
+                        .variant(UiVariant::Danger)
                         .spawn(parent, MainMenuInteractions::QuitButton);
                 });
         })

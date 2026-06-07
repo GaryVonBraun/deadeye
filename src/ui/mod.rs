@@ -1,9 +1,14 @@
 use bevy::prelude::*;
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 
 use crate::ui::{
-    campaign_menu::CampaignMenuPlugin, common::button::ui_button_interaction,
-    game_over_menu::GameOverMenuPlugin, hud::HudPlugin, main_menu::MainMenuPlugin,
-    missions_menu::MissionDevMenuPlugin, victory_menu::VictoryMenuPlugin,
+    campaign_menu::CampaignMenuPlugin,
+    common::{button::ui_button_interaction, menu_button::ui_menu_button_interaction},
+    game_over_menu::GameOverMenuPlugin,
+    hud::HudPlugin,
+    main_menu::MainMenuPlugin,
+    missions_menu::MissionDevMenuPlugin,
+    victory_menu::VictoryMenuPlugin,
 };
 
 mod campaign_menu;
@@ -25,6 +30,27 @@ impl Plugin for UiPlugin {
             HudPlugin,
             CampaignMenuPlugin,
         ));
-        app.add_systems(Update, ui_button_interaction);
+        app.insert_resource(UiScale(1.));
+        app.add_systems(Update, (ui_button_interaction, ui_menu_button_interaction));
+        app.add_systems(EguiPrimaryContextPass, temporary_scale_window);
     }
+}
+
+fn temporary_scale_window(mut contexts: EguiContexts, mut ui_scale: ResMut<UiScale>) -> Result {
+    egui::Window::new("Debug Menu")
+        .resizable(false)
+        .default_pos(egui::pos2(1500.0, 16.0))
+        .show(contexts.ctx_mut()?, |ui| {
+            ui.horizontal(|ui| {
+                ui.label("UI Scale");
+                let mut scale = ui_scale.0;
+                if ui
+                    .add(egui::Slider::new(&mut scale, 0.5..=3.0).step_by(0.10))
+                    .changed()
+                {
+                    ui_scale.0 = scale;
+                }
+            });
+        });
+    Ok(())
 }

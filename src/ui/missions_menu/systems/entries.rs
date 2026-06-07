@@ -3,10 +3,7 @@ use bevy::{prelude::*, ui::Node};
 use crate::{
     mission::io::operations::read_missions_manifest,
     ui::{
-        common::{
-            bundles::ui_card,
-            button::{UiButton, UiButtonVariant},
-        },
+        common::{bundles::ui_card, button::UiButton, components::UiVariant},
         missions_menu::components::{MissionListInteractions, MissionListUi},
     },
 };
@@ -45,15 +42,15 @@ pub fn populate_mission_list(mut commands: Commands, query: Query<Entity, With<M
                                 ));
                             });
                         UiButton::new("Play".to_string())
-                            .variant(UiButtonVariant::Primary)
+                            .variant(UiVariant::Primary)
                             .spawn(parent, MissionListInteractions::Play(mission.id));
 
                         UiButton::new("Edit".to_string())
-                            .variant(UiButtonVariant::Primary)
+                            .variant(UiVariant::Primary)
                             .spawn(parent, MissionListInteractions::Edit(mission.id));
 
                         UiButton::new("Delete".to_string())
-                            .variant(UiButtonVariant::Danger)
+                            .variant(UiVariant::Danger)
                             .spawn(
                                 parent,
                                 MissionListInteractions::Delete {
