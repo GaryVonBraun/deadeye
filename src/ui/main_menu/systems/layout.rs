@@ -1,5 +1,5 @@
 use crate::ui::{
-    common::{components::UiVariant, menu_button::UiMenuButton, styles::*},
+    common::{components::UiVariant, divider::UiDivider, menu_button::UiMenuButton, styles::*},
     main_menu::components::{MainMenu, MainMenuInteractions},
 };
 use bevy::prelude::*;
@@ -31,6 +31,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                     Node {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
+                        justify_content: JustifyContent::SpaceEvenly,
                         padding: UiRect::horizontal(Val::Px(20.)),
                         border: UiRect::right(Val::Px(2.)),
                         row_gap: Val::Vh(1.),
@@ -46,24 +47,46 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                         TextColor::from(TEXT_PRIMARY_COLOR),
                         TextFont::from_font_size(70.),
                     ));
-                    UiMenuButton::new("continue".to_string(), "Continue last campaign".to_string())
-                        .variant(UiVariant::Primary)
-                        .spawn(parent, MainMenuInteractions::ContinueButton);
-                    UiMenuButton::new("load".to_string(), "Select campaign".to_string())
-                        .variant(UiVariant::Primary)
-                        .spawn(parent, MainMenuInteractions::LoadButton);
-                    UiMenuButton::new(
-                        "setting".to_string(),
-                        "Audio - Controls - Visuals".to_string(),
-                    )
-                    .variant(UiVariant::Primary)
-                    .spawn(parent, MainMenuInteractions::SettingsButton);
-                    UiMenuButton::new("missions".to_string(), "Edit or Play a mission".to_string())
-                        .variant(UiVariant::Primary)
-                        .spawn(parent, MainMenuInteractions::MissionsButton);
-                    UiMenuButton::new("quit".to_string(), "Exit to desktop".to_string())
-                        .variant(UiVariant::Danger)
-                        .spawn(parent, MainMenuInteractions::QuitButton);
+
+                    UiDivider::horizontal().spawn(parent);
+                    parent
+                        .spawn(Node {
+                            flex_direction: FlexDirection::Column,
+                            ..Default::default()
+                        })
+                        .with_children(|p| {
+                            UiMenuButton::new(
+                                "continue".to_string(),
+                                "Continue last campaign".to_string(),
+                            )
+                            .variant(UiVariant::Primary)
+                            .spawn(p, MainMenuInteractions::ContinueButton);
+                            UiMenuButton::new("load".to_string(), "Select campaign".to_string())
+                                .variant(UiVariant::Primary)
+                                .spawn(p, MainMenuInteractions::LoadButton);
+                            UiMenuButton::new(
+                                "setting".to_string(),
+                                "Audio - Controls - Visuals".to_string(),
+                            )
+                            .variant(UiVariant::Primary)
+                            .spawn(p, MainMenuInteractions::SettingsButton);
+                            UiMenuButton::new(
+                                "missions".to_string(),
+                                "Edit or Play a mission".to_string(),
+                            )
+                            .variant(UiVariant::Primary)
+                            .spawn(p, MainMenuInteractions::MissionsButton);
+                            UiMenuButton::new("quit".to_string(), "Exit to desktop".to_string())
+                                .variant(UiVariant::Danger)
+                                .spawn(p, MainMenuInteractions::QuitButton);
+                        });
+                    UiDivider::horizontal().spawn(parent);
+
+                    parent.spawn((
+                        Text::new("Dead\nSector".to_string()),
+                        TextColor::from(TEXT_PRIMARY_COLOR),
+                        TextFont::from_font_size(20.),
+                    ));
                 });
         })
         .id();

@@ -41,7 +41,7 @@ fn main() {
                 primary_window: Some(Window {
                     title: String::from("Zormb game"),
                     position: WindowPosition::Centered(MonitorSelection::Primary),
-                    resolution: WindowResolution::new(2000, 1000),
+                    resolution: WindowResolution::new(1920, 1080),
                     resizable: true,
                     ..Default::default()
                 }),
