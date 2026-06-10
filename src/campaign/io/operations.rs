@@ -1,6 +1,7 @@
 use std::{fs, path::PathBuf};
 
 use bevy::prelude::*;
+use uuid::Uuid;
 
 use crate::{
     campaign::{io::paths::*, resources::Campaign},
@@ -33,9 +34,17 @@ pub fn get_campaign_files() -> Vec<PathBuf> {
     campaigns
 }
 
-pub fn read_campaign_data(path: PathBuf) -> Result<Campaign, ()> {
+pub fn read_campaign_data_from_path(path: PathBuf) -> Result<Campaign, ()> {
     let Ok(campaign) = read_ron_file::<Campaign>(path.clone()) else {
         error!("campaign not found: {:?}", path);
+        return Err(());
+    };
+    Ok(campaign)
+}
+
+pub fn read_campaign_data_from_id(id: Uuid) -> Result<Campaign, ()> {
+    let Ok(campaign) = read_ron_file::<Campaign>(campaign_data_path(&id)) else {
+        error!("campaign not found: {:?}", id);
         return Err(());
     };
     Ok(campaign)
@@ -47,7 +56,7 @@ pub fn list_all_campaign_data() -> Vec<Campaign> {
     let mut campaigns: Vec<Campaign> = vec![];
 
     for path in file_paths {
-        let Ok(campaign) = read_campaign_data(path) else {
+        let Ok(campaign) = read_campaign_data_from_path(path) else {
             error!("failed loading campaign data");
             continue;
         };

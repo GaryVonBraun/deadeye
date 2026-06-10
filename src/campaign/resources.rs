@@ -1,7 +1,8 @@
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Resource, Serialize, Deserialize)]
 pub struct Campaign {
     pub id: Uuid,
     pub name: String,

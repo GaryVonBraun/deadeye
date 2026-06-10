@@ -1,5 +1,5 @@
 use crate::{
-    campaign::systems::load_campaigns,
+    campaign::systems::load_all_campaign_data,
     ui::{
         campaign_menu::components::{CampaignMenuInteractions, MainMenu},
         common::{
@@ -17,7 +17,7 @@ pub fn spawn_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer
 pub fn build_campaign_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
     println!("Building campaign menu");
 
-    let campaigns = load_campaigns();
+    let campaigns = load_all_campaign_data();
     let image = asset_server.load("main_menu_placeholder.png");
 
     let main_menu_entity = commands
@@ -72,7 +72,7 @@ pub fn build_campaign_menu(commands: &mut Commands, asset_server: &Res<AssetServ
                     .with_children(|p| {
                         for campaign in campaigns {
                             UiMenuButton::new(campaign.name, format!("money {:?}", campaign.money))
-                                .spawn(p, CampaignMenuInteractions::BackButton);
+                                .spawn(p, CampaignMenuInteractions::LoadButton(campaign.id));
                         }
                     });
                 });
