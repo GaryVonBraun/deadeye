@@ -1,6 +1,6 @@
 use crate::ui::{
     campaign_menu::components::{CampaignMenuInteractions, MainMenu},
-    common::button::UiButton,
+    common::{button::UiButton, components::UiVariant, divider::UiDivider, styles::*},
 };
 use bevy::prelude::*;
 pub fn spawn_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -33,17 +33,30 @@ pub fn build_campaign_menu(commands: &mut Commands, asset_server: &Res<AssetServ
                     Node {
                         width: Val::Percent(30.),
                         height: Val::Percent(50.),
-                        border: UiRect::all(Val::Vw(0.1)),
+                        border: UiRect::all(Val::Px(1.)),
+                        flex_direction: FlexDirection::Column,
                         ..Default::default()
                     },
-                    BorderColor::all(Color::linear_rgba(0., 0., 0., 0.95)),
-                    BackgroundColor::from(Color::linear_rgba(0., 0., 0., 0.8)),
+                    BorderColor::all(BORDER_STRONG_COLOR),
+                    BackgroundColor::from(BACKGROUND_PANEL_COLOR),
                 ))
-                .with_children(|parent| {
+                .with_children(|p| {
                     // title
-                    parent.spawn((Text::new("HUH".to_string()), TextColor::WHITE));
-                    UiButton::new("Back".to_string())
-                        .spawn(parent, CampaignMenuInteractions::BackButton);
+
+                    p.spawn((
+                        Node {
+                            width: Val::Percent(100.),
+                            justify_content: JustifyContent::SpaceBetween,
+                            ..Default::default()
+                        },
+                        BackgroundColor::from(BACKGROUND_DEEP_COLOR),
+                    ))
+                    .with_children(|p| {
+                        UiButton::new("Back".to_string())
+                            .variant(UiVariant::Secondary)
+                            .spawn(p, CampaignMenuInteractions::BackButton);
+                        UiDivider::horizontal();
+                    });
                 });
         })
         .id();

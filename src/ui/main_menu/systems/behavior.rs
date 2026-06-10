@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
+    campaign::messages::CreateCampaignMessage,
     core::states::AppState,
     ui::main_menu::components::{MainMenuInteractions, MainMenuStatChild, MainMenuStats},
 };
@@ -15,6 +16,7 @@ pub fn main_menu_interactions(
     >,
     mut next_state: ResMut<NextState<AppState>>,
     mut app_exit_message_writer: MessageWriter<AppExit>,
+    mut create_campaign_writer: MessageWriter<CreateCampaignMessage>,
 ) {
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {
@@ -35,6 +37,9 @@ pub fn main_menu_interactions(
                 }
                 MainMenuInteractions::QuitButton => {
                     app_exit_message_writer.write(AppExit::Success);
+                }
+                MainMenuInteractions::NewCampaignButton => {
+                    create_campaign_writer.write(CreateCampaignMessage);
                 }
             }
         }

@@ -64,12 +64,9 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                                 ..Default::default()
                             })
                             .with_children(|p| {
-                                UiMenuButton::new(
-                                    "continue".to_string(),
-                                    "Continue last campaign".to_string(),
-                                )
-                                .variant(UiVariant::Primary)
-                                .spawn(p, MainMenuInteractions::ContinueButton);
+                                UiMenuButton::new("New".to_string(), "New Campaign".to_string())
+                                    .variant(UiVariant::Primary)
+                                    .spawn(p, MainMenuInteractions::NewCampaignButton);
                                 UiMenuButton::new(
                                     "load".to_string(),
                                     "Select campaign".to_string(),

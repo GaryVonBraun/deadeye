@@ -32,12 +32,12 @@ impl Plugin for UiPlugin {
         ));
         app.insert_resource(UiScale(1.));
         app.add_systems(Update, (ui_button_interaction, ui_menu_button_interaction));
-        app.add_systems(EguiPrimaryContextPass, temporary_scale_window);
+        // app.add_systems(EguiPrimaryContextPass, temporary_scale_window);
     }
 }
 
 fn temporary_scale_window(mut contexts: EguiContexts, mut ui_scale: ResMut<UiScale>) -> Result {
-    egui::Window::new("Debug Menu")
+    egui::Window::new("Scale Ui Menu")
         .resizable(false)
         .default_pos(egui::pos2(1500.0, 16.0))
         .show(contexts.ctx_mut()?, |ui| {
