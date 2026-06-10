@@ -1,6 +1,9 @@
 use uuid::Uuid;
 
-use crate::campaign::{io::operations::write_campaign, resources::Campaign};
+use crate::campaign::{
+    io::operations::{list_all_campaign_data, write_campaign},
+    resources::Campaign,
+};
 
 pub fn create_new_campaign() {
     let campaign = Campaign {
@@ -10,4 +13,8 @@ pub fn create_new_campaign() {
     };
 
     write_campaign(&campaign);
+}
+
+pub fn load_campaigns() -> Vec<Campaign> {
+    list_all_campaign_data()
 }

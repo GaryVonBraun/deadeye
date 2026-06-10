@@ -1,8 +1,15 @@
-use crate::ui::{
-    campaign_menu::components::{CampaignMenuInteractions, MainMenu},
-    common::{button::UiButton, components::UiVariant, divider::UiDivider, styles::*},
+use crate::{
+    campaign::systems::load_campaigns,
+    ui::{
+        campaign_menu::components::{CampaignMenuInteractions, MainMenu},
+        common::{
+            button::UiButton, components::UiVariant, divider::UiDivider, menu_button::UiMenuButton,
+            styles::*,
+        },
+    },
 };
 use bevy::prelude::*;
+use bevy_egui::egui::containers::menu::MenuButton;
 pub fn spawn_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     build_campaign_menu(&mut commands, &asset_server);
 }
@@ -10,6 +17,7 @@ pub fn spawn_campaign_menu(mut commands: Commands, asset_server: Res<AssetServer
 pub fn build_campaign_menu(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
     println!("Building campaign menu");
 
+    let campaigns = load_campaigns();
     let image = asset_server.load("main_menu_placeholder.png");
 
     let main_menu_entity = commands
@@ -56,6 +64,16 @@ pub fn build_campaign_menu(commands: &mut Commands, asset_server: &Res<AssetServ
                             .variant(UiVariant::Secondary)
                             .spawn(p, CampaignMenuInteractions::BackButton);
                         UiDivider::horizontal();
+                    });
+                    p.spawn(Node {
+                        flex_direction: FlexDirection::Column,
+                        ..Default::default()
+                    })
+                    .with_children(|p| {
+                        for campaign in campaigns {
+                            UiMenuButton::new(campaign.name, format!("money {:?}", campaign.money))
+                                .spawn(p, CampaignMenuInteractions::BackButton);
+                        }
                     });
                 });
         })

@@ -5,7 +5,7 @@ use crate::campaign::{messages::CreateCampaignMessage, systems::create_new_campa
 mod io;
 pub mod messages;
 mod resources;
-mod systems;
+pub mod systems;
 pub struct CampaignPlugin;
 
 impl Plugin for CampaignPlugin {
