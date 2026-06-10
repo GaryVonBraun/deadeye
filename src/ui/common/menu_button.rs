@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, text::LineBreak::NoWrap};
+use bevy_egui::egui::{TextWrapMode, TextureWrapMode};
 
 use crate::ui::common::{components::UiVariant, styles::SECONDARY_COLOR};
 
@@ -33,11 +34,15 @@ impl UiMenuButton {
         parent
             .spawn((
                 Node {
-                    height: Val::Px(120.),
-                    width: Val::Px(360.),
+                    width: Val::Percent(100.),
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
-                    padding: UiRect::left(Val::Px(50.)),
+                    padding: UiRect {
+                        left: Val::Px(50.),
+                        right: Val::Px(50.),
+                        top: Val::Px(20.),
+                        bottom: Val::Px(20.),
+                    },
                     border: UiRect::all(Val::Px(2.)).with_left(Val::Px(7.)),
                     ..default()
                 },
@@ -55,12 +60,13 @@ impl UiMenuButton {
             .with_children(|p| {
                 p.spawn((
                     Text::new(self.label),
-                    TextFont::from_font_size(48.),
+                    TextFont::from_font_size(60.),
                     MenuButtonLabel,
                 ));
                 p.spawn((
                     Text::new(self.sub_label),
-                    TextFont::from_font_size(18.),
+                    TextLayout::new_with_no_wrap(),
+                    TextFont::from_font_size(20.),
                     TextColor::from(SECONDARY_COLOR),
                     MenuButtonSubLabel,
                 ));

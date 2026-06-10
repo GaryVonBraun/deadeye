@@ -24,9 +24,9 @@ impl UiDivider {
         UiDivider::Vertical(1.)
     }
 
-    pub fn spawn(self, parent: &mut ChildSpawnerCommands) -> Entity {
+    pub fn spawn(self, p: &mut ChildSpawnerCommands) -> Entity {
         match self {
-            UiDivider::Vertical(width) => parent
+            UiDivider::Vertical(width) => p
                 .spawn((
                     Node {
                         height: Val::Percent(100.),
@@ -37,7 +37,7 @@ impl UiDivider {
                     BackgroundColor::from(BORDER_STRONG_COLOR),
                 ))
                 .id(),
-            UiDivider::Horizontal(height) => parent
+            UiDivider::Horizontal(height) => p
                 .spawn((
                     Node {
                         height: Val::Px(height),
