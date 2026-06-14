@@ -24,32 +24,31 @@ impl UiButton {
         self
     }
 
-    pub fn spawn(self, parent: &mut ChildSpawnerCommands, interaction: impl Component) -> Entity {
-        parent
-            .spawn((
-                Node {
-                    height: Val::Px(80.),
-                    width: Val::Px(200.),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::Column,
-                    border: UiRect::all(Val::Px(2.)),
-                    ..default()
-                },
-                Button,
-                UiButton {
-                    label: self.label.clone(),
-                    variant: self.variant,
-                },
-                BorderColor::all(UiVariant::base_color(self.variant)),
-                BackgroundColor::DEFAULT,
-                self.variant,
-                interaction,
-            ))
-            .with_children(|p| {
-                p.spawn((Text::new(self.label), ButtonLabel));
-            })
-            .id()
+    pub fn spawn(self, p: &mut ChildSpawnerCommands, interaction: impl Component) -> Entity {
+        p.spawn((
+            Node {
+                height: Val::Px(80.),
+                width: Val::Px(200.),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                flex_direction: FlexDirection::Column,
+                border: UiRect::all(Val::Px(2.)),
+                ..default()
+            },
+            Button,
+            UiButton {
+                label: self.label.clone(),
+                variant: self.variant,
+            },
+            BorderColor::all(UiVariant::base_color(self.variant)),
+            BackgroundColor::DEFAULT,
+            self.variant,
+            interaction,
+        ))
+        .with_children(|p| {
+            p.spawn((Text::new(self.label), ButtonLabel));
+        })
+        .id()
     }
 }
 

@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub enum AppState {
     MainMenu,
     CampaignMenu,
+    CampaignOverview,
     MissionMenu,
     Editor,
     InGame,
