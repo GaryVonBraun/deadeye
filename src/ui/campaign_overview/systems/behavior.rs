@@ -1,8 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    campaign::messages::CreateCampaignMessage, core::states::AppState,
-    ui::campaign_overview::components::CampaignOverviewInteractions,
+    campaign::{
+        messages::CreateCampaignMessage,
+        resources::{Campaign, SquadMember},
+    },
+    core::states::AppState,
+    ui::campaign_overview::components::*,
 };
 pub fn campaign_overview_interactions(
     mut button_query: Query<
@@ -10,8 +14,6 @@ pub fn campaign_overview_interactions(
         (Changed<Interaction>, With<CampaignOverviewInteractions>),
     >,
     mut next_state: ResMut<NextState<AppState>>,
-    mut app_exit_message_writer: MessageWriter<AppExit>,
-    mut create_campaign_writer: MessageWriter<CreateCampaignMessage>,
 ) {
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {
@@ -21,6 +23,29 @@ pub fn campaign_overview_interactions(
                 }
                 CampaignOverviewInteractions::ShopMenuButton => {
                     warn!("No shop implemented yet!")
+                }
+            }
+        }
+    }
+}
+
+pub fn campaign_squad_interactions(
+    mut button_query: Query<
+        (&Interaction, &CampaignSquadInteractions),
+        (Changed<Interaction>, With<CampaignSquadInteractions>),
+    >,
+    mut campaign: ResMut<Campaign>,
+) {
+    for (interaction, &menu_interaction) in button_query.iter_mut() {
+        if *interaction == Interaction::Pressed {
+            match menu_interaction {
+                CampaignSquadInteractions::AddMemberButton => {
+                    campaign.squad.push(SquadMember {
+                        name: "Ben".to_string(),
+                    });
+                }
+                CampaignSquadInteractions::RemoveMemberButton(index) => {
+                    campaign.squad.remove(index);
                 }
             }
         }

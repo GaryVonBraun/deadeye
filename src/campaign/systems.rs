@@ -5,7 +5,7 @@ use crate::{
     campaign::{
         io::operations::{list_all_campaign_data, read_campaign_data_from_id, write_campaign},
         messages::LoadCampaignMessage,
-        resources::Campaign,
+        resources::{Campaign, SquadMember},
     },
     core::states::AppState,
 };
@@ -15,6 +15,9 @@ pub fn create_new_campaign(mut commands: Commands, mut next_state: ResMut<NextSt
         id: Uuid::new_v4(),
         name: "new save".to_string(),
         money: 500,
+        squad: vec![SquadMember {
+            name: "Zack".to_string(),
+        }],
     };
 
     write_campaign(&campaign);

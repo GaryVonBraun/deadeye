@@ -1,7 +1,9 @@
 use crate::{
     campaign::resources::Campaign,
     ui::{
-        campaign_overview::components::{CampaignOverview, CampaignOverviewInteractions},
+        campaign_overview::components::{
+            CampaignOverview, CampaignOverviewInteractions, SquadMemberList,
+        },
         common::{button::UiButton, components::UiVariant, styles::*},
     },
 };
@@ -58,8 +60,13 @@ pub fn build_campaign_overview(
                 })
                 .with_children(|p| {
                     menu_section("SQUAD ROSTER", p, |p| {
-                        UiButton::new("test1".to_string())
-                            .spawn(p, CampaignOverviewInteractions::MainMenuButton);
+                        p.spawn((
+                            Node {
+                                flex_direction: FlexDirection::Column,
+                                ..Default::default()
+                            },
+                            SquadMemberList,
+                        ));
                     });
                     menu_section("MISSION SELECT", p, |p| {
                         UiButton::new("test2".to_string())
@@ -86,8 +93,6 @@ pub fn despawn_campaign_overview(
     commands.entity(main_menu_entity.0).despawn();
 }
 
-// idk here i am trying to create a reuseable ui thingy that makes it so the node can have custom content
-// perhaps this is done by creating a children parameter, perhaps i should just return this node and do .with_children() on it
 pub fn menu_section(
     label: &str,
     p: &mut ChildSpawnerCommands,

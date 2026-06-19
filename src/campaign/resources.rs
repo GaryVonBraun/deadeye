@@ -7,4 +7,10 @@ pub struct Campaign {
     pub id: Uuid,
     pub name: String,
     pub money: i32,
+    pub squad: Vec<SquadMember>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SquadMember {
+    pub name: String,
 }

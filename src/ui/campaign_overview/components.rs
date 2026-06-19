@@ -8,3 +8,12 @@ pub enum CampaignOverviewInteractions {
     MainMenuButton,
     ShopMenuButton,
 }
+
+#[derive(Component, Debug, Clone, Copy)]
+pub enum CampaignSquadInteractions {
+    AddMemberButton,
+    RemoveMemberButton(usize),
+}
+
+#[derive(Component, Debug)]
+pub struct SquadMemberList;
