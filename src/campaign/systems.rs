@@ -10,7 +10,7 @@ use crate::{
     core::states::AppState,
 };
 
-pub fn create_new_campaign() {
+pub fn create_new_campaign(mut commands: Commands, mut next_state: ResMut<NextState<AppState>>) {
     let campaign = Campaign {
         id: Uuid::new_v4(),
         name: "new save".to_string(),
@@ -18,6 +18,8 @@ pub fn create_new_campaign() {
     };
 
     write_campaign(&campaign);
+    commands.insert_resource(campaign);
+    next_state.set(AppState::CampaignOverview);
 }
 
 pub fn load_all_campaign_data() -> Vec<Campaign> {
