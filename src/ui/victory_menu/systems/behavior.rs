@@ -18,7 +18,7 @@ pub fn victory_menu_interactions(
         if *interaction == Interaction::Pressed {
             match menu_interaction {
                 VictoryMenuInteractions::MissionsButton => {
-                    next_state.set(AppState::MissionMenu);
+                    next_state.set(AppState::CampaignOverview);
                 }
                 VictoryMenuInteractions::QuitButton => {
                     app_exit_message_writer.write(AppExit::Success);

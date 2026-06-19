@@ -25,7 +25,7 @@ pub fn game_over_menu_interactions(
                     });
                 }
                 GameOverMenuInteractions::MissionsButton => {
-                    next_state.set(AppState::MissionMenu);
+                    next_state.set(AppState::CampaignOverview);
                 }
                 GameOverMenuInteractions::QuitButton => {
                     app_exit_message_writer.write(AppExit::Success);
