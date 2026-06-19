@@ -6,7 +6,8 @@ use crate::{
         resources::{Campaign, SquadMember},
     },
     core::states::AppState,
-    ui::campaign_overview::components::*,
+    mission::messages::LoadMissionMessage,
+    ui::campaign_overview::{components::*, resources::SelectedMission},
 };
 pub fn campaign_overview_interactions(
     mut button_query: Query<
@@ -46,6 +47,28 @@ pub fn campaign_squad_interactions(
                 }
                 CampaignSquadInteractions::RemoveMemberButton(index) => {
                     campaign.squad.remove(index);
+                }
+            }
+        }
+    }
+}
+
+pub fn campaign_mission_interactions(
+    mut button_query: Query<
+        (&Interaction, &CampaignMissionInteractions),
+        (Changed<Interaction>, With<CampaignMissionInteractions>),
+    >,
+    mut selected_mission: ResMut<SelectedMission>,
+    mut load_mission_writer: MessageWriter<LoadMissionMessage>,
+) {
+    for (interaction, &menu_interaction) in button_query.iter_mut() {
+        if *interaction == Interaction::Pressed {
+            match menu_interaction {
+                CampaignMissionInteractions::SelectMission(index) => {
+                    selected_mission.id = Some(index);
+                }
+                CampaignMissionInteractions::StartMission(id) => {
+                    load_mission_writer.write(LoadMissionMessage { id });
                 }
             }
         }

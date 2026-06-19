@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Component, Serialize, Deserialize)]
 pub struct Mission {
     pub id: Uuid,
     pub name: String,

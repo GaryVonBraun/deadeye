@@ -1,8 +1,12 @@
 use crate::{
     campaign::resources::Campaign,
     ui::{
-        campaign_overview::components::{
-            CampaignOverview, CampaignOverviewInteractions, SquadMemberList,
+        campaign_overview::{
+            components::{
+                CampaignOverview, CampaignOverviewInteractions, SquadMemberList, UiMissionBriefing,
+                UiMissionList,
+            },
+            resources::SelectedMission,
         },
         common::{button::UiButton, components::UiVariant, styles::*},
     },
@@ -13,6 +17,7 @@ pub fn spawn_campaign_overview(
     asset_server: Res<AssetServer>,
     campaign_info: Res<Campaign>,
 ) {
+    commands.insert_resource(SelectedMission { id: None });
     build_campaign_overview(&mut commands, &asset_server, campaign_info);
 }
 
@@ -69,8 +74,22 @@ pub fn build_campaign_overview(
                         ));
                     });
                     menu_section("MISSION SELECT", p, |p| {
-                        UiButton::new("test2".to_string())
-                            .spawn(p, CampaignOverviewInteractions::MainMenuButton);
+                        p.spawn((
+                            Node {
+                                width: Val::Percent(100.),
+                                flex_direction: FlexDirection::Column,
+                                ..Default::default()
+                            },
+                            UiMissionList,
+                        ));
+                    });
+                    menu_section("Briefing", p, |p| {
+                        p.spawn((
+                            Node {
+                                ..Default::default()
+                            },
+                            UiMissionBriefing,
+                        ));
                     });
                 });
 
