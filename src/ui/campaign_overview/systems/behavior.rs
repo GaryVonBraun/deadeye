@@ -19,6 +19,9 @@ pub fn campaign_overview_interactions(
                 CampaignOverviewInteractions::MainMenuButton => {
                     next_state.set(AppState::MainMenu);
                 }
+                CampaignOverviewInteractions::ShopMenuButton => {
+                    warn!("No shop implemented yet!")
+                }
             }
         }
     }

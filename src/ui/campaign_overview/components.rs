@@ -6,4 +6,5 @@ pub struct CampaignOverview;
 #[derive(Component, Debug, Clone, Copy)]
 pub enum CampaignOverviewInteractions {
     MainMenuButton,
+    ShopMenuButton,
 }

@@ -7,7 +7,7 @@ use crate::campaign::{
 
 mod io;
 pub mod messages;
-mod resources;
+pub mod resources;
 pub mod systems;
 pub struct CampaignPlugin;
 
