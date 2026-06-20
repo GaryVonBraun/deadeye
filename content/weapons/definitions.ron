@@ -1,0 +1,22 @@
+(
+    weapons: [
+        (
+            id: "ak",
+            fire_delay: 0.1,
+            reload_time: 3.0,
+            magazine_size: 30,
+            speed: 500.0,
+            damage: 100.0,
+            shoot_sound: "weapon_pistol_fire",
+            reload_sound: "weapon_ak_reload",
+            dry_sound: "weapon_pistol_dry",
+            fire_mode: Auto,
+
+            spread_base: 0.0,
+            spread_max: 0.3,
+            spread_per_shot: 0.2,
+            spread_recovery: 1.0,
+            movement_spread: 0.2,
+        ),
+    ],
+)

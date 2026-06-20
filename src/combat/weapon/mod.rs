@@ -5,8 +5,8 @@ use crate::{combat::weapon::systems::*, core::states::SimulationState};
 mod bundles;
 pub mod components;
 pub mod factories;
+mod io;
 mod systems;
-
 pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {

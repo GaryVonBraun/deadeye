@@ -17,7 +17,7 @@ use crate::{
     animation::{components::SpriteAnimator, resources::AnimationRegistry},
     combat::{
         components::{EquippedWeapon, MeleeIntent, MeleeState, ShootingIntent},
-        weapon::factories::spawn_debug_weapon,
+        weapon::factories::spawn_weapon,
     },
     core::io::read_ron_file,
     navigation::flow_field::components::{FlowFieldBundle, FlowFieldTarget},
@@ -84,7 +84,9 @@ pub fn spawn_actor_handler(
 
         match actor.archetype {
             ActorArchetype::Player => {
-                let weapon = spawn_debug_weapon(
+                //FIXME - Currently if there is no weapon the game will crash
+                let weapon = spawn_weapon(
+                    "ak".to_string(),
                     &mut commands,
                     Vec3 {
                         x: 0.0,
@@ -92,19 +94,8 @@ pub fn spawn_actor_handler(
                         z: 2.,
                     },
                     &animation_registry,
-                );
-
-                // let weapon2 = spawn_debug_weapon(
-                //     &mut commands,
-                //     &asset_server,
-                //     Vec3 {
-                //         x: 1.0,
-                //         y: 4.,
-                //         z: 2.,
-                //     },
-                //     &animation_definitions,
-                //     &mut texture_atlas_layouts,
-                // );
+                )
+                .unwrap();
 
                 let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
                     error!("animation def not found");
@@ -155,7 +146,9 @@ pub fn spawn_actor_handler(
                     .id();
             }
             ActorArchetype::Human => {
-                let weapon = spawn_debug_weapon(
+                //FIXME - Currently if there is no weapon the game will crash
+                let weapon = spawn_weapon(
+                    "ak".to_string(),
                     &mut commands,
                     Vec3 {
                         x: 0.0,
@@ -163,7 +156,8 @@ pub fn spawn_actor_handler(
                         z: 2.,
                     },
                     &animation_registry,
-                );
+                )
+                .unwrap();
 
                 let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
                     error!("animation def not found");

@@ -1,7 +1,10 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, Deserialize)]
 pub struct Weapon {
+    pub id: String,
+
     pub fire_delay: f32,
     pub reload_time: f32,
     pub magazine_size: u32,
@@ -46,7 +49,7 @@ pub enum WeaponState {
     Reloading { timer: f32 },
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, Serialize, Deserialize)]
 pub enum FireMode {
     Semi,
     Auto,
