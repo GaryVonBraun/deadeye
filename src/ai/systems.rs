@@ -289,7 +289,7 @@ pub fn ai_shooting_system(
                     messages.write(ShootMessage {
                         owner: ai_entity,
                         target_position: ai_shooting_intent.target_position,
-                        just_pressed: false,
+                        just_pressed: true,
                     });
                 }
             }

@@ -174,7 +174,7 @@ pub fn load_mission(
                     x: x as f32 * 5.,
                     y: 0. as f32 * 5.,
                 },
-                weapons: vec!["ak".to_string()],
+                weapons: vec!["pistol".to_string()],
             });
         }
     }

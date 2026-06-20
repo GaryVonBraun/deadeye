@@ -27,7 +27,7 @@ pub fn spawn_weapon(
     };
 
     //NOTE - This could be an animation helper function.
-    let Some(anim_def) = animation_registry.entries.get("weapon_default") else {
+    let Some(anim_def) = animation_registry.entries.get(weapon_id) else {
         error!("animation def not found");
         return None;
     };
@@ -52,7 +52,7 @@ pub fn spawn_weapon(
                 current_clip: anim_def.default.clone(),
                 frame_timer: Timer::from_seconds(1.0 / clip.fps as f32, TimerMode::Repeating),
                 current_frame: 0,
-                def_id: "weapon_default".to_string(),
+                def_id: weapon_id.clone(),
                 clip_dirty: false,
                 flip_x: false,
                 flip_y: false,

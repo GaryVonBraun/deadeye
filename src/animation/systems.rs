@@ -28,7 +28,7 @@ pub fn setup_animations(
     let Ok(animation_entries) = read_ron_file::<Vec<AnimationDefinition>>(PathBuf::from(
         "content/animation/animation_definitions.ron",
     )) else {
-        error!("failed to find audio registry");
+        error!("failed to find animation registry");
         return;
     };
     let mut registry_entries: HashMap<String, LoadedAnimation> = HashMap::new();

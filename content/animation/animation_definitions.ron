@@ -73,12 +73,28 @@
     ),
     AnimationDefinition (
     default: "idle",
-    name: "weapon_default",
+    name: "ak",
     clips: [
         ClipDefinition (
             name: "idle",
             texture: "Gun_Idle.png",
             frame_size: (16, 10),
+            columns: 1,
+            rows: 1,
+            fps: 1,
+            looping: false,
+            freeze: true,
+            )
+        ],
+    ),
+    AnimationDefinition (
+    default: "idle",
+    name: "pistol",
+    clips: [
+        ClipDefinition (
+            name: "idle",
+            texture: "Pistol_idle.png",
+            frame_size: (8, 9),
             columns: 1,
             rows: 1,
             fps: 1,
