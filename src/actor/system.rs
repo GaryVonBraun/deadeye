@@ -57,9 +57,7 @@ pub struct ActorDefinition {
 pub fn spawn_actor_handler(
     mut spawn_actor_reader: MessageReader<SpawnActorMessage>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     animation_registry: Res<AnimationRegistry>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let Ok(definitions) =
         read_ron_file::<ActorDefinitions>(PathBuf::from("content/actors/definitions.ron"))
@@ -80,13 +78,12 @@ pub fn spawn_actor_handler(
             return;
         };
 
-        // info!("{:?}", message);
-
-        match actor.archetype {
-            ActorArchetype::Player => {
-                //FIXME - Currently if there is no weapon the game will crash
-                let weapon = spawn_weapon(
-                    "ak".to_string(),
+        let weapons: Vec<Entity> = message
+            .weapons
+            .iter()
+            .filter_map(|id| {
+                spawn_weapon(
+                    id,
                     &mut commands,
                     Vec3 {
                         x: 0.0,
@@ -95,8 +92,11 @@ pub fn spawn_actor_handler(
                     },
                     &animation_registry,
                 )
-                .unwrap();
+            })
+            .collect();
 
+        let entity: Entity = match actor.archetype {
+            ActorArchetype::Player => {
                 let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
                     error!("animation def not found");
                     return;
@@ -106,13 +106,12 @@ pub fn spawn_actor_handler(
                     return;
                 };
 
-                let entity = commands
+                commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
                             actor,
                         ),
-                        EquippedWeapon { entity: weapon },
                         Sprite {
                             image: clip.image_handle.clone(),
                             texture_atlas: Some(TextureAtlas {
@@ -139,26 +138,10 @@ pub fn spawn_actor_handler(
                         ShootingIntent::default(),
                         Player,
                     ))
-                    .add_children(&[
-                        weapon,
-                        // weapon2
-                    ])
-                    .id();
+                    .add_children(&weapons)
+                    .id()
             }
             ActorArchetype::Human => {
-                //FIXME - Currently if there is no weapon the game will crash
-                let weapon = spawn_weapon(
-                    "ak".to_string(),
-                    &mut commands,
-                    Vec3 {
-                        x: 0.0,
-                        y: -4.,
-                        z: 2.,
-                    },
-                    &animation_registry,
-                )
-                .unwrap();
-
                 let Some(anim_def) = animation_registry.entries.get("soldier_default") else {
                     error!("animation def not found");
                     return;
@@ -168,7 +151,7 @@ pub fn spawn_actor_handler(
                     return;
                 };
 
-                let entity: Entity = commands
+                commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
@@ -182,7 +165,6 @@ pub fn spawn_actor_handler(
                             }),
                             ..default()
                         },
-                        EquippedWeapon { entity: weapon },
                         FlowFieldTarget::default(),
                         SentientAiBundle::with_vision_range(actor.vision_range),
                         Locomotion::with_speed(actor.speed),
@@ -200,8 +182,8 @@ pub fn spawn_actor_handler(
                         },
                         ShootingIntent::default(),
                     ))
-                    .add_child(weapon)
-                    .id();
+                    .add_children(&weapons)
+                    .id()
             }
             ActorArchetype::Zombie => {
                 let Some(anim_def) = animation_registry.entries.get("zombie_default") else {
@@ -214,7 +196,7 @@ pub fn spawn_actor_handler(
                     continue;
                 };
 
-                let entity = commands
+                commands
                     .spawn((
                         CoreActorBundle::from_actor_with_position(
                             message.position.extend(0.),
@@ -254,8 +236,14 @@ pub fn spawn_actor_handler(
                             damage: actor.melee_damage,
                         },
                     ))
-                    .id();
+                    .id()
             }
+        };
+        //TEMPORARY - TODO: This is a hack to make sure the first weapon gets equipped.
+        if let Some(first_weapon) = weapons.first() {
+            commands.entity(entity).insert(EquippedWeapon {
+                entity: *first_weapon,
+            });
         }
     }
 }

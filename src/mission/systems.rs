@@ -43,12 +43,12 @@ pub fn test_mission(
             return;
         };
         info!("load mission: {:?}", message.id);
-        
+
         info!("found mission called: {:?}", mission.name);
-        
+
         // set state to game
         next_state.set(AppState::InGame);
-        
+
         //set active map
         load_map_writer.write(LoadMapMessage { id: mission.map_id });
 
@@ -73,6 +73,7 @@ pub fn test_mission(
         spawn_actor_writer.write(SpawnActorMessage {
             id: "player".to_string(),
             position: mission.player_spawn,
+            weapons: vec!["ak".to_string()],
         });
         commands.insert_resource(ActiveMission { mission: mission });
 
@@ -97,6 +98,7 @@ pub fn test_mission(
                         x: x as f32 * 5.,
                         y: y as f32 * 5.,
                     },
+                    weapons: vec!["ak".to_string()],
                 });
             }
         }
@@ -148,6 +150,7 @@ pub fn load_mission(
         spawn_actor_writer.write(SpawnActorMessage {
             id: "player".to_string(),
             position: mission.player_spawn,
+            weapons: vec!["ak".to_string()],
         });
         commands.insert_resource(ActiveMission { mission: mission });
 
@@ -171,6 +174,7 @@ pub fn load_mission(
                     x: x as f32 * 5.,
                     y: 0. as f32 * 5.,
                 },
+                weapons: vec!["ak".to_string()],
             });
         }
     }
@@ -390,6 +394,7 @@ pub fn wave_spawner(
         spawn_actor_writer.write(SpawnActorMessage {
             id: "zombie".to_string(),
             position: pos,
+            weapons: vec![],
         });
         state.wave_zombies_spawned += 1;
     }

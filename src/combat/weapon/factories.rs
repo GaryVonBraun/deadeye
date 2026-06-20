@@ -7,7 +7,7 @@ use crate::{
     },
 };
 pub fn spawn_weapon(
-    weapon_id: String,
+    weapon_id: &String,
     commands: &mut Commands,
     translation: Vec3,
     animation_registry: &Res<AnimationRegistry>,
@@ -20,7 +20,7 @@ pub fn spawn_weapon(
     let Some(weapon) = definitions
         .weapons
         .iter()
-        .find(|definition| definition.id == weapon_id)
+        .find(|definition| definition.id == *weapon_id)
     else {
         error!("Could not find a weapon with id: {}", weapon_id);
         return None;
