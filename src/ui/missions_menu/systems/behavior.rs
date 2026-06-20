@@ -3,9 +3,8 @@ use bevy::prelude::*;
 use crate::{
     core::states::AppState,
     map::messages::DeleteMapMessage,
-    mission::{
-        messages::LoadMissionMessage,
-        messages::{CreateMissionMessage, DeleteMissionMessage, EditMissionMessage},
+    mission::messages::{
+        CreateMissionMessage, DeleteMissionMessage, EditMissionMessage, TestMissionMessage,
     },
     ui::missions_menu::components::{MissionListInteractions, MissionMenuInteractions},
 };
@@ -39,7 +38,7 @@ pub fn mission_list_interactions(
     mut delete_mission_writer: MessageWriter<DeleteMissionMessage>,
     mut delete_map_writer: MessageWriter<DeleteMapMessage>,
     mut edit_mission_writer: MessageWriter<EditMissionMessage>,
-    mut load_mission_writer: MessageWriter<LoadMissionMessage>,
+    mut test_mission_writer: MessageWriter<TestMissionMessage>,
 ) {
     for (interaction, &menu_interaction) in button_query.iter_mut() {
         if *interaction == Interaction::Pressed {
@@ -52,7 +51,7 @@ pub fn mission_list_interactions(
                     edit_mission_writer.write(EditMissionMessage { id });
                 }
                 MissionListInteractions::Play(id) => {
-                    load_mission_writer.write(LoadMissionMessage { id });
+                    test_mission_writer.write(TestMissionMessage { id });
                 }
             }
         }

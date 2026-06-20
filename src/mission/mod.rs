@@ -15,6 +15,7 @@ pub struct MissionPlugin;
 impl Plugin for MissionPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<LoadMissionMessage>();
+        app.add_message::<TestMissionMessage>();
         app.add_message::<SaveMissionMessage>();
         app.add_message::<CreateMissionMessage>();
         app.add_message::<DeleteMissionMessage>();
@@ -23,6 +24,10 @@ impl Plugin for MissionPlugin {
         app.add_systems(
             Update,
             load_mission.run_if(on_message::<LoadMissionMessage>),
+        );
+        app.add_systems(
+            Update,
+            test_mission.run_if(on_message::<TestMissionMessage>),
         );
 
         app.add_systems(

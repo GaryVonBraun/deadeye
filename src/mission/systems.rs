@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     actor::{components::Zombie, messages::SpawnActorMessage},
+    campaign::resources::Campaign,
     combat::health::components::Dead,
     core::states::AppState,
     editor::messages::LoadEditorMessage,
@@ -28,6 +29,80 @@ use crate::{
     ui::missions_menu::messages::RefreshMissionListMessage,
 };
 
+pub fn test_mission(
+    mut test_mission_reader: MessageReader<TestMissionMessage>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut load_map_writer: MessageWriter<LoadMapMessage>,
+    mut load_props_writer: MessageWriter<LoadPropsMessage>,
+    mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
+    mut build_nav_grid_writer: MessageWriter<BuildNavGridMessage>,
+    mut commands: Commands,
+) {
+    for message in test_mission_reader.read() {
+        let Ok(mission) = read_mission_data(&message.id) else {
+            return;
+        };
+        info!("load mission: {:?}", message.id);
+        
+        info!("found mission called: {:?}", mission.name);
+        
+        // set state to game
+        next_state.set(AppState::InGame);
+        
+        //set active map
+        load_map_writer.write(LoadMapMessage { id: mission.map_id });
+
+        load_props_writer.write(LoadPropsMessage { id: mission.map_id });
+
+        build_nav_grid_writer.write(BuildNavGridMessage { id: mission.map_id });
+
+        // is a mission has waves we insert the spawner state here
+        if !mission.waves.is_empty() {
+            commands.insert_resource(WaveSpawnerState {
+                current_wave: 0,
+                wave_zombies_spawned: 0,
+                spawn_timer: Timer::from_seconds(
+                    1.0 / mission.waves[0].spawn_per_second,
+                    TimerMode::Repeating,
+                ),
+                wave_delay_timer: None,
+                finished: false,
+            });
+        }
+
+        spawn_actor_writer.write(SpawnActorMessage {
+            id: "player".to_string(),
+            position: mission.player_spawn,
+        });
+        commands.insert_resource(ActiveMission { mission: mission });
+
+        //TEMPORARY - for now we spawn a zombie and npc like this just to be able to test it
+        // for i in 0..50 {
+        //     for j in 0..50 {
+        //         spawn_actor_writer.write(SpawnActorMessage {
+        //             id: "zombie".to_string(),
+        //             position: Vec2 {
+        //                 x: 800. + 35. * i as f32,
+        //                 y: -500. + 35. * j as f32,
+        //             },
+        //         });
+        //     }
+        // }
+
+        for y in 0..1 {
+            for x in 0..1 {
+                spawn_actor_writer.write(SpawnActorMessage {
+                    id: "npc".to_string(),
+                    position: Vec2 {
+                        x: x as f32 * 5.,
+                        y: y as f32 * 5.,
+                    },
+                });
+            }
+        }
+    }
+}
+
 pub fn load_mission(
     mut load_mission_reader: MessageReader<LoadMissionMessage>,
     mut next_state: ResMut<NextState<AppState>>,
@@ -36,6 +111,7 @@ pub fn load_mission(
     mut spawn_actor_writer: MessageWriter<SpawnActorMessage>,
     mut build_nav_grid_writer: MessageWriter<BuildNavGridMessage>,
     mut commands: Commands,
+    campaign: Res<Campaign>,
 ) {
     for message in load_mission_reader.read() {
         let Ok(mission) = read_mission_data(&message.id) else {
@@ -88,16 +164,14 @@ pub fn load_mission(
         //     }
         // }
 
-        for y in 0..1 {
-            for x in 0..1 {
-                spawn_actor_writer.write(SpawnActorMessage {
-                    id: "npc".to_string(),
-                    position: Vec2 {
-                        x: x as f32 * 5.,
-                        y: y as f32 * 5.,
-                    },
-                });
-            }
+        for x in 0..campaign.squad.len() {
+            spawn_actor_writer.write(SpawnActorMessage {
+                id: "npc".to_string(),
+                position: Vec2 {
+                    x: x as f32 * 5.,
+                    y: 0. as f32 * 5.,
+                },
+            });
         }
     }
 }
