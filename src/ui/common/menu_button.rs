@@ -65,7 +65,7 @@ impl UiMenuButton {
                 ));
                 p.spawn((
                     Text::new(self.sub_label),
-                    TextLayout::new_with_no_wrap(),
+                    TextLayout::no_wrap(),
                     TextFont::from_font_size(20.),
                     TextColor::from(SECONDARY_COLOR),
                     MenuButtonSubLabel,
