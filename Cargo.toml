@@ -4,17 +4,18 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.18", default-features = false, features = [
+bevy = { version = "0.19", default-features = false, features = [
     "2d",
+    "audio",
     # "trace_tracy",
 ] }
-bevy-inspector-egui = "0.36.0"
+bevy-inspector-egui = "0.37.0"
 rand = { version = "0.10.1", features = ["std_rng"] }
-ron = "0.12.0"
+ron = "0.12.1"
 serde = "1.0.228"
-uuid = "1.22.0"
-bevy_egui = "0.39"
-image = "0.25"
+uuid = "1.23.3"
+bevy_egui = "0.40"
+image = "0.25.10"
 chrono = "0.4"
 pretty-num = "0.1.2"
 
