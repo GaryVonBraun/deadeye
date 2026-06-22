@@ -99,7 +99,7 @@ pub fn editor_tile_picker_panel(
 
                 // Zooming
                 if response.hovered() {
-                    let scroll = ui.input(|i| i.raw_scroll_delta.y);
+                    let scroll = ui.input(|i| i.smooth_scroll_delta.y);
 
                     if scroll != 0.0 {
                         let zoom_before = editor_settings.tile_picker_zoom;
